@@ -1,0 +1,29 @@
+{
+  "name": "pingo",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Pingo — Support for every child. Платформа, где родители находят волонтёров и специалистов для занятий с детьми с особыми потребностями.",
+  "scripts": {
+    "dev": "vite",
+    "dev:mobile": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview",
+    "preview:mobile": "vite preview --host"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
+    "dexie": "^4.0.11",
+    "dexie-react-hooks": "^1.1.7",
+    "framer-motion": "^11.18.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
+    "vite": "^7.3.7",
+    "vite-plugin-pwa": "^1.0.3",
+    "workbox-window": "^7.3.0"
+  }
+}
