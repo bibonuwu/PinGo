@@ -6,6 +6,7 @@ import {
   CalendarCheckIcon,
   CalendarXIcon,
   CertificateIcon,
+  ChatCircleDotsIcon,
   ChecksIcon,
   ClipboardTextIcon,
   FlagIcon,
@@ -42,6 +43,7 @@ const ICONS = {
   certificate_issued: CertificateIcon,
   announcement: MegaphoneIcon,
   complaint: FlagIcon,
+  support_message: ChatCircleDotsIcon,
 };
 
 export default function Notifications() {

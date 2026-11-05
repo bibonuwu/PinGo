@@ -6,7 +6,7 @@ import { FlagIcon, PaperPlaneRightIcon, CalendarDotsIcon, UserIcon } from '@phos
 import { db } from '../lib/db';
 import { COMPLAINT_REASONS } from '../lib/constants';
 import { cx, fmtAgo, fmtDay, fmtTime, toDateKey } from '../lib/utils';
-import { MAX_MESSAGE_LENGTH, markConversationRead, sendMessage } from '../services/chat';
+import { MAX_MESSAGE_LENGTH, markConversationRead, sendMessage, supportAdminOf } from '../services/chat';
 import { createComplaint } from '../services/complaints';
 import { useToast } from '../context/ToastContext';
 import { Avatar } from './Avatar';
@@ -20,6 +20,7 @@ export function ConversationList({ items, me, basePath, activeId }) {
         {items.map((c, i) => {
           const unread = c.unread?.[me] || 0;
           const mine = c.lastSenderId === me;
+          const admin = supportAdminOf(c);
           return (
             <motion.li
               key={c.id}
@@ -31,7 +32,10 @@ export function ConversationList({ items, me, basePath, activeId }) {
                 <Avatar avatar={c.other?.avatar} name={c.other?.name} size={52} />
                 <span className="conv__body">
                   <span className="conv__top">
-                    <strong>{c.other?.name ?? 'Пользователь'}</strong>
+                    <span className="conv__name">
+                      <strong>{c.other?.name ?? 'Пользователь'}</strong>
+                      {admin && admin !== me && <span className="tag tag--yellow tag--xs">модератор</span>}
+                    </span>
                     <time>{fmtAgo(c.updatedAt)}</time>
                   </span>
                   <span className="conv__bottom">
@@ -121,7 +125,10 @@ export function ComplaintDialog({ open, onClose, reporterId, target, context }) 
   );
 }
 
+const ROLE_LABEL = { specialist: 'Специалист Pingo', admin: 'Модератор Pingo', parent: 'Родитель' };
+
 // Лента сообщений + поле ввода. Используется в «Сообщениях» и в видеокомнате.
+// conversation.draft — диалога ещё нет в базе, он создастся с первым сообщением.
 export function ChatThread({ conversation, me, other, profileLink, bookingsLink, showHeader = true, backTo, className }) {
   const toast = useToast();
   const [text, setText] = useState('');
@@ -137,6 +144,11 @@ export function ChatThread({ conversation, me, other, profileLink, bookingsLink,
   );
   const groups = useMemo(() => groupByDay(messages ?? []), [messages]);
   const unread = conversation.unread?.[me] || 0;
+  const admin = supportAdminOf(conversation);
+  const support = Boolean(admin);
+  // Пока карточка собеседника не загрузилась, роль понятна из устройства диалога.
+  const otherRole =
+    other?.role ?? (admin && admin !== me ? 'admin' : conversation.specialistId === me ? 'parent' : 'specialist');
 
   useEffect(() => {
     if (unread > 0) markConversationRead(id, me);
@@ -157,7 +169,7 @@ export function ChatThread({ conversation, me, other, profileLink, bookingsLink,
     if (!value || sending) return;
     setSending(true);
     try {
-      await sendMessage(id, me, value);
+      await sendMessage(id, me, value, { draft: conversation.draft ? conversation : null });
       setText('');
       if (inputRef.current) {
         inputRef.current.style.height = 'auto';
@@ -178,19 +190,23 @@ export function ChatThread({ conversation, me, other, profileLink, bookingsLink,
           <Avatar avatar={other?.avatar} name={other?.name} size={44} />
           <div className="chat__who">
             <strong>{other?.name ?? 'Пользователь'}</strong>
-            <span>{other?.role === 'specialist' ? 'Специалист Pingo' : 'Родитель'}</span>
+            <span>{ROLE_LABEL[otherRole]}</span>
           </div>
           <div className="chat__actions">
             {bookingsLink && <IconButton icon={CalendarDotsIcon} label="Записи" to={bookingsLink} size="sm" />}
             {profileLink && <IconButton icon={UserIcon} label="Анкета" to={profileLink} size="sm" />}
-            <IconButton icon={FlagIcon} label="Пожаловаться" size="sm" onClick={() => setComplaintOpen(true)} />
+            {!support && <IconButton icon={FlagIcon} label="Пожаловаться" size="sm" onClick={() => setComplaintOpen(true)} />}
           </div>
         </header>
       )}
       <div className="chat__list" ref={listRef}>
         {messages && messages.length === 0 && (
           <div className="chat__empty">
-            <p>Напишите первое сообщение — например, расскажите о целях занятий.</p>
+            <p>
+              {support
+                ? 'Напишите первое сообщение — собеседник увидит его в разделе «Сообщения» и получит уведомление.'
+                : 'Напишите первое сообщение — например, расскажите о целях занятий.'}
+            </p>
           </div>
         )}
         {groups.map((g) => (
@@ -257,7 +273,7 @@ export function ChatThread({ conversation, me, other, profileLink, bookingsLink,
           <PaperPlaneRightIcon size={22} weight="fill" />
         </motion.button>
       </form>
-      {other && (
+      {other && !support && (
         <ComplaintDialog
           open={complaintOpen}
           onClose={() => setComplaintOpen(false)}

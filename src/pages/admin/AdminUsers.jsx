@@ -1,16 +1,26 @@
 import { useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { CaretRightIcon, EnvelopeSimpleIcon, FileCsvIcon, MagnifyingGlassIcon, MegaphoneIcon, SealCheckIcon, UsersThreeIcon } from '@phosphor-icons/react';
+import {
+  CaretRightIcon,
+  ChatCircleDotsIcon,
+  FileCsvIcon,
+  MagnifyingGlassIcon,
+  MegaphoneIcon,
+  SealCheckIcon,
+  UsersThreeIcon,
+} from '@phosphor-icons/react';
 import { useLiveQuery } from '../../hooks/useLiveQuery';
 import { db } from '../../lib/db';
 import { fmtDateYear, pluralize } from '../../lib/utils';
+import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { exportUsersCsv, profileKind } from '../../services/admin';
+import { supportChatPath, supportConversationId } from '../../services/chat';
 import { kindLabel } from '../../services/profiles';
 import { Avatar } from '../../components/Avatar';
 import { EmptyState } from '../../components/EmptyState';
 import { PageHeader } from '../../components/PageHeader';
-import { Button, ButtonLink, Input, StatusBadge, Tabs } from '../../components/ui';
+import { Button, ButtonLink, IconButton, Input, StatusBadge, Tabs } from '../../components/ui';
 
 const TABS = [
   { value: 'all', label: 'Все' },
@@ -29,6 +39,7 @@ function groupOf(u, profile) {
 
 export default function AdminUsers() {
   const toast = useToast();
+  const { user: me } = useAuth();
   const [params, setParams] = useSearchParams();
   const tab = TABS.some((t) => t.value === params.get('tab')) ? params.get('tab') : 'all';
   const [query, setQuery] = useState('');
@@ -36,16 +47,22 @@ export default function AdminUsers() {
 
   const rows = useLiveQuery(async () => {
     const users = (await db.users.toArray()).filter((u) => u.email);
-    const [profiles, complaints] = await Promise.all([db.profiles.bulkGet(users.map((u) => u.id)), db.complaints.toArray()]);
+    const [profiles, complaints, chats] = await Promise.all([
+      db.profiles.bulkGet(users.map((u) => u.id)),
+      db.complaints.toArray(),
+      db.conversations.bulkGet(users.map((u) => supportConversationId(me.id, u))),
+    ]);
     return users
       .map((u, i) => ({
         user: u,
         profile: u.role === 'specialist' ? profiles[i] : null,
         group: groupOf(u, profiles[i]),
         complaints: complaints.filter((c) => c.targetId === u.id).length,
+        // Непрочитанные ответы в диалоге поддержки с этим модератором.
+        unread: chats[i]?.unread?.[me.id] || 0,
       }))
       .sort((a, b) => (b.user.createdAt ?? 0) - (a.user.createdAt ?? 0));
-  }, []);
+  }, [me.id]);
 
   const counts = useMemo(() => {
     const c = { all: rows?.length ?? 0 };
@@ -106,7 +123,7 @@ export default function AdminUsers() {
         <EmptyState icon={UsersThreeIcon} title="Никого не нашли" text="Попробуйте другой фильтр или запрос." />
       ) : (
         <ul className="admin-list">
-          {list.slice(0, limit).map(({ user: u, profile: p, group, complaints }) => {
+          {list.slice(0, limit).map(({ user: u, profile: p, group, complaints, unread }) => {
             const meta = (
               <span className="admin-row__body">
                 <span className="admin-row__top">
@@ -137,9 +154,15 @@ export default function AdminUsers() {
                     <Avatar avatar={u.avatar} name={u.name} size={48} />
                     {meta}
                     {p && <StatusBadge kind="profile" status={p.status} />}
-                    <a href={`mailto:${u.email}`} className="icon-btn icon-btn--soft icon-btn--sm" aria-label={`Написать ${u.name}`} title="Написать письмо">
-                      <EnvelopeSimpleIcon size={18} weight="bold" />
-                    </a>
+                    {group !== 'admins' && (
+                      <IconButton
+                        icon={ChatCircleDotsIcon}
+                        to={supportChatPath(me.id, u)}
+                        label={`Написать в чат: ${u.name}`}
+                        size="sm"
+                        badge={unread}
+                      />
+                    )}
                   </div>
                 )}
               </li>

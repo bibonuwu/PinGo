@@ -85,7 +85,10 @@ const ROLE_PAGES = {
     SpecialistHome, Availability, Requests, SpecialistProfile, ProfileEditor, Training,
     BookingDetail, Messages, VideoRoom,
   ],
-  admin: [AdminDashboard, AdminProfiles, AdminProfileReview, AdminRating, AdminVolunteers, AdminUsers, AdminBroadcast, AdminReports],
+  admin: [
+    AdminDashboard, AdminProfiles, AdminProfileReview, AdminRating, AdminVolunteers, AdminUsers, AdminBroadcast, AdminReports,
+    Messages,
+  ],
 };
 
 // Для родителя действуют настройки доступности выбранного ребёнка, для остальных — свои.
@@ -205,6 +208,8 @@ export default function App() {
                   <Route path="users" element={<AdminUsers />} />
                   <Route path="broadcast" element={<AdminBroadcast />} />
                   <Route path="reports" element={<AdminReports />} />
+                  <Route path="messages" element={<Messages />} />
+                  <Route path="messages/:id" element={<Messages />} />
                   {sharedRoutes}
                 </Route>
 

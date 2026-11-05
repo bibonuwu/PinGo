@@ -61,13 +61,14 @@ export const NAV = {
     { to: '/admin/volunteers', label: 'Волонтёры', icon: HandHeartIcon, badge: 'volunteers' },
     { to: '/admin/users', label: 'Пользователи', icon: UsersThreeIcon, also: ['/admin/broadcast'], mobile: false },
     { to: '/admin/reports', label: 'Жалобы', icon: FlagIcon, badge: 'reports' },
+    { to: '/admin/messages', label: 'Сообщения', icon: ChatCircleDotsIcon, badge: 'messages' },
   ],
 };
 
 const ROLE_LABEL = { parent: 'Родитель', specialist: 'Специалист / волонтёр', admin: 'Модератор' };
 
 // На телефоне нижняя панель мешает полю ввода чата и форме записи — там её прячем.
-const HIDE_NAV = [/^\/(parent|specialist)\/messages\/[^/]+$/, /^\/parent\/specialists\/[^/]+\/book$/];
+const HIDE_NAV = [/^\/(parent|specialist|admin)\/messages\/[^/]+$/, /^\/parent\/specialists\/[^/]+\/book$/];
 
 function isActive(item, path, mobile = false) {
   const also = [...(item.also || []), ...(mobile ? item.mobileAlso || [] : [])];

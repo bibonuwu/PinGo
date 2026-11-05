@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import {
   ArrowsClockwiseIcon,
   CertificateIcon,
+  ChatCircleDotsIcon,
   CheckCircleIcon,
   CheckIcon,
   CircleIcon,
@@ -24,12 +25,13 @@ import { useSessionStats } from '../../hooks/useAdminStats';
 import { openFile } from '../../services/files';
 import { approveProfile, changedFields, describeProfile, kindLabel, rejectProfile, revokeProfile } from '../../services/profiles';
 import { deleteReview, profileKind, revokeCertificate, unverifyProfile, verifyProfile } from '../../services/admin';
+import { supportChatPath } from '../../services/chat';
 import { Avatar } from '../../components/Avatar';
 import { CertificateList, IssueCertificateSheet } from '../../components/Certificate';
 import { EmptyState } from '../../components/EmptyState';
 import { PageHeader } from '../../components/PageHeader';
 import { ConfirmDialog, ReasonDialog } from '../../components/Sheet';
-import { Button, ButtonLink, StatusBadge, Stars } from '../../components/ui';
+import { Button, ButtonLink, IconButton, StatusBadge, Stars } from '../../components/ui';
 
 const ACTIONS = {
   submitted: 'Отправлена на модерацию',
@@ -89,7 +91,19 @@ export default function AdminProfileReview() {
 
   return (
     <div className="page review-page">
-      <PageHeader back="/admin/profiles" title={user.name} subtitle={`${kindLabel(d.kind)} · ${user.email}`} actions={<StatusBadge kind="profile" status={profile.status} size="lg" />} />
+      <PageHeader
+        back="/admin/profiles"
+        title={user.name}
+        subtitle={`${kindLabel(d.kind)} · ${user.email}`}
+        actions={
+          <>
+            {user.role === 'specialist' && (
+              <IconButton icon={ChatCircleDotsIcon} to={supportChatPath(admin.id, user)} label={`Написать в чат: ${user.name}`} />
+            )}
+            <StatusBadge kind="profile" status={profile.status} size="lg" />
+          </>
+        }
+      />
 
       {profile.status === 'pending' && profile.published && (
         <motion.div className="notice" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>

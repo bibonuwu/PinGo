@@ -108,6 +108,12 @@ async function startRole(nextRole, uid, run, admin) {
         listen('reviews', col('reviews'), 'reviews'),
         listen('certificates', col('certificates'), 'certificates'),
         listen('broadcasts', col('broadcasts'), 'broadcasts'),
+        // Диалоги поддержки: с родителем модератор на месте специалиста, со специалистом — на месте
+        // родителя (см. services/chat.js). Слушаем только свои диалоги — чтений немного.
+        listen('conversations', col('conversations', eq('specialistId', uid)), 'conversations'),
+        listen('messages', col('messages', eq('specialistId', uid)), 'messages'),
+        listen('conversations:asParent', col('conversations', eq('parentId', uid)), 'conversations'),
+        listen('messages:asParent', col('messages', eq('parentId', uid)), 'messages'),
       );
     }
   } else {

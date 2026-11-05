@@ -4,7 +4,7 @@ import { PresenceContext, motion } from 'framer-motion';
 
 // Чаты одного раздела не перемонтируются при переключении диалога (список слева остаётся на месте).
 function routeKey(path) {
-  const m = path.match(/^\/(parent|specialist)\/messages/);
+  const m = path.match(/^\/(parent|specialist|admin)\/messages/);
   return m ? m[0] : path;
 }
 

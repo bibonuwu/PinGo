@@ -184,14 +184,27 @@ service cloud.firestore {
     }
 
     // Диалоги: id = c_{parentId}_{specialistId}, доступ только у двух участников.
+    // Диалог поддержки (kind == 'support', adminId) начинает только модератор: с родителем он стоит
+    // на месте специалиста, со специалистом — на месте родителя.
     match /conversations/{id} {
+      function roleOf(userId) {
+        return get(path('people', userId)).data.role;
+      }
+      function regularPair() {
+        return incoming().get('kind', null) == null
+          && roleOf(incoming().parentId) == 'parent' && roleOf(incoming().specialistId) == 'specialist';
+      }
+      function supportPair() {
+        return isAdmin() && incoming().get('kind', null) == 'support' && incoming().get('adminId', null) == me()
+          && ((incoming().specialistId == me() && roleOf(incoming().parentId) == 'parent')
+            || (incoming().parentId == me() && roleOf(incoming().specialistId) == 'specialist'));
+      }
       allow get: if signedIn() && (resource == null || isParty(existing()));
       allow list: if signedIn() && isParty(existing());
       allow create: if signedIn() && isParty(incoming())
         && id == 'c_' + incoming().parentId + '_' + incoming().specialistId
-        && get(path('people', incoming().parentId)).data.role == 'parent'
-        && get(path('people', incoming().specialistId)).data.role == 'specialist';
-      allow update: if signedIn() && isParty(existing()) && keeps(['id', 'parentId', 'specialistId']);
+        && (regularPair() || supportPair());
+      allow update: if signedIn() && isParty(existing()) && keeps(['id', 'parentId', 'specialistId', 'kind', 'adminId']);
     }
 
     match /messages/{id} {
