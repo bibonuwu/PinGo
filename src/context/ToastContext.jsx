@@ -50,7 +50,6 @@ export function ToastProvider({ children }) {
               return (
                 <motion.div
                   key={t.id}
-                  layout
                   className={`toast toast--${t.tone}`}
                   initial={{ opacity: 0, y: -16, scale: 0.96 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}

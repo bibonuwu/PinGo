@@ -1,4 +1,6 @@
+import { arrayUnion } from 'firebase/firestore';
 import { db } from '../lib/db';
+import { batch, commit, ref, update } from '../lib/remote';
 import {
   FORMAT_MAP,
   LANGUAGE_MAP,
@@ -13,6 +15,8 @@ import { notifyAdminsRaw, notifyRaw } from './notifications';
 // draft — то, что редактирует специалист; published — последняя одобренная версия (её видят родители).
 // Статусы: draft → pending → approved | rejected. Правка одобренной анкеты не скрывает её из каталога:
 // родители видят прежнюю версию, пока модератор не одобрит изменения.
+// Хранение: profiles/{uid} — вся анкета (видят владелец и модератор);
+// catalog/{uid} — опубликованная версия без документов (её видят родители).
 
 export function emptyProfileData() {
   return {
@@ -115,66 +119,77 @@ export function describeProfile(data) {
   };
 }
 
-async function getOwnProfile(userId) {
-  const p = await db.profiles.get(userId);
+function getOwnProfile(userId) {
+  const p = db.profiles.peek(userId);
   if (!p) throw new Error('Анкета не найдена');
   return p;
 }
 
+// Документы (дипломы) видит только модератор — в каталог они не попадают.
+// verifiedAt — отметка «Подтверждён Pingo» (её ставит модератор, см. services/admin.js).
+const catalogEntry = (id, published, sessionMinutes, verifiedAt, now) => ({
+  id,
+  published: { ...published, documents: [] },
+  sessionMinutes,
+  verifiedAt: verifiedAt ?? null,
+  updatedAt: now,
+});
+
+// Автосохранение: пишем только изменённые поля черновика, чтобы быстрые правки не затирали друг друга.
 export async function saveDraft(userId, patch) {
-  return db.transaction('rw', db.profiles, async () => {
-    const p = await getOwnProfile(userId);
-    if (p.status === 'pending') throw new Error('Анкета на проверке — отзовите её, чтобы редактировать');
-    await db.profiles.update(userId, { draft: { ...p.draft, ...patch }, updatedAt: Date.now() });
-  });
+  const p = getOwnProfile(userId);
+  if (p.status === 'pending') throw new Error('Анкета на проверке — отзовите её, чтобы редактировать');
+  const fields = Object.fromEntries(Object.entries(patch).map(([k, v]) => [`draft.${k}`, v]));
+  await update('profiles', userId, { ...fields, updatedAt: Date.now() });
 }
 
 export async function setSessionMinutes(userId, minutes) {
-  await db.profiles.update(userId, { sessionMinutes: minutes, updatedAt: Date.now() });
+  const p = getOwnProfile(userId);
+  const now = Date.now();
+  const w = batch();
+  w.update(ref('profiles', userId), { sessionMinutes: minutes, updatedAt: now });
+  if (p.published) w.update(ref('catalog', userId), { sessionMinutes: minutes, updatedAt: now });
+  await commit(w);
 }
 
 export async function completeTrainingModule(userId, moduleId) {
-  return db.transaction('rw', db.profiles, async () => {
-    const p = await getOwnProfile(userId);
-    if (p.trainingDone.includes(moduleId)) return;
-    await db.profiles.update(userId, { trainingDone: [...p.trainingDone, moduleId], updatedAt: Date.now() });
-  });
+  const p = getOwnProfile(userId);
+  if (p.trainingDone.includes(moduleId)) return;
+  await update('profiles', userId, { trainingDone: arrayUnion(moduleId), updatedAt: Date.now() });
 }
 
 export async function submitProfile(userId) {
-  return db.transaction('rw', db.profiles, db.users, db.notifications, async () => {
-    const p = await getOwnProfile(userId);
-    if (p.status === 'pending') throw new Error('Анкета уже на проверке');
-    const issues = profileIssues(p);
-    if (issues.length) throw new Error(issues[0].text);
-    const now = Date.now();
-    const user = await db.users.get(userId);
-    await db.profiles.update(userId, {
-      status: 'pending',
-      submittedAt: now,
-      rejectionReason: null,
-      updatedAt: now,
-      history: [...p.history, { at: now, action: 'submitted', by: userId }],
-    });
-    await notifyAdminsRaw({
-      type: 'profile_submitted',
-      title: p.published ? 'Изменения в анкете на модерации' : 'Новая анкета на модерации',
-      body: `${user?.name ?? 'Пользователь'} · ${kindLabel(p.draft.kind).toLowerCase()}`,
-      link: `/admin/profiles/${userId}`,
-    });
+  const p = getOwnProfile(userId);
+  if (p.status === 'pending') throw new Error('Анкета уже на проверке');
+  const issues = profileIssues(p);
+  if (issues.length) throw new Error(issues[0].text);
+  const now = Date.now();
+  const user = db.users.peek(userId);
+  const w = batch();
+  w.update(ref('profiles', userId), {
+    status: 'pending',
+    submittedAt: now,
+    rejectionReason: null,
+    updatedAt: now,
+    history: [...p.history, { at: now, action: 'submitted', by: userId }],
   });
+  await notifyAdminsRaw(w, {
+    type: 'profile_submitted',
+    title: p.published ? 'Изменения в анкете на модерации' : 'Новая анкета на модерации',
+    body: `${user?.name ?? 'Пользователь'} · ${kindLabel(p.draft.kind).toLowerCase()}`,
+    link: `/admin/profiles/${userId}`,
+  });
+  await commit(w);
 }
 
 export async function withdrawProfile(userId) {
-  return db.transaction('rw', db.profiles, async () => {
-    const p = await getOwnProfile(userId);
-    if (p.status !== 'pending') return;
-    const now = Date.now();
-    await db.profiles.update(userId, {
-      status: p.published ? 'approved' : 'draft',
-      updatedAt: now,
-      history: [...p.history, { at: now, action: 'withdrawn', by: userId }],
-    });
+  const p = getOwnProfile(userId);
+  if (p.status !== 'pending') return;
+  const now = Date.now();
+  await update('profiles', userId, {
+    status: p.published ? 'approved' : 'draft',
+    updatedAt: now,
+    history: [...p.history, { at: now, action: 'withdrawn', by: userId }],
   });
 }
 
@@ -184,75 +199,82 @@ function requireReason(reason) {
   return r;
 }
 
+function getProfile(profileId) {
+  const p = db.profiles.peek(profileId);
+  if (!p) throw new Error('Анкета не найдена');
+  return p;
+}
+
 export async function approveProfile(adminId, profileId) {
-  return db.transaction('rw', db.profiles, db.notifications, async () => {
-    const p = await db.profiles.get(profileId);
-    if (!p) throw new Error('Анкета не найдена');
-    if (p.status !== 'pending') throw new Error('Одобрить можно только анкету на модерации');
-    const now = Date.now();
-    await db.profiles.update(profileId, {
-      status: 'approved',
-      published: structuredClone(p.draft),
-      rejectionReason: null,
-      reviewedAt: now,
-      reviewedBy: adminId,
-      updatedAt: now,
-      history: [...p.history, { at: now, action: 'approved', by: adminId }],
-    });
-    await notifyRaw(profileId, {
-      type: 'profile_approved',
-      title: 'Анкета одобрена 🎉',
-      body: p.published ? 'Изменения опубликованы в каталоге.' : 'Теперь родители видят вас в каталоге и могут записаться.',
-      link: '/specialist/profile',
-    });
+  const p = getProfile(profileId);
+  if (p.status !== 'pending') throw new Error('Одобрить можно только анкету на модерации');
+  const now = Date.now();
+  const published = structuredClone(p.draft);
+  const w = batch();
+  w.update(ref('profiles', profileId), {
+    status: 'approved',
+    published,
+    rejectionReason: null,
+    reviewedAt: now,
+    reviewedBy: adminId,
+    updatedAt: now,
+    history: [...p.history, { at: now, action: 'approved', by: adminId }],
   });
+  w.set(ref('catalog', profileId), catalogEntry(profileId, published, p.sessionMinutes, p.verifiedAt, now));
+  notifyRaw(w, profileId, {
+    type: 'profile_approved',
+    title: 'Анкета одобрена 🎉',
+    body: p.published ? 'Изменения опубликованы в каталоге.' : 'Теперь родители видят вас в каталоге и могут записаться.',
+    link: '/specialist/profile',
+  });
+  await commit(w);
 }
 
 export async function rejectProfile(adminId, profileId, reason) {
   const r = requireReason(reason);
-  return db.transaction('rw', db.profiles, db.notifications, async () => {
-    const p = await db.profiles.get(profileId);
-    if (!p) throw new Error('Анкета не найдена');
-    if (p.status !== 'pending') throw new Error('Отклонить можно только анкету на модерации');
-    const now = Date.now();
-    await db.profiles.update(profileId, {
-      status: 'rejected',
-      rejectionReason: r,
-      reviewedAt: now,
-      reviewedBy: adminId,
-      updatedAt: now,
-      history: [...p.history, { at: now, action: 'rejected', by: adminId, reason: r }],
-    });
-    await notifyRaw(profileId, {
-      type: 'profile_rejected',
-      title: p.published ? 'Изменения в анкете отклонены' : 'Анкета отклонена',
-      body: r,
-      link: '/specialist/profile',
-    });
+  const p = getProfile(profileId);
+  if (p.status !== 'pending') throw new Error('Отклонить можно только анкету на модерации');
+  const now = Date.now();
+  const w = batch();
+  w.update(ref('profiles', profileId), {
+    status: 'rejected',
+    rejectionReason: r,
+    reviewedAt: now,
+    reviewedBy: adminId,
+    updatedAt: now,
+    history: [...p.history, { at: now, action: 'rejected', by: adminId, reason: r }],
   });
+  notifyRaw(w, profileId, {
+    type: 'profile_rejected',
+    title: p.published ? 'Изменения в анкете отклонены' : 'Анкета отклонена',
+    body: r,
+    link: '/specialist/profile',
+  });
+  await commit(w);
 }
 
 // Снять одобренную анкету с публикации (например, после жалобы).
 export async function revokeProfile(adminId, profileId, reason) {
   const r = requireReason(reason);
-  return db.transaction('rw', db.profiles, db.notifications, async () => {
-    const p = await db.profiles.get(profileId);
-    if (!p?.published) throw new Error('Анкета не опубликована');
-    const now = Date.now();
-    await db.profiles.update(profileId, {
-      status: 'rejected',
-      published: null,
-      rejectionReason: r,
-      reviewedAt: now,
-      reviewedBy: adminId,
-      updatedAt: now,
-      history: [...p.history, { at: now, action: 'revoked', by: adminId, reason: r }],
-    });
-    await notifyRaw(profileId, {
-      type: 'profile_revoked',
-      title: 'Анкета снята с публикации',
-      body: r,
-      link: '/specialist/profile',
-    });
+  const p = getProfile(profileId);
+  if (!p.published) throw new Error('Анкета не опубликована');
+  const now = Date.now();
+  const w = batch();
+  w.update(ref('profiles', profileId), {
+    status: 'rejected',
+    published: null,
+    rejectionReason: r,
+    reviewedAt: now,
+    reviewedBy: adminId,
+    updatedAt: now,
+    history: [...p.history, { at: now, action: 'revoked', by: adminId, reason: r }],
   });
+  w.delete(ref('catalog', profileId));
+  notifyRaw(w, profileId, {
+    type: 'profile_revoked',
+    title: 'Анкета снята с публикации',
+    body: r,
+    link: '/specialist/profile',
+  });
+  await commit(w);
 }

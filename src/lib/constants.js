@@ -3,6 +3,10 @@
 export const APP_VERSION = '0.1.0';
 export const SLOGAN = 'Support for every child';
 
+// Модераторы Pingo — только эти почты (подтверждённые). Тот же список — в firestore.rules, функция isAdmin().
+export const ADMIN_EMAILS = ['toryyy0325@gmail.com', 'aibekabeken47@gmail.com'];
+export const isAdminEmail = (email) => ADMIN_EMAILS.includes((email || '').trim().toLowerCase());
+
 // Видеокомната открывается за 15 минут до начала и закрывается через 15 минут после конца.
 export const ROOM_OPENS_BEFORE_MIN = 15;
 export const ROOM_CLOSES_AFTER_MIN = 15;
@@ -147,6 +151,25 @@ export const PROFILE_STATUS = {
   rejected: { label: 'Отклонена', tone: 'danger' },
 };
 
+// ---------- Сертификаты и рассылки модератора ----------
+
+export const CERTIFICATE_TYPES = [
+  { id: 'volunteer_month', label: 'Волонтёр месяца', text: 'за самоотверженную помощь детям и их семьям', color: '#F97316' },
+  { id: 'top_rated', label: 'Высокий рейтинг', text: 'за высокие оценки родителей и бережную работу с детьми', color: '#F4C600' },
+  { id: 'hours', label: 'Часы добрых дел', text: 'за время, подаренное детям на платформе Pingo', color: '#22C55E' },
+  { id: 'gratitude', label: 'Благодарность', text: 'за вклад в поддержку детей с особыми потребностями', color: '#3B82F6' },
+  { id: 'custom', label: 'Свой сертификат', text: '', color: '#8B5CF6' },
+];
+export const CERTIFICATE_MAP = Object.fromEntries(CERTIFICATE_TYPES.map((c) => [c.id, c]));
+
+export const BROADCAST_AUDIENCES = [
+  { id: 'all', label: 'Все' },
+  { id: 'parents', label: 'Родители' },
+  { id: 'specialists', label: 'Специалисты и волонтёры' },
+  { id: 'volunteers', label: 'Только волонтёры' },
+];
+export const BROADCAST_AUDIENCE_MAP = Object.fromEntries(BROADCAST_AUDIENCES.map((a) => [a.id, a]));
+
 // ---------- Доступность ----------
 
 export const TEXT_SIZES = [
@@ -156,8 +179,8 @@ export const TEXT_SIZES = [
 ];
 export const LINE_SPACINGS = [
   { id: 'normal', label: 'Обычный', value: 1.5 },
-  { id: 'relaxed', label: 'Увеличенный', value: 1.75 },
-  { id: 'loose', label: 'Максимальный', value: 2 },
+  { id: 'relaxed', label: 'Больше', value: 1.75 },
+  { id: 'loose', label: 'Максимум', value: 2 },
 ];
 export const DEFAULT_A11Y = {
   textSize: 'normal',

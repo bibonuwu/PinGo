@@ -1,10 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
+import { addDoc, collection, deleteDoc, onSnapshot } from 'firebase/firestore';
+import { auth, firestore } from '../lib/firebase';
 import { uid } from '../lib/utils';
 
+// Публичные STUN-серверы помогают пройти NAT. В сетях со строгим NAT (часть мобильных операторов,
+// корпоративные сети) для звонка понадобится ещё TURN-сервер — его добавляют сюда же.
+const ICE_SERVERS = [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }];
+
 // Видеосвязь между двумя участниками через WebRTC.
-// Пока у Pingo нет сервера, сигналинг идёт через BroadcastChannel — звонок работает между
-// вкладками одного браузера (например, родитель и специалист в соседних вкладках).
-// Для реальных звонков достаточно заменить канал на WebSocket-сервер с тем же протоколом.
+// Сигналинг идёт через Firestore: каждое сообщение (hello / offer / answer / ice / media / bye) —
+// документ в rooms/{bookingId}/signals. Читать и писать их могут только родитель и специалист записи.
 export function useRoomConnection(roomId, localStream, active) {
   const [remoteStream, setRemoteStream] = useState(null);
   const [state, setState] = useState('waiting'); // waiting | connecting | connected
@@ -12,18 +17,24 @@ export function useRoomConnection(roomId, localStream, active) {
   const sendRef = useRef(() => {});
 
   useEffect(() => {
-    if (!active || typeof BroadcastChannel === 'undefined' || typeof RTCPeerConnection === 'undefined') {
+    if (!active || typeof RTCPeerConnection === 'undefined') {
       return undefined;
     }
     const me = uid();
-    const channel = new BroadcastChannel(`pingo-room-${roomId}`);
+    const owner = auth.currentUser?.uid;
+    const signals = collection(firestore, 'rooms', roomId, 'signals');
+    const mine = [];
+    let seq = 0;
     let pc = null;
     let peerId = null;
     let pendingIce = [];
     let closed = false;
 
     const send = (msg) => {
-      if (!closed) channel.postMessage({ ...msg, from: me });
+      if (closed) return;
+      addDoc(signals, { ...msg, from: me, uid: owner, seq: (seq += 1), createdAt: Date.now() })
+        .then((r) => mine.push(r))
+        .catch((e) => console.warn('[room] signal', e));
     };
     sendRef.current = send;
 
@@ -54,7 +65,7 @@ export function useRoomConnection(roomId, localStream, active) {
 
     const createPc = (other) => {
       peerId = other;
-      const conn = new RTCPeerConnection({ iceServers: [] });
+      const conn = new RTCPeerConnection({ iceServers: ICE_SERVERS });
       conn.ontrack = (e) => setRemoteStream(e.streams[0] ?? new MediaStream([e.track]));
       conn.onicecandidate = (e) => {
         if (e.candidate) send({ type: 'ice', to: other, candidate: e.candidate.toJSON() });
@@ -78,8 +89,8 @@ export function useRoomConnection(roomId, localStream, active) {
       for (const c of list) await conn.addIceCandidate(c).catch(() => {});
     };
 
-    channel.onmessage = async ({ data: m }) => {
-      if (!m || m.from === me || (m.to && m.to !== me)) return;
+    const handle = async (m) => {
+      if (closed || !m || m.from === me || (m.to && m.to !== me)) return;
       try {
         if (m.type === 'hello') {
           if (pc && peerId !== m.from) return; // в комнате уже двое
@@ -121,16 +132,45 @@ export function useRoomConnection(roomId, localStream, active) {
       }
     };
 
+    // Сообщения, которые уже лежали в комнате до входа (прошлые подключения), пропускаем,
+    // свои старые — удаляем. Остальные обрабатываем строго по порядку отправки.
+    const seen = new Set();
+    let synced = false;
+    let queue = Promise.resolve();
+    const stop = onSnapshot(
+      signals,
+      { includeMetadataChanges: true },
+      (snap) => {
+        if (!synced) {
+          for (const d of snap.docs) seen.add(d.id);
+          if (snap.metadata.fromCache) return;
+          synced = true;
+          for (const d of snap.docs) if (d.data().uid === owner) deleteDoc(d.ref).catch(() => {});
+          send({ type: 'hello' });
+          return;
+        }
+        const fresh = [];
+        for (const change of snap.docChanges()) {
+          if (change.type !== 'added' || seen.has(change.doc.id)) continue;
+          seen.add(change.doc.id);
+          fresh.push(change.doc.data());
+        }
+        fresh.sort((a, b) => a.createdAt - b.createdAt || a.seq - b.seq);
+        for (const m of fresh) queue = queue.then(() => handle(m));
+      },
+      (e) => console.warn('[room] signals', e),
+    );
+
     const onLeave = () => send({ type: 'bye' });
     window.addEventListener('pagehide', onLeave);
-    send({ type: 'hello' });
 
     return () => {
       send({ type: 'bye' });
       closed = true;
+      stop();
       window.removeEventListener('pagehide', onLeave);
       reset();
-      channel.close();
+      for (const r of mine) deleteDoc(r).catch(() => {});
       sendRef.current = () => {};
     };
   }, [roomId, localStream, active]);

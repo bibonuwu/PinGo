@@ -14,7 +14,7 @@ export function BookingCard({ booking, viewer, counterpart, child, now, to, acti
   const { opensAt } = roomWindow(booking);
   const person =
     viewer === 'parent'
-      ? { avatar: counterpart?.avatar, name: counterpart?.name ?? 'Специалист', sub: child ? `для ${child.name}` : '' }
+      ? { avatar: counterpart?.avatar, name: counterpart?.name ?? 'Специалист', sub: child ? `ребёнок: ${child.name}` : '' }
       : {
           avatar: child?.avatar,
           name: child ? `${child.name}, ${fmtAge(ageFromBirthDate(child.birthDate))}` : 'Ребёнок',

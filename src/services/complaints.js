@@ -1,4 +1,5 @@
 import { db } from '../lib/db';
+import { batch, commit, ref, update } from '../lib/remote';
 import { COMPLAINT_REASON_MAP } from '../lib/constants';
 import { uid } from '../lib/utils';
 import { notifyAdminsRaw } from './notifications';
@@ -21,20 +22,20 @@ export async function createComplaint({ reporterId, targetId, reason, details = 
     createdAt: Date.now(),
     resolvedAt: null,
   };
-  await db.transaction('rw', db.complaints, db.users, db.notifications, async () => {
-    await db.complaints.add(complaint);
-    await notifyAdminsRaw({
-      type: 'complaint',
-      title: 'Новая жалоба',
-      body: `${reporter?.name ?? 'Пользователь'} → ${target.name}: ${COMPLAINT_REASON_MAP[reason].label}`,
-      link: '/admin/reports',
-    });
+  const w = batch();
+  w.set(ref('complaints', complaint.id), complaint);
+  await notifyAdminsRaw(w, {
+    type: 'complaint',
+    title: 'Новая жалоба',
+    body: `${reporter?.name ?? 'Пользователь'} → ${target.name}: ${COMPLAINT_REASON_MAP[reason].label}`,
+    link: '/admin/reports',
   });
+  await commit(w);
   return complaint;
 }
 
 export async function resolveComplaint(id, adminId, resolution = '') {
-  await db.complaints.update(id, {
+  await update('complaints', id, {
     status: 'resolved',
     resolution: resolution.trim() || 'Проверено',
     resolvedBy: adminId,

@@ -1,4 +1,5 @@
 import { db } from '../lib/db';
+import { batch, commit, ref } from '../lib/remote';
 import { hhmmToMinutes, toDateKey, uid } from '../lib/utils';
 
 // type: 'weekly' — повторяется каждую неделю (weekday 0–6, 0 = воскресенье);
@@ -16,26 +17,24 @@ export async function addAvailability(specialistId, { type, weekday, date, start
     throw new Error('Выберите день недели');
   }
 
-  return db.transaction('rw', db.availability, async () => {
-    const rules = await db.availability.where('specialistId').equals(specialistId).toArray();
-    const sameDay = rules.filter((r) => r.type === type && (type === 'weekly' ? r.weekday === weekday : r.date === date));
-    const clash = sameDay.find((r) => hhmmToMinutes(r.start) < e && hhmmToMinutes(r.end) > s);
-    if (clash) throw new Error(`Пересекается с окном ${clash.start}–${clash.end}`);
-    const rule = {
-      id: uid(),
-      specialistId,
-      type,
-      weekday: type === 'weekly' ? weekday : null,
-      date: type === 'date' ? date : null,
-      start,
-      end,
-      createdAt: Date.now(),
-    };
-    await db.availability.add(rule);
-    return rule;
-  });
+  const rules = await db.availability.where('specialistId').equals(specialistId).toArray();
+  const sameDay = rules.filter((r) => r.type === type && (type === 'weekly' ? r.weekday === weekday : r.date === date));
+  const clash = sameDay.find((r) => hhmmToMinutes(r.start) < e && hhmmToMinutes(r.end) > s);
+  if (clash) throw new Error(`Пересекается с окном ${clash.start}–${clash.end}`);
+  const rule = {
+    id: uid(),
+    specialistId,
+    type,
+    weekday: type === 'weekly' ? weekday : null,
+    date: type === 'date' ? date : null,
+    start,
+    end,
+    createdAt: Date.now(),
+  };
+  await commit(batch().set(ref('availability', rule.id), rule));
+  return rule;
 }
 
 export function removeAvailability(id) {
-  return db.availability.delete(id);
+  return commit(batch().delete(ref('availability', id)));
 }

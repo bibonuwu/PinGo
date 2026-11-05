@@ -1,0 +1,335 @@
+/* ---------- Видеокомната ---------- */
+
+.room {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  background: #141414;
+  color: #fff;
+}
+.room--gate {
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.room__back {
+  position: absolute;
+  top: calc(16px + env(safe-area-inset-top));
+  left: 16px;
+  z-index: 3;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.1);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  transition: background 0.2s;
+}
+.room__back:hover {
+  background: rgb(255 255 255 / 0.18);
+}
+.room__back--inline {
+  position: static;
+  flex-shrink: 0;
+}
+.room__gate {
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+.room__gate h1 {
+  font-size: 2rem;
+}
+.room__gate p {
+  color: #c7c7cc;
+}
+.room__countdown {
+  font-family: var(--font-label);
+  font-size: 4.5rem;
+  line-height: 1;
+  color: var(--yellow);
+  font-variant-numeric: tabular-nums;
+}
+.room__muted {
+  font-size: 0.875rem;
+  color: #8e8e93;
+}
+
+.room--lobby {
+  align-items: center;
+  justify-content: center;
+  padding: 80px 16px 24px;
+  overflow-y: auto;
+}
+.lobby {
+  width: 100%;
+  max-width: 1000px;
+  display: grid;
+  align-items: center;
+  gap: 24px;
+}
+@media (min-width: 900px) {
+  .lobby {
+    grid-template-columns: 1.4fr 1fr;
+    gap: 40px;
+  }
+}
+.lobby__preview {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 28px;
+  background: #232325;
+  overflow: hidden;
+}
+.lobby__preview video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.lobby__placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+.mirror {
+  transform: scaleX(-1);
+}
+.lobby__info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+}
+.lobby__info h1 {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+}
+.lobby__info p {
+  color: #c7c7cc;
+}
+.lobby__info p.room__muted {
+  color: #8e8e93;
+}
+.room__link {
+  color: var(--yellow);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+p.lobby__error {
+  font-size: 0.9375rem;
+  color: #fcd34d;
+}
+.live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 2rem;
+  padding: 0 12px;
+  border-radius: var(--pill);
+  background: rgb(239 68 68 / 0.15);
+  color: #fca5a5;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.room__controls {
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+.room__controls--lobby {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+.ctl {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.12);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  transition:
+    background 0.2s,
+    transform 0.15s var(--ease);
+}
+.ctl:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.2);
+}
+.ctl:active:not(:disabled) {
+  transform: scale(0.92);
+}
+.ctl:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.ctl.is-off,
+.ctl.is-off:hover:not(:disabled) {
+  background: #fff;
+  color: var(--danger);
+}
+.ctl.is-active,
+.ctl.is-active:hover:not(:disabled) {
+  background: var(--yellow);
+  color: var(--ink);
+}
+.ctl--leave,
+.ctl--leave:hover:not(:disabled) {
+  width: 72px;
+  border-radius: 28px;
+  background: var(--danger);
+}
+
+.room--call {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+.room__top {
+  padding: calc(12px + env(safe-area-inset-top)) 16px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.room__title {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.room__title strong {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.room__title span {
+  font-size: 0.8125rem;
+  color: #a1a1aa;
+  font-variant-numeric: tabular-nums;
+}
+.conn {
+  height: 1.75rem;
+  padding: 0 12px;
+  border-radius: var(--pill);
+  background: rgb(255 255 255 / 0.1);
+  color: #d1d1d6;
+  font-size: 0.75rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.conn--connected {
+  background: rgb(34 197 94 / 0.18);
+  color: #86efac;
+}
+.conn--connecting {
+  background: rgb(244 198 0 / 0.18);
+  color: var(--yellow);
+}
+.room__stage {
+  position: relative;
+  min-height: 0;
+  margin: 0 12px;
+  border-radius: 28px;
+  background: #1e1e20;
+  overflow: hidden;
+}
+.room__remote {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.room__waiting {
+  position: absolute;
+  inset: 0;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+  color: #c7c7cc;
+}
+.room__self {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  width: clamp(110px, 24vw, 220px);
+  aspect-ratio: 3 / 4;
+  border-radius: 20px;
+  background: #2a2a2c;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.5);
+  cursor: grab;
+  touch-action: none;
+}
+@media (min-width: 900px) {
+  .room__self {
+    aspect-ratio: 16 / 10;
+  }
+}
+.room__self video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.room__self-mic {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  color: #f87171;
+}
+.room__panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  width: min(100%, 400px);
+  background: #fff;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  box-shadow: -20px 0 40px rgb(0 0 0 / 0.3);
+}
+.room__panel-head {
+  padding: calc(16px + env(safe-area-inset-top)) 16px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+}
+.room__info {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+.room__info .tag {
+  background: var(--surface);
+}
+.chat--room .chat__list {
+  padding: 12px;
+}
+@media (min-width: 1100px) {
+  .room--call.has-panel {
+    padding-right: 400px;
+  }
+  .room__panel {
+    box-shadow: none;
+  }
+}

@@ -1,7 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import Dexie from 'dexie';
-import { useLiveQuery } from 'dexie-react-hooks';
+import { useLiveQuery } from '../hooks/useLiveQuery';
 import { AnimatePresence, motion } from 'framer-motion';
 import { FlagIcon, PaperPlaneRightIcon, CalendarDotsIcon, UserIcon } from '@phosphor-icons/react';
 import { db } from '../lib/db';
@@ -18,7 +17,6 @@ import { Button, Chip, Field, IconButton, Textarea } from './ui';
 export function ConversationList({ items, me, basePath, activeId }) {
   return (
     <ul className="conv-list">
-      <AnimatePresence initial={false}>
         {items.map((c, i) => {
           const unread = c.unread?.[me] || 0;
           const mine = c.lastSenderId === me;
@@ -48,7 +46,6 @@ export function ConversationList({ items, me, basePath, activeId }) {
             </motion.li>
           );
         })}
-      </AnimatePresence>
     </ul>
   );
 }
@@ -108,7 +105,7 @@ export function ComplaintDialog({ open, onClose, reporterId, target, context }) 
       }
     >
       <p className="muted">
-        Жалоба на <strong>{target?.name}</strong> попадёт к модератору Pingo. Если ребёнку угрожает опасность — звоните 112.
+        Жалобу получит модератор Pingo. Пользователь: <strong>{target?.name}</strong>. Если ребёнку угрожает опасность — звоните 112.
       </p>
       <div className="chips chips--wrap">
         {COMPLAINT_REASONS.map((r) => (
@@ -135,7 +132,7 @@ export function ChatThread({ conversation, me, other, profileLink, bookingsLink,
   const id = conversation.id;
 
   const messages = useLiveQuery(
-    () => db.messages.where('[conversationId+createdAt]').between([id, Dexie.minKey], [id, Dexie.maxKey]).toArray(),
+    async () => (await db.messages.where('conversationId').equals(id).toArray()).sort((a, b) => a.createdAt - b.createdAt),
     [id],
   );
   const groups = useMemo(() => groupByDay(messages ?? []), [messages]);

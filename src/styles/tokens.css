@@ -1,0 +1,123 @@
+/* Дизайн-токены Pingo: палитра из макетов, шрифты, радиусы, тени. */
+:root {
+  --yellow: #f4c600;
+  --yellow-hover: #e6ba00;
+  --yellow-soft: #fdf2c7;
+  --yellow-50: #fff9e3;
+  --orange: #ffaf04; /* карточка «Родитель» */
+  --gold: #fdcb02; /* карточка «Специалист / волонтёр» */
+  --ink: #141414;
+  --ink-2: #1e1e1e;
+  --ink-3: #323232;
+
+  --text: #141414;
+  --text-2: #4a4a4f;
+  --text-3: #8e8e93;
+  --line: #e5e5ea;
+  --surface: #f2f2f7;
+  --surface-hover: #e9e9ef;
+  --bg: #ffffff;
+
+  --purple: #8b5cf6;
+  --blue: #3b82f6;
+  --green: #22c55e;
+  --orange-2: #f97316;
+  --pink: #ffb3c8;
+
+  --success: #15803d;
+  --success-bg: #dcfce7;
+  --warning: #a16207;
+  --warning-bg: #fef3c7;
+  --danger: #dc2626;
+  --danger-bg: #fee2e2;
+  --info: #1d4ed8;
+  --info-bg: #dbeafe;
+  --muted-bg: #ededf0;
+
+  /* Bricolage Grotesque, DM Sans и Bebas Neue — без кириллицы: русские буквы берутся из Inter и Oswald. */
+  --font-display: 'Bricolage Grotesque', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-text: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-alt: 'DM Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-label: 'Bebas Neue', 'Oswald', 'Arial Narrow', sans-serif;
+
+  --lh: 1.5;
+  --radius-sm: 12px;
+  --radius: 20px;
+  --radius-lg: 28px;
+  --radius-xl: 36px;
+  --pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgb(20 20 20 / 0.06), 0 1px 1px rgb(20 20 20 / 0.04);
+  --shadow: 0 12px 30px -14px rgb(20 20 20 / 0.22);
+  --shadow-lg: 0 24px 60px -20px rgb(20 20 20 / 0.32);
+  --glow: 0 14px 30px -12px rgb(244 198 0 / 0.75);
+
+  --gutter: 20px;
+  --nav-h: 4.25rem;
+  --banner-h: 44px;
+  --sidebar-w: 272px;
+  --content-w: 1120px;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --gutter: 48px;
+  }
+}
+
+/* ---------- Доступность (настройки ребёнка или пользователя) ---------- */
+
+html[data-text-size='large'] {
+  font-size: 112.5%;
+}
+html[data-text-size='xlarge'] {
+  font-size: 125%;
+}
+html[data-line-spacing='relaxed'] {
+  --lh: 1.75;
+}
+html[data-line-spacing='loose'] {
+  --lh: 2;
+}
+html[data-high-contrast] {
+  --text-2: #1a1a1a;
+  --text-3: #3a3a3f;
+  --line: #8e8e93;
+  --surface: #ebebf0;
+  --surface-hover: #dfdfe6;
+}
+html[data-high-contrast] .chip,
+html[data-high-contrast] .card-section,
+html[data-high-contrast] .sp-card,
+html[data-high-contrast] .bk-card {
+  box-shadow: inset 0 0 0 1.5px #3a3a3f;
+}
+html[data-readable] {
+  --font-text: Verdana, 'Inter', system-ui, sans-serif;
+  --font-alt: Verdana, 'Inter', system-ui, sans-serif;
+}
+html[data-readable] body {
+  letter-spacing: 0.02em;
+  word-spacing: 0.12em;
+}
+
+html[data-reduce-motion] *,
+html[data-reduce-motion] *::before,
+html[data-reduce-motion] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

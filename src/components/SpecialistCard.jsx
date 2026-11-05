@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowUpRightIcon, ClockIcon, HeartIcon, SparkleIcon } from '@phosphor-icons/react';
+import { ArrowUpRightIcon, ClockIcon, HeartIcon, SealCheckIcon, SparkleIcon } from '@phosphor-icons/react';
 import { freshSlots } from '../hooks/useCatalog';
 import { kindLabel } from '../services/profiles';
 import { cx, fmtDayTime } from '../lib/utils';
@@ -11,12 +11,20 @@ export function SpecialistCard({ entry, match, childName, favorite, onToggleFavo
   const { user, data } = entry;
   const next = freshSlots(entry.slots, now)[0];
   return (
-    <motion.article className="sp-card" variants={itemVariants} whileHover={{ y: -4 }} layout="position">
+    <motion.article
+      className="sp-card"
+      variants={itemVariants}
+      whileHover={{ y: -4 }}
+      layout="position"
+    >
       <Link to={to} className="card-link" aria-label={`${user.name} — открыть анкету`} />
       <div className="sp-card__head">
         <Avatar avatar={user.avatar} name={user.name} size={52} />
         <div className="sp-card__who">
-          <h3 className="sp-card__name">{user.name}</h3>
+          <h3 className="sp-card__name">
+            {user.name}
+            {entry.profile.verifiedAt && <SealCheckIcon size={16} weight="fill" className="ico-verified" aria-label="Подтверждён Pingo" />}
+          </h3>
           <p className="sp-card__title">{data.title}</p>
         </div>
       </div>
@@ -26,7 +34,7 @@ export function SpecialistCard({ entry, match, childName, favorite, onToggleFavo
       </div>
       {match?.good && (
         <p className="match-tag">
-          <SparkleIcon size={14} weight="fill" /> Подходит для {childName}
+          <SparkleIcon size={14} weight="fill" /> Подходит · {childName}
         </p>
       )}
       <p className="sp-card__next">
@@ -34,7 +42,7 @@ export function SpecialistCard({ entry, match, childName, favorite, onToggleFavo
         {next ? fmtDayTime(next.start, now) : 'Нет свободных окон'}
       </p>
       <div className="sp-card__foot">
-        <span className="pill-white">{user.isDemo ? 'Демо-профиль' : `Опыт: ${data.experienceYears} г.`}</span>
+        <span className="pill-white">{`Опыт: ${data.experienceYears} г.`}</span>
         <span className="arrow-btn" aria-hidden="true">
           <ArrowUpRightIcon size={20} weight="bold" />
         </span>

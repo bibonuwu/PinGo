@@ -1,0 +1,288 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  font-family: var(--font-text);
+  font-size: 1rem;
+  line-height: var(--lh);
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#root {
+  min-height: 100dvh;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+}
+
+p,
+dl,
+dd,
+blockquote,
+figure {
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--yellow);
+  color: var(--ink);
+}
+
+body.no-scroll {
+  overflow: hidden;
+}
+
+/* ---------- Утилиты ---------- */
+
+.muted {
+  color: var(--text-3);
+}
+.small {
+  font-size: 0.875rem;
+}
+.prewrap {
+  white-space: pre-wrap;
+}
+.label-font {
+  font-family: var(--font-label);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-weight: 400;
+}
+.ico-yellow {
+  color: var(--yellow);
+}
+.ico-green {
+  color: var(--green);
+}
+.ico-verified {
+  color: var(--blue);
+  flex-shrink: 0;
+}
+
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.fullscreen-loader {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+}
+
+/* Только для экранных дикторов: например, таблица данных под диаграммой. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Экран доступа: подтвердить почту модератора или «нет доступа». */
+.gate {
+  min-height: 100dvh;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 40px var(--gutter);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+}
+.gate p {
+  color: var(--text-2);
+}
+.gate .btn-row {
+  justify-content: center;
+}
+
+.fatal {
+  max-width: 520px;
+  margin: 20vh auto 0;
+  padding: 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.fatal p {
+  color: var(--text-2);
+}
+
+/* ---------- Талисман Pingo ---------- */
+
+.pingo {
+  overflow: visible;
+  flex-shrink: 0;
+}
+.pingo--animated .pingo__body {
+  animation: pingo-bob 2.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+.pingo--animated .pingo__shadow {
+  animation: pingo-shadow 2.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.pingo--animated .pingo__eyes {
+  animation: pingo-blink 4.6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.pingo--wave .pingo__flipper-r {
+  animation: pingo-wave 1.8s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: 0% 0%;
+}
+
+@keyframes pingo-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+@keyframes pingo-shadow {
+  0%,
+  100% {
+    transform: scaleX(1);
+    opacity: 0.12;
+  }
+  50% {
+    transform: scaleX(0.86);
+    opacity: 0.08;
+  }
+}
+@keyframes pingo-blink {
+  0%,
+  46%,
+  52%,
+  100% {
+    transform: scaleY(1);
+  }
+  49% {
+    transform: scaleY(0.1);
+  }
+}
+@keyframes pingo-wave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(-42deg);
+  }
+  40% {
+    transform: rotate(-16deg);
+  }
+  60% {
+    transform: rotate(-42deg);
+  }
+  80% {
+    transform: rotate(-6deg);
+  }
+}
+
+/* ---------- Конфетти ---------- */
+
+.confetti {
+  position: fixed;
+  left: 50%;
+  top: 38%;
+  z-index: 150;
+  pointer-events: none;
+}
+.confetti__piece {
+  position: absolute;
+  left: 0;
+  top: 0;
+}

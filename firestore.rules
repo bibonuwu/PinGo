@@ -1,0 +1,245 @@
+rules_version = '2';
+
+// Правила доступа Pingo. Главное: данные ребёнка видят только его родитель, специалисты,
+// к которым он записан, и модератор; роль пользователя нельзя поменять самому себе;
+// анкету в каталог публикует только модератор. Модераторы — только почты из списка в isAdmin().
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+    function me() {
+      return request.auth.uid;
+    }
+    function path(collectionName, id) {
+      return /databases/$(database)/documents/$(collectionName)/$(id);
+    }
+    // Модератор — подтверждённая почта из этого списка (тот же список — ADMIN_EMAILS в src/lib/constants.js).
+    // Роль admin в users/{uid} без такой почты прав не даёт.
+    function isAdmin() {
+      return signedIn()
+        && request.auth.token.get('email', '') in ['toryyy0325@gmail.com', 'aibekabeken47@gmail.com']
+        && request.auth.token.get('email_verified', false) == true;
+    }
+    function incoming() {
+      return request.resource.data;
+    }
+    function existing() {
+      return resource.data;
+    }
+    function changedKeys() {
+      return incoming().diff(existing()).affectedKeys();
+    }
+    function keeps(keys) {
+      return !changedKeys().hasAny(keys);
+    }
+    function isParty(d) {
+      return d.parentId == me() || d.specialistId == me();
+    }
+
+    // Личные данные аккаунта (email, избранное, настройки): владелец и модератор.
+    // Роль выбирают при регистрации (родитель или специалист); роль admin получают только почты модераторов.
+    match /users/{uid} {
+      allow get: if signedIn() && (me() == uid || isAdmin());
+      allow list: if isAdmin();
+      allow create: if signedIn() && me() == uid && incoming().id == uid
+        && (incoming().role in ['parent', 'specialist'] || (incoming().role == 'admin' && isAdmin()));
+      allow update: if isAdmin() || (signedIn() && me() == uid && keeps(['id', 'role', 'createdAt']));
+      allow delete: if signedIn() && me() == uid;
+    }
+
+    // Публичная карточка: имя, аватар, роль — для каталога, записей и чатов.
+    match /people/{uid} {
+      allow get: if signedIn();
+      // Список модераторов нужен, чтобы отправить им уведомление о новой анкете или жалобе.
+      allow list: if signedIn() && (resource.data.role == 'admin' || isAdmin());
+      allow create: if signedIn() && me() == uid && incoming().id == uid
+        && incoming().keys().hasOnly(['id', 'role', 'name', 'avatar', 'createdAt'])
+        && incoming().role == getAfter(path('users', uid)).data.role;
+      allow update: if isAdmin() || (signedIn() && me() == uid
+        && incoming().keys().hasOnly(['id', 'role', 'name', 'avatar', 'createdAt'])
+        && keeps(['id', 'role', 'createdAt']));
+      allow delete: if signedIn() && me() == uid;
+    }
+
+    // Профиль ребёнка: родитель, специалисты из specialistIds (у них есть запись с ребёнком), модератор.
+    match /children/{id} {
+      allow read: if signedIn() && (existing().parentId == me() || me() in existing().specialistIds || isAdmin());
+      allow create: if signedIn() && incoming().id == id && incoming().parentId == me()
+        && incoming().specialistIds is list;
+      allow update: if signedIn() && existing().parentId == me() && keeps(['id', 'parentId', 'createdAt']);
+      allow delete: if signedIn() && existing().parentId == me();
+    }
+
+    // Анкета целиком (черновик, история модерации, документы): владелец и модератор.
+    // Владелец не может сам опубликовать анкету — поле published меняет только модератор.
+    match /profiles/{uid} {
+      function ownerStatusOk() {
+        let before = existing().status;
+        let after = incoming().status;
+        return after == before
+          || (after == 'pending' && before != 'pending')
+          || (before == 'pending' && (after == 'draft' || (after == 'approved' && existing().published != null)));
+      }
+      allow get: if signedIn() && (me() == uid || isAdmin());
+      allow list: if isAdmin();
+      allow create: if signedIn() && me() == uid && incoming().id == uid
+        && incoming().status == 'draft' && incoming().published == null
+        && getAfter(path('users', uid)).data.role == 'specialist';
+      allow update: if isAdmin() || (signedIn() && me() == uid
+        && keeps(['id', 'published', 'reviewedAt', 'reviewedBy', 'verifiedAt', 'verifiedBy', 'createdAt'])
+        && ownerStatusOk()
+        && (keeps(['rejectionReason']) || incoming().rejectionReason == null)
+        && (existing().status != 'pending' || keeps(['draft'])));
+      allow delete: if signedIn() && me() == uid;
+    }
+
+    // Документы специалиста (диплом, сертификаты) — частями до 750 КБ: documents/{ownerId}/parts/{fileId}_{n}.
+    // Загружает и удаляет владелец, открыть может владелец и модератор. Файл — не больше 5 МБ (7 частей).
+    match /documents/{ownerId}/parts/{partId} {
+      allow get: if signedIn() && (me() == ownerId || isAdmin());
+      allow create: if signedIn() && me() == ownerId
+        && incoming().keys().hasOnly(['fileId', 'index', 'total', 'chunk'])
+        && incoming().chunk is bytes && incoming().chunk.size() <= 750 * 1024
+        && incoming().index is int && incoming().total is int
+        && incoming().index >= 0 && incoming().index < incoming().total && incoming().total <= 7
+        && partId == incoming().fileId + '_' + string(incoming().index);
+      allow delete: if signedIn() && me() == ownerId;
+    }
+
+    // Каталог: опубликованные (одобренные модератором) версии анкет — их видят все вошедшие.
+    match /catalog/{uid} {
+      allow read: if signedIn();
+      allow create: if isAdmin();
+      allow update: if isAdmin() || (signedIn() && me() == uid && changedKeys().hasOnly(['sessionMinutes', 'updatedAt']));
+      allow delete: if isAdmin() || (signedIn() && me() == uid);
+    }
+
+    // Окна расписания специалиста.
+    match /availability/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn() && incoming().id == id && incoming().specialistId == me()
+        && getAfter(path('users', me())).data.role == 'specialist';
+      allow delete: if signedIn() && existing().specialistId == me();
+    }
+
+    // Записи на занятия: родитель и специалист записи, модератор.
+    match /bookings/{id} {
+      function byParent() {
+        return existing().parentId == me();
+      }
+      function bySpecialist() {
+        return existing().specialistId == me();
+      }
+      function from(s) {
+        return existing().status == s;
+      }
+      function to(s) {
+        return incoming().status == s;
+      }
+      function sameStatusEdit() {
+        return incoming().status == existing().status && (
+          (byParent() && changedKeys().hasOnly(['reviewId', 'updatedAt']) && existing().reviewId == null)
+          || (bySpecialist() && changedKeys().hasOnly(['report', 'updatedAt']) && existing().report == null)
+        );
+      }
+      function confirmOrDecline() {
+        return bySpecialist() && from('pending') && (to('confirmed') || to('declined'))
+          && changedKeys().hasOnly(['status', 'statusReason', 'confirmedAt', 'updatedAt']);
+      }
+      function cancel() {
+        return (from('pending') || from('confirmed')) && to('cancelled') && incoming().cancelledBy == me()
+          && (byParent() || from('confirmed'))
+          && changedKeys().hasOnly(['status', 'statusReason', 'cancelledBy', 'updatedAt']);
+      }
+      allow read: if signedIn() && (isParty(existing()) || isAdmin());
+      allow create: if signedIn() && incoming().id == id && incoming().parentId == me()
+        && incoming().status == 'pending' && incoming().reviewId == null && incoming().report == null
+        && exists(path('catalog', incoming().specialistId))
+        && get(path('children', incoming().childId)).data.parentId == me();
+      allow update: if signedIn() && isParty(existing()) && (sameStatusEdit() || confirmOrDecline() || cancel());
+    }
+
+    // Занятые окна (без личных данных) — чтобы родители видели, какое время свободно.
+    // Документ busy/{specialistId}_{start} можно только создать: второй родитель не займёт то же окно.
+    match /busy/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn() && id == incoming().specialistId + '_' + string(incoming().start)
+        && getAfter(path('bookings', incoming().bookingId)).data.parentId == me()
+        && getAfter(path('bookings', incoming().bookingId)).data.specialistId == incoming().specialistId
+        && getAfter(path('bookings', incoming().bookingId)).data.start == incoming().start;
+      allow delete: if signedIn() && (resource == null || isParty(get(path('bookings', existing().bookingId)).data));
+    }
+
+    // Отзывы после занятия: один на запись, оставляет родитель.
+    match /reviews/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn() && incoming().id == id && incoming().parentId == me()
+        && incoming().rating is int && incoming().rating >= 1 && incoming().rating <= 5
+        && get(path('bookings', incoming().bookingId)).data.parentId == me()
+        && get(path('bookings', incoming().bookingId)).data.specialistId == incoming().specialistId
+        && getAfter(path('bookings', incoming().bookingId)).data.reviewId == id;
+      allow delete: if isAdmin();
+    }
+
+    // Диалоги: id = c_{parentId}_{specialistId}, доступ только у двух участников.
+    match /conversations/{id} {
+      allow get: if signedIn() && (resource == null || isParty(existing()));
+      allow list: if signedIn() && isParty(existing());
+      allow create: if signedIn() && isParty(incoming())
+        && id == 'c_' + incoming().parentId + '_' + incoming().specialistId
+        && get(path('people', incoming().parentId)).data.role == 'parent'
+        && get(path('people', incoming().specialistId)).data.role == 'specialist';
+      allow update: if signedIn() && isParty(existing()) && keeps(['id', 'parentId', 'specialistId']);
+    }
+
+    match /messages/{id} {
+      allow read: if signedIn() && isParty(existing());
+      allow create: if signedIn() && incoming().id == id && isParty(incoming())
+        && (incoming().senderId == me() || incoming().senderId == 'system')
+        && incoming().conversationId == 'c_' + incoming().parentId + '_' + incoming().specialistId
+        && incoming().text is string && incoming().text.size() <= 2000;
+    }
+
+    // Уведомления: создать может любой вошедший (например, о новой записи), читать и менять — только адресат.
+    match /notifications/{id} {
+      allow get: if signedIn() && (resource == null || existing().userId == me());
+      allow list: if signedIn() && existing().userId == me();
+      allow create: if signedIn() && incoming().id == id && incoming().read == false;
+      allow update: if signedIn() && existing().userId == me() && changedKeys().hasOnly(['read']);
+      allow delete: if signedIn() && existing().userId == me();
+    }
+
+    // Сертификаты Pingo: выдаёт и отзывает модератор, видят все вошедшие (они показываются в анкете).
+    match /certificates/{id} {
+      allow read: if signedIn();
+      allow create: if isAdmin() && incoming().id == id && incoming().issuedBy == me()
+        && exists(path('people', incoming().userId));
+      allow delete: if isAdmin();
+    }
+
+    // История рассылок модератора (сами сообщения — это уведомления адресатам).
+    match /broadcasts/{id} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() && incoming().id == id && incoming().sentBy == me();
+    }
+
+    // Жалобы: отправляет любой вошедший, разбирает модератор.
+    match /complaints/{id} {
+      allow read, update: if isAdmin();
+      allow create: if signedIn() && incoming().id == id && incoming().reporterId == me()
+        && incoming().status == 'open';
+    }
+
+    // Сигналинг видеозвонка: только родитель и специалист записи.
+    match /rooms/{bookingId}/signals/{signalId} {
+      function roomParty() {
+        return isParty(get(path('bookings', bookingId)).data);
+      }
+      allow read: if signedIn() && roomParty();
+      allow create: if signedIn() && roomParty() && incoming().uid == me();
+      allow delete: if signedIn() && existing().uid == me();
+    }
+  }
+}

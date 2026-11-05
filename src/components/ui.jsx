@@ -138,7 +138,7 @@ export function Toggle({ checked, onChange, label, hint, icon: Icon, disabled })
         onChange={(e) => onChange(e.target.checked)}
       />
       <span className="toggle__track" aria-hidden="true">
-        <motion.span className="toggle__thumb" layout transition={{ type: 'spring', stiffness: 600, damping: 34 }} />
+        <span className="toggle__thumb" />
       </span>
     </label>
   );
@@ -204,7 +204,8 @@ export function Tabs({ value, onChange, items, layoutId = 'tabs', className }) {
   );
 }
 
-export function Segmented({ value, onChange, options, layoutId = 'seg', multiple = false, className }) {
+// Без layoutId: сегменты бывают внутри шторок и шагов мастера, где layout-анимация мешает AnimatePresence.
+export function Segmented({ value, onChange, options, multiple = false, className }) {
   const isActive = (id) => (multiple ? value.includes(id) : value === id);
   const toggle = (id) => {
     if (!multiple) return onChange(id);
@@ -224,9 +225,6 @@ export function Segmented({ value, onChange, options, layoutId = 'seg', multiple
             className={cx('segmented__item', active && 'is-active')}
             onClick={() => toggle(o.id)}
           >
-            {!multiple && active && (
-              <motion.span layoutId={layoutId} className="segmented__pill" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />
-            )}
             <span className="segmented__label">{o.label}</span>
             {o.hint && <span className="segmented__hint">{o.hint}</span>}
           </button>

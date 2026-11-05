@@ -1,8 +1,10 @@
+import { arrayUnion } from 'firebase/firestore';
 import { db } from '../lib/db';
+import { batch, commit, ref } from '../lib/remote';
 import { ROOM_CLOSES_AFTER_MIN, ROOM_OPENS_BEFORE_MIN } from '../lib/constants';
 import { generateSlots, isActiveBooking } from '../lib/slots';
 import { MINUTE, ageFromBirthDate, firstName, fmtAge, fmtStamp, uid } from '../lib/utils';
-import { ensureConversationRaw, pushMessageRaw, conversationIdFor } from './chat';
+import { ensureConversationRaw, pushMessageRaw } from './chat';
 import { notifyRaw } from './notifications';
 
 // Хранимые статусы: pending → confirmed | declined | cancelled.
@@ -15,6 +17,11 @@ export function displayStatus(b, now = Date.now()) {
 }
 
 export const isUpcoming = (b, now = Date.now()) => isActiveBooking(b) && b.end > now && displayStatus(b, now) !== 'expired';
+
+// Занятое окно специалиста: busy/{specialistId}_{start}.
+export const busyId = (specialistId, start) => `${specialistId}_${start}`;
+
+const SLOT_TAKEN = 'Это время уже заняли. Выберите другое окно.';
 
 export function roomWindow(b) {
   return {
@@ -58,73 +65,85 @@ export async function createBooking({ parentId, childId, specialistId, start, fo
   const end = start + duration * MINUTE;
   const cleanNote = (note || '').trim().slice(0, 500);
 
-  return db.transaction(
-    'rw',
-    [db.bookings, db.availability, db.conversations, db.messages, db.notifications],
-    async () => {
-      const now = Date.now();
-      const rules = await db.availability.where('specialistId').equals(specialistId).toArray();
-      const busy = (await db.bookings.where('specialistId').equals(specialistId).toArray()).filter(isActiveBooking);
-      const free = generateSlots({ rules, busy, duration, from: now });
-      if (!free.some((s) => s.start === start)) throw new Error('Это время уже заняли. Выберите другое окно.');
-      const childBusy = (await db.bookings.where('childId').equals(childId).toArray()).some(
-        (b) => isActiveBooking(b) && b.start < end && b.end > start,
-      );
-      if (childBusy) throw new Error(`У ${child.name} уже есть занятие в это время`);
-
-      const booking = {
-        id: uid(),
-        parentId,
-        childId,
-        specialistId,
-        start,
-        end,
-        duration,
-        format,
-        note: cleanNote,
-        status: 'pending',
-        statusReason: null,
-        cancelledBy: null,
-        report: null,
-        reviewId: null,
-        createdAt: now,
-        updatedAt: now,
-      };
-      await db.bookings.add(booking);
-      const convId = await ensureConversationRaw(parentId, specialistId);
-      await pushMessageRaw(convId, {
-        senderId: 'system',
-        kind: 'system',
-        bookingId: booking.id,
-        text: `Запрос на занятие: ${fmtStamp(start)} · ${child.name}`,
-        unreadFor: [specialistId],
-      });
-      if (cleanNote) await pushMessageRaw(convId, { senderId: parentId, text: cleanNote, unreadFor: [specialistId] });
-      await notifyRaw(specialistId, {
-        type: 'booking_request',
-        title: 'Новый запрос на занятие',
-        body: `${parent.name} · ${child.name}, ${fmtAge(ageFromBirthDate(child.birthDate))} · ${fmtStamp(start)}`,
-        link: `/specialist/requests/${booking.id}`,
-      });
-      return { booking, specialistName: specialist?.name };
-    },
+  const now = Date.now();
+  const rules = await db.availability.where('specialistId').equals(specialistId).toArray();
+  const busy = await db.busy.where('specialistId').equals(specialistId).toArray();
+  const free = generateSlots({ rules, busy, duration, from: now });
+  if (!free.some((s) => s.start === start)) throw new Error(SLOT_TAKEN);
+  const childBusy = (await db.bookings.where('childId').equals(childId).toArray()).some(
+    (b) => isActiveBooking(b) && b.start < end && b.end > start,
   );
+  if (childBusy) throw new Error(`${child.name}: в это время уже есть другое занятие`);
+
+  const booking = {
+    id: uid(),
+    parentId,
+    childId,
+    specialistId,
+    start,
+    end,
+    duration,
+    format,
+    note: cleanNote,
+    status: 'pending',
+    statusReason: null,
+    cancelledBy: null,
+    report: null,
+    reviewId: null,
+    createdAt: now,
+    updatedAt: now,
+  };
+  const w = batch();
+  w.set(ref('bookings', booking.id), booking);
+  // Занятое окно видят все родители. Правила не дают создать второй документ на то же время,
+  // поэтому два родителя не запишутся в одно окно, даже если нажмут одновременно.
+  w.set(ref('busy', busyId(specialistId, start)), { id: busyId(specialistId, start), specialistId, bookingId: booking.id, start, end });
+  // Специалист записи видит профиль ребёнка (потребности, цели, доступность).
+  if (!child.specialistIds?.includes(specialistId)) {
+    w.update(ref('children', childId), { specialistIds: arrayUnion(specialistId) });
+  }
+  const conv = ensureConversationRaw(w, parentId, specialistId);
+  pushMessageRaw(w, conv, {
+    senderId: 'system',
+    kind: 'system',
+    bookingId: booking.id,
+    text: `Запрос на занятие: ${fmtStamp(start)} · ${child.name}`,
+    unreadFor: [specialistId],
+    createdAt: now,
+  });
+  if (cleanNote) pushMessageRaw(w, conv, { senderId: parentId, text: cleanNote, unreadFor: [specialistId], createdAt: now + 1 });
+  notifyRaw(w, specialistId, {
+    type: 'booking_request',
+    title: 'Новый запрос на занятие',
+    body: `${parent.name} · ${child.name}, ${fmtAge(ageFromBirthDate(child.birthDate))} · ${fmtStamp(start)}`,
+    link: `/specialist/requests/${booking.id}`,
+  });
+  try {
+    await commit(w);
+  } catch (e) {
+    if (e.code === 'permission-denied') throw new Error(SLOT_TAKEN);
+    throw e;
+  }
+  return { booking, specialistName: specialist?.name };
 }
 
+// Изменение записи + системное сообщение в чат + уведомление — одним пакетом.
 async function transition(bookingId, mutate) {
-  const before = await db.bookings.get(bookingId);
-  if (!before) throw new Error('Запись не найдена');
-  const parties = await loadParties(before);
-  return db.transaction('rw', [db.bookings, db.conversations, db.messages, db.notifications], async () => {
-    const b = await db.bookings.get(bookingId);
-    const convId = conversationIdFor(b.parentId, b.specialistId);
-    await ensureConversationRaw(b.parentId, b.specialistId);
-    return mutate(b, { ...parties, convId, now: Date.now() });
-  });
+  const b = await db.bookings.get(bookingId);
+  if (!b) throw new Error('Запись не найдена');
+  const parties = await loadParties(b);
+  const w = batch();
+  const conv = ensureConversationRaw(w, b.parentId, b.specialistId);
+  const result = await mutate(b, { ...parties, w, conv, now: Date.now() });
+  await commit(w);
+  return result;
 }
+
+// Окно снова свободно для других родителей.
+const releaseSlot = (w, b) => w.delete(ref('busy', busyId(b.specialistId, b.start)));
 
 export function confirmBooking(specialistId, bookingId) {
-  return transition(bookingId, async (b, { child, specialist, convId, now }) => {
+  return transition(bookingId, async (b, { child, specialist, w, conv, now }) => {
     if (b.specialistId !== specialistId) throw new Error('Нет доступа к записи');
     if (b.status !== 'pending') throw new Error('Запрос уже обработан');
     if (b.start <= now) throw new Error('Время занятия уже прошло');
@@ -132,37 +151,38 @@ export function confirmBooking(specialistId, bookingId) {
       (x) => x.id !== b.id && x.status === 'confirmed' && x.start < b.end && x.end > b.start,
     );
     if (clash) throw new Error('На это время у вас уже есть подтверждённое занятие');
-    await db.bookings.update(b.id, { status: 'confirmed', confirmedAt: now, updatedAt: now });
-    await pushMessageRaw(convId, {
+    w.update(ref('bookings', b.id), { status: 'confirmed', confirmedAt: now, updatedAt: now });
+    pushMessageRaw(w, conv, {
       senderId: 'system',
       kind: 'system',
       bookingId: b.id,
       text: `Занятие подтверждено: ${fmtStamp(b.start)}`,
       unreadFor: [b.parentId],
     });
-    await notifyRaw(b.parentId, {
+    notifyRaw(w, b.parentId, {
       type: 'booking_confirmed',
       title: 'Занятие подтверждено',
-      body: `${specialist.name} ждёт ${child?.name ?? 'ребёнка'} · ${fmtStamp(b.start)}`,
+      body: `${specialist.name} подтвердил(а) занятие · ${child?.name ?? 'ребёнок'} · ${fmtStamp(b.start)}`,
       link: `/parent/bookings/${b.id}`,
     });
   });
 }
 
 export function declineBooking(specialistId, bookingId, reason = '') {
-  return transition(bookingId, async (b, { specialist, convId, now }) => {
+  return transition(bookingId, async (b, { specialist, w, conv, now }) => {
     if (b.specialistId !== specialistId) throw new Error('Нет доступа к записи');
     if (b.status !== 'pending') throw new Error('Запрос уже обработан');
     const r = reason.trim();
-    await db.bookings.update(b.id, { status: 'declined', statusReason: r || null, updatedAt: now });
-    await pushMessageRaw(convId, {
+    w.update(ref('bookings', b.id), { status: 'declined', statusReason: r || null, updatedAt: now });
+    releaseSlot(w, b);
+    pushMessageRaw(w, conv, {
       senderId: 'system',
       kind: 'system',
       bookingId: b.id,
       text: `Запрос отклонён${r ? `: ${r}` : ''}`,
       unreadFor: [b.parentId],
     });
-    await notifyRaw(b.parentId, {
+    notifyRaw(w, b.parentId, {
       type: 'booking_declined',
       title: 'Запрос отклонён',
       body: `${specialist.name}: ${r || 'не сможет провести занятие в это время'}`,
@@ -173,7 +193,7 @@ export function declineBooking(specialistId, bookingId, reason = '') {
 
 // Родитель может отменить запрос или подтверждённую запись, специалист — подтверждённую.
 export function cancelBooking(userId, bookingId, reason = '') {
-  return transition(bookingId, async (b, { parent, specialist, child, convId, now }) => {
+  return transition(bookingId, async (b, { parent, specialist, child, w, conv, now }) => {
     const byParent = userId === b.parentId;
     const bySpecialist = userId === b.specialistId;
     if (!byParent && !bySpecialist) throw new Error('Нет доступа к записи');
@@ -181,17 +201,18 @@ export function cancelBooking(userId, bookingId, reason = '') {
     if (bySpecialist && b.status === 'pending') throw new Error('Запрос можно отклонить, а не отменить');
     if (b.start <= now) throw new Error('Занятие уже началось — отменить его нельзя');
     const r = reason.trim();
-    await db.bookings.update(b.id, { status: 'cancelled', statusReason: r || null, cancelledBy: userId, updatedAt: now });
-    const who = byParent ? parent.name : specialist.name;
+    w.update(ref('bookings', b.id), { status: 'cancelled', statusReason: r || null, cancelledBy: userId, updatedAt: now });
+    releaseSlot(w, b);
+    const who = (byParent ? parent?.name : specialist?.name) ?? 'Участник';
     const other = byParent ? b.specialistId : b.parentId;
-    await pushMessageRaw(convId, {
+    pushMessageRaw(w, conv, {
       senderId: 'system',
       kind: 'system',
       bookingId: b.id,
       text: `${firstName(who)} отменил(а) занятие ${fmtStamp(b.start)}${r ? `: ${r}` : ''}`,
       unreadFor: [other],
     });
-    await notifyRaw(other, {
+    notifyRaw(w, other, {
       type: 'booking_cancelled',
       title: 'Занятие отменено',
       body: `${who} · ${child?.name ?? ''} · ${fmtStamp(b.start)}${r ? ` — ${r}` : ''}`,
@@ -202,7 +223,7 @@ export function cancelBooking(userId, bookingId, reason = '') {
 
 // Отчёт специалиста после занятия (из концепции: «отчёты после каждого занятия»).
 export function addSessionReport(specialistId, bookingId, { summary, progress, homework }) {
-  return transition(bookingId, async (b, { specialist, child, now }) => {
+  return transition(bookingId, async (b, { specialist, child, w, now }) => {
     if (b.specialistId !== specialistId) throw new Error('Нет доступа к записи');
     if (displayStatus(b, now) !== 'completed') throw new Error('Отчёт можно добавить после занятия');
     if (b.report) throw new Error('Отчёт уже добавлен');
@@ -213,11 +234,11 @@ export function addSessionReport(specialistId, bookingId, { summary, progress, h
       homework: (homework || '').trim(),
       createdAt: now,
     };
-    await db.bookings.update(b.id, { report, updatedAt: now });
-    await notifyRaw(b.parentId, {
+    w.update(ref('bookings', b.id), { report, updatedAt: now });
+    notifyRaw(w, b.parentId, {
       type: 'report_added',
       title: 'Отчёт о занятии',
-      body: `${specialist.name} рассказал(а), как прошло занятие с ${child?.name ?? 'ребёнком'}`,
+      body: `${specialist.name} добавил(а) отчёт · ${child?.name ?? 'занятие'}`,
       link: `/parent/bookings/${b.id}`,
     });
   });
@@ -242,15 +263,15 @@ export async function addReview(parentId, bookingId, { rating, text }) {
     text: (text || '').trim().slice(0, 1000),
     createdAt: now,
   };
-  await db.transaction('rw', db.reviews, db.bookings, db.notifications, async () => {
-    await db.reviews.add(review);
-    await db.bookings.update(bookingId, { reviewId: review.id, updatedAt: now });
-    await notifyRaw(b.specialistId, {
-      type: 'review_added',
-      title: `Новый отзыв: ${'★'.repeat(rating)}`,
-      body: review.text || `${review.authorName} оценил(а) занятие`,
-      link: `/specialist/requests/${bookingId}`,
-    });
+  const w = batch();
+  w.set(ref('reviews', review.id), review);
+  w.update(ref('bookings', bookingId), { reviewId: review.id, updatedAt: now });
+  notifyRaw(w, b.specialistId, {
+    type: 'review_added',
+    title: `Новый отзыв: ${'★'.repeat(rating)}`,
+    body: review.text || `${review.authorName} оценил(а) занятие`,
+    link: `/specialist/requests/${bookingId}`,
   });
+  await commit(w);
   return review;
 }

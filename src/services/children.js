@@ -1,4 +1,5 @@
 import { db } from '../lib/db';
+import { batch, commit, ref, update } from '../lib/remote';
 import { DEFAULT_A11Y } from '../lib/constants';
 import { isActiveBooking } from '../lib/slots';
 import { ageFromBirthDate, uid } from '../lib/utils';
@@ -50,43 +51,42 @@ export async function createChild(parentId, data, { consent }) {
   if (Object.keys(issues).length) throw new Error(Object.values(issues)[0]);
   if (!consent) throw new Error('Подтвердите согласие законного представителя');
   const now = Date.now();
-  const child = { id: uid(), parentId, ...clean(data), consentAt: now, createdAt: now, updatedAt: now };
-  await db.transaction('rw', db.children, db.users, async () => {
-    await db.children.add(child);
-    const parent = await db.users.get(parentId);
-    if (!parent.activeChildId) await db.users.update(parentId, { activeChildId: child.id });
-  });
+  // specialistIds — специалисты, у которых есть записи с ребёнком: только они видят его профиль.
+  const child = { id: uid(), parentId, ...clean(data), specialistIds: [], consentAt: now, createdAt: now, updatedAt: now };
+  const w = batch();
+  w.set(ref('children', child.id), child);
+  if (!db.users.peek(parentId)?.activeChildId) w.update(ref('users', parentId), { activeChildId: child.id });
+  await commit(w);
   return child;
 }
 
 export async function updateChild(id, data) {
   const issues = childIssues(data);
   if (Object.keys(issues).length) throw new Error(Object.values(issues)[0]);
-  await db.children.update(id, { ...clean(data), updatedAt: Date.now() });
+  await update('children', id, { ...clean(data), updatedAt: Date.now() });
 }
 
 export async function updateChildAccessibility(id, accessibility) {
-  await db.children.update(id, { accessibility, updatedAt: Date.now() });
+  await update('children', id, { accessibility, updatedAt: Date.now() });
 }
 
 export function setActiveChild(parentId, childId) {
-  return db.users.update(parentId, { activeChildId: childId });
+  return update('users', parentId, { activeChildId: childId });
 }
 
 export async function deleteChild(parentId, childId) {
-  return db.transaction('rw', db.children, db.users, db.bookings, async () => {
-    const child = await db.children.get(childId);
-    if (!child || child.parentId !== parentId) throw new Error('Профиль ребёнка не найден');
-    const now = Date.now();
-    const active = (await db.bookings.where('childId').equals(childId).toArray()).some(
-      (b) => isActiveBooking(b) && b.end > now,
-    );
-    if (active) throw new Error(`Сначала отмените активные записи для ${child.name}`);
-    await db.children.delete(childId);
-    const parent = await db.users.get(parentId);
-    if (parent.activeChildId === childId) {
-      const next = await db.children.where('parentId').equals(parentId).first();
-      await db.users.update(parentId, { activeChildId: next?.id ?? null });
-    }
-  });
+  const child = db.children.peek(childId);
+  if (!child || child.parentId !== parentId) throw new Error('Профиль ребёнка не найден');
+  const now = Date.now();
+  const active = (await db.bookings.where('childId').equals(childId).toArray()).some(
+    (b) => isActiveBooking(b) && b.end > now,
+  );
+  if (active) throw new Error(`Сначала отмените активные записи ребёнка (${child.name})`);
+  const w = batch();
+  w.delete(ref('children', childId));
+  if (db.users.peek(parentId)?.activeChildId === childId) {
+    const next = (await db.children.where('parentId').equals(parentId).toArray()).find((c) => c.id !== childId);
+    w.update(ref('users', parentId), { activeChildId: next?.id ?? null });
+  }
+  await commit(w);
 }
