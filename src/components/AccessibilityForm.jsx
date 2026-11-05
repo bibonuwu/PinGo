@@ -3,6 +3,7 @@ import { BookOpenTextIcon, CircleHalfIcon, SparkleIcon, WavesIcon } from '@phosp
 import { LINE_SPACINGS, TEXT_SIZES, describeAccessibility } from '../lib/constants';
 import { cx } from '../lib/utils';
 import { Button, Field, Segmented, Toggle } from './ui';
+import { t } from '../i18n';
 
 // Настройки доступности ребёнка (или пользователя) с живым предпросмотром.
 export function AccessibilityForm({ value, onChange, suggestion, suggestionFor, idPrefix = 'a11y' }) {
@@ -17,18 +18,18 @@ export function AccessibilityForm({ value, onChange, suggestion, suggestionFor, 
         <motion.div className="a11y-suggest" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
           <SparkleIcon size={20} weight="fill" />
           <div>
-            <strong>Pingo рекомендует{suggestionFor ? ` · ${suggestionFor}` : ''}</strong>
-            <span>{describeAccessibility(suggestion).join(', ') || 'стандартные настройки'}</span>
+            <strong>{t('Pingo рекомендует{p0}', { p0: suggestionFor ? ` · ${suggestionFor}` : '' })}</strong>
+            <span>{describeAccessibility(suggestion).join(', ') || t('стандартные настройки')}</span>
           </div>
           <Button size="sm" variant="dark" onClick={() => onChange(suggestion)}>
-            Применить
+            {t('Применить')}
           </Button>
         </motion.div>
       )}
-      <Field label="Размер текста">
+      <Field label={t('Размер текста')}>
         <Segmented value={value.textSize} onChange={(v) => set({ textSize: v })} options={TEXT_SIZES} layoutId={`${idPrefix}-size`} />
       </Field>
-      <Field label="Межстрочный интервал">
+      <Field label={t('Межстрочный интервал')}>
         <Segmented
           value={value.lineSpacing}
           onChange={(v) => set({ lineSpacing: v })}
@@ -39,22 +40,22 @@ export function AccessibilityForm({ value, onChange, suggestion, suggestionFor, 
       <div className="toggle-list">
         <Toggle
           icon={WavesIcon}
-          label="Меньше анимаций"
-          hint="Спокойный интерфейс без движения — помогает при СДВГ и сенсорной чувствительности"
+          label={t('Меньше анимаций')}
+          hint={t('Спокойный интерфейс без движения — помогает при СДВГ и сенсорной чувствительности')}
           checked={value.reduceMotion}
           onChange={(v) => set({ reduceMotion: v })}
         />
         <Toggle
           icon={CircleHalfIcon}
-          label="Высокий контраст"
-          hint="Более тёмный текст и чёткие границы"
+          label={t('Высокий контраст')}
+          hint={t('Более тёмный текст и чёткие границы')}
           checked={value.highContrast}
           onChange={(v) => set({ highContrast: v })}
         />
         <Toggle
           icon={BookOpenTextIcon}
-          label="Удобное чтение"
-          hint="Шрифт Verdana и увеличенные интервалы между буквами — помогает при дислексии"
+          label={t('Удобное чтение')}
+          hint={t('Шрифт Verdana и увеличенные интервалы между буквами — помогает при дислексии')}
           checked={value.readableFont}
           onChange={(v) => set({ readableFont: v })}
         />
@@ -62,11 +63,11 @@ export function AccessibilityForm({ value, onChange, suggestion, suggestionFor, 
       <div
         className={cx('a11y-preview', value.highContrast && 'is-contrast', value.readableFont && 'is-readable')}
         style={{ fontSize: 16 * scale, lineHeight: lh }}
-        aria-label="Предпросмотр"
+        aria-label={t('Предпросмотр')}
       >
-        <span className="a11y-preview__label">Предпросмотр</span>
+        <span className="a11y-preview__label">{t('Предпросмотр')}</span>
         <p>
-          Привет! Сегодня занятие в 15:00. Возьми карточки с животными — будем играть и учить новые слова.
+          {t('Привет! Сегодня занятие в 15:00. Возьми карточки с животными — будем играть и учить новые слова.')}
         </p>
       </div>
     </div>

@@ -2,7 +2,9 @@ import { increment } from 'firebase/firestore';
 import { db } from '../lib/db';
 import { batch, commit, ref, update } from '../lib/remote';
 import { uid } from '../lib/utils';
+import { isMsg, msg, plainText } from '../i18n/stored';
 import { notifyRaw } from './notifications';
+import { t } from '../i18n';
 
 export const MAX_MESSAGE_LENGTH = 2000;
 
@@ -71,18 +73,21 @@ export async function ensureConversation(parentId, specialistId) {
 
 // kind: 'text' | 'system'. unreadFor — кому увеличить счётчик непрочитанного.
 // В сообщении хранятся участники диалога — по ним правила безопасности решают, кому его показать.
+// text системного сообщения — шаблон msg(): каждый участник прочитает его на своём языке.
 export function pushMessageRaw(
   w,
   conv,
   { senderId, text, kind = 'text', bookingId = null, unreadFor = [], createdAt = Date.now() },
 ) {
+  const template = isMsg(text) ? text : null;
   const msg = {
     id: uid(),
     conversationId: conv.id,
     parentId: conv.parentId,
     specialistId: conv.specialistId,
     senderId,
-    text,
+    text: plainText(text),
+    i18n: template,
     kind,
     bookingId,
     createdAt,
@@ -93,7 +98,8 @@ export function pushMessageRaw(
     parentId: conv.parentId,
     specialistId: conv.specialistId,
     updatedAt: createdAt,
-    lastText: text,
+    lastText: msg.text,
+    lastI18n: template,
     lastKind: kind,
     lastSenderId: senderId,
   };
@@ -106,11 +112,11 @@ export function pushMessageRaw(
 export async function sendMessage(conversationId, senderId, rawText, { draft = null } = {}) {
   const text = rawText.trim();
   if (!text) return null;
-  if (text.length > MAX_MESSAGE_LENGTH) throw new Error(`Сообщение длиннее ${MAX_MESSAGE_LENGTH} символов`);
+  if (text.length > MAX_MESSAGE_LENGTH) throw new Error(t('Сообщение длиннее {MAX_MESSAGE_LENGTH} символов', { MAX_MESSAGE_LENGTH }));
   const saved = db.conversations.peek(conversationId);
   const c = saved ?? (draft?.id === conversationId ? draft : null);
-  if (!c) throw new Error('Диалог не найден');
-  if (senderId !== c.parentId && senderId !== c.specialistId) throw new Error('Нет доступа к диалогу');
+  if (!c) throw new Error(t('Диалог не найден'));
+  if (senderId !== c.parentId && senderId !== c.specialistId) throw new Error(t('Нет доступа к диалогу'));
   const other = senderId === c.parentId ? c.specialistId : c.parentId;
   const w = batch();
   const adminId = supportAdminOf(c);
@@ -121,7 +127,7 @@ export async function sendMessage(conversationId, senderId, rawText, { draft = n
   if (adminId && senderId === adminId && !c.unread?.[other]) {
     notifyRaw(w, other, {
       type: 'support_message',
-      title: 'Сообщение от модератора Pingo',
+      title: msg('Сообщение от модератора Pingo'),
       body: text.length > 140 ? `${text.slice(0, 139)}…` : text,
       link: `/${other === c.parentId ? 'parent' : 'specialist'}/messages/${c.id}`,
     });

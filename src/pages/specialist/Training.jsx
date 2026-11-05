@@ -13,6 +13,7 @@ import { Confetti } from '../../components/Decor';
 import { PageHeader } from '../../components/PageHeader';
 import { Pingo } from '../../components/Pingo';
 import { Button, ProgressBar } from '../../components/ui';
+import { t } from '../../i18n';
 
 // Обучение из концепции: инклюзия, этика, безопасность детей, нарушения развития, правила занятий.
 export default function Training() {
@@ -46,7 +47,7 @@ export default function Training() {
       if (next) setOpen(next.id);
       else {
         setCelebrate(true);
-        toast.success('Обучение пройдено! Вернитесь к анкете и отправьте её на модерацию.');
+        toast.success(t('Обучение пройдено! Вернитесь к анкете и отправьте её на модерацию.'));
       }
     } catch (e) {
       toast.error(e.message);
@@ -58,14 +59,14 @@ export default function Training() {
       {celebrate && <Confetti />}
       <PageHeader
         back={location.state?.fromEditor ? '/specialist/profile/edit#training' : '/specialist/profile'}
-        title="Обучение Pingo"
-        subtitle="Пять коротких модулей о безопасности и бережном общении. Без них анкету нельзя отправить на модерацию."
+        title={t('Обучение Pingo')}
+        subtitle={t('Пять коротких модулей о безопасности и бережном общении. Без них анкету нельзя отправить на модерацию.')}
       />
       <div className="training__progress">
         <GraduationCapIcon size={28} weight="fill" />
         <div>
           <strong>
-            {progress.done} из {progress.total} модулей
+            {t('{done} из {total} модулей', { done: progress.done, total: progress.total })}
           </strong>
           <ProgressBar value={progress.done / progress.total} />
         </div>
@@ -88,7 +89,7 @@ export default function Training() {
                 <span className="module__title">
                   <strong>{m.title}</strong>
                   <span>
-                    <ClockIcon size={14} weight="bold" /> {m.minutes} мин
+                    <ClockIcon size={14} weight="bold" />{' '}{t('{minutes} мин', { minutes: m.minutes })}
                   </span>
                 </span>
                 <CaretDownIcon size={20} weight="bold" className="module__caret" />
@@ -103,11 +104,11 @@ export default function Training() {
                     </ul>
                     {done ? (
                       <p className="module__done">
-                        <CheckCircleIcon size={18} weight="fill" /> Модуль пройден
+                        <CheckCircleIcon size={18} weight="fill" />{' '}{t('Модуль пройден')}
                       </p>
                     ) : (
                       <Button variant="dark" onClick={() => complete(m.id)}>
-                        Я изучил(а) модуль
+                        {t('Я изучил(а) модуль')}
                       </Button>
                     )}
                   </motion.div>
@@ -122,10 +123,10 @@ export default function Training() {
         <motion.div ref={doneRef} className="training__done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
           <Pingo size={96} mood="happy" outfit="glasses" />
           <div>
-            <strong>Обучение пройдено 🎓</strong>
-            <p>Спасибо, что заботитесь о безопасности детей.</p>
+            <strong>{t('Обучение пройдено 🎓')}</strong>
+            <p>{t('Спасибо, что заботитесь о безопасности детей.')}</p>
             <Button variant="primary" onClick={backToEditor}>
-              Вернуться к анкете
+              {t('Вернуться к анкете')}
             </Button>
           </div>
         </motion.div>

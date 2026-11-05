@@ -12,11 +12,12 @@ import { EmptyState } from '../../components/EmptyState';
 import { PageHeader } from '../../components/PageHeader';
 import { ReasonDialog } from '../../components/Sheet';
 import { Button, ButtonLink, Stagger, Tabs } from '../../components/ui';
+import { t } from '../../i18n';
 
 const EMPTY = {
-  pending: { title: 'Новых запросов нет', text: 'Когда родитель выберет ваше время, запрос появится здесь, а я пришлю уведомление.' },
-  upcoming: { title: 'Нет подтверждённых занятий', text: 'Примите запрос — и занятие появится в этом списке.' },
-  history: { title: 'История пуста', text: 'Здесь будут проведённые, отклонённые и отменённые занятия.' },
+  pending: { title: t('Новых запросов нет'), text: t('Когда родитель выберет ваше время, запрос появится здесь, а я пришлю уведомление.') },
+  upcoming: { title: t('Нет подтверждённых занятий'), text: t('Примите запрос — и занятие появится в этом списке.') },
+  history: { title: t('История пуста'), text: t('Здесь будут проведённые, отклонённые и отменённые занятия.') },
 };
 
 export default function Requests() {
@@ -45,7 +46,7 @@ export default function Requests() {
     setBusyId(id);
     try {
       await confirmBooking(user.id, id);
-      toast.success('Занятие подтверждено — родитель получил уведомление');
+      toast.success(t('Занятие подтверждено — родитель получил уведомление'));
     } catch (e) {
       toast.error(e.message);
     } finally {
@@ -57,15 +58,15 @@ export default function Requests() {
 
   return (
     <div className="page">
-      <PageHeader title="Запросы" subtitle="Подтверждайте запросы вовремя — семья ждёт ответа." />
+      <PageHeader title={t('Запросы')} subtitle={t('Подтверждайте запросы вовремя — семья ждёт ответа.')} />
       <Tabs
         value={tab}
         onChange={(v) => setParams({ tab: v }, { replace: true })}
         layoutId="requests-tabs"
         items={[
-          { value: 'pending', label: 'Новые', count: groups.pending.length },
-          { value: 'upcoming', label: 'Предстоящие', count: groups.upcoming.length },
-          { value: 'history', label: 'История' },
+          { value: 'pending', label: t('Новые'), count: groups.pending.length },
+          { value: 'upcoming', label: t('Предстоящие'), count: groups.upcoming.length },
+          { value: 'history', label: t('История') },
         ]}
       />
       {list.length === 0 ? (
@@ -76,7 +77,7 @@ export default function Requests() {
           action={
             tab === 'pending' && (
               <ButtonLink to="/specialist/availability" variant="primary">
-                Проверить расписание
+                {t('Проверить расписание')}
               </ButtonLink>
             )
           }
@@ -96,10 +97,10 @@ export default function Requests() {
                 tab === 'pending' && (
                   <>
                     <Button size="sm" variant="primary" icon={CheckIcon} loading={busyId === b.id} onClick={() => accept(b.id)}>
-                      Принять
+                      {t('Принять')}
                     </Button>
                     <Button size="sm" variant="soft" icon={XIcon} onClick={() => setDeclineId(b.id)}>
-                      Отклонить
+                      {t('Отклонить')}
                     </Button>
                   </>
                 )
@@ -111,11 +112,11 @@ export default function Requests() {
       <ReasonDialog
         open={!!declineId}
         onClose={() => setDeclineId(null)}
-        title="Отклонить запрос"
-        text="Родитель увидит причину и сможет выбрать другое время или специалиста."
+        title={t('Отклонить запрос')}
+        text={t('Родитель увидит причину и сможет выбрать другое время или специалиста.')}
         templates={DECLINE_TEMPLATES}
-        confirmLabel="Отклонить"
-        onConfirm={(reason) => declineBooking(user.id, declineId, reason).then(() => toast.info('Запрос отклонён'))}
+        confirmLabel={t('Отклонить')}
+        onConfirm={(reason) => declineBooking(user.id, declineId, reason).then(() => toast.info(t('Запрос отклонён')))}
       />
     </div>
   );

@@ -29,13 +29,14 @@ import { ModerationCard } from '../../components/ModerationCard';
 import { Pingo } from '../../components/Pingo';
 import { ReasonDialog } from '../../components/Sheet';
 import { Button, ButtonLink, IconButton, SectionLabel, Stagger } from '../../components/ui';
+import { t } from '../../i18n';
 
 function greeting(now) {
   const h = new Date(now).getHours();
-  if (h >= 5 && h < 12) return 'Доброе утро';
-  if (h >= 12 && h < 18) return 'Добрый день';
-  if (h >= 18 && h < 23) return 'Добрый вечер';
-  return 'Доброй ночи';
+  if (h >= 5 && h < 12) return t('Доброе утро');
+  if (h >= 12 && h < 18) return t('Добрый день');
+  if (h >= 18 && h < 23) return t('Добрый вечер');
+  return t('Доброй ночи');
 }
 
 export default function SpecialistHome() {
@@ -74,19 +75,19 @@ export default function SpecialistHome() {
   const accept = async (id) => {
     try {
       await confirmBooking(user.id, id);
-      toast.success('Занятие подтверждено — родитель получил уведомление');
+      toast.success(t('Занятие подтверждено — родитель получил уведомление'));
     } catch (e) {
       toast.error(e.message);
     }
   };
 
   const STAT_CARDS = [
-    { icon: TrayIcon, value: stats.pending.length, label: plural(stats.pending.length, ['новый запрос', 'новых запроса', 'новых запросов']), to: '/specialist/requests', tone: 'yellow' },
-    { icon: CalendarPlusIcon, value: stats.week, label: `${plural(stats.week, ['занятие', 'занятия', 'занятий'])} на неделе`, to: '/specialist/requests?tab=upcoming' },
+    { icon: TrayIcon, value: stats.pending.length, label: plural(stats.pending.length, [t('новый запрос'), t('новых запроса'), t('новых запросов')]), to: '/specialist/requests', tone: 'yellow' },
+    { icon: CalendarPlusIcon, value: stats.week, label: t('{plural} на неделе', { plural: plural(stats.week, [t('занятие'), t('занятия'), t('занятий')]) }), to: '/specialist/requests?tab=upcoming' },
     isVolunteer
-      ? { icon: ClockIcon, value: fmtHours(stats.minutes), label: 'часов волонтёрства' }
-      : { icon: ClockIcon, value: stats.completed, label: plural(stats.completed, ['занятие проведено', 'занятия проведено', 'занятий проведено']) },
-    { icon: StarIcon, value: rating ? rating.toFixed(1).replace('.', ',') : '—', label: rating ? `рейтинг · ${reviews.length} ${plural(reviews.length, ['отзыв', 'отзыва', 'отзывов'])}` : 'пока нет отзывов' },
+      ? { icon: ClockIcon, value: fmtHours(stats.minutes), label: t('часов волонтёрства') }
+      : { icon: ClockIcon, value: stats.completed, label: plural(stats.completed, [t('занятие проведено'), t('занятия проведено'), t('занятий проведено')]) },
+    { icon: StarIcon, value: rating ? rating.toFixed(1).replace('.', ',') : '—', label: rating ? t('рейтинг · {length} {plural}', { length: reviews.length, plural: plural(reviews.length, [t('отзыв'), t('отзыва'), t('отзывов')]) }) : t('пока нет отзывов') },
   ];
 
   return (
@@ -95,18 +96,18 @@ export default function SpecialistHome() {
         <Link to="/specialist/profile" className="home__child">
           <Avatar avatar={user.avatar} name={user.name} size={64} />
           <span>
-            <span className="home__child-label">{isVolunteer ? 'Волонтёр' : 'Специалист'}</span>
+            <span className="home__child-label">{isVolunteer ? t('Волонтёр') : t('Специалист')}</span>
             <strong>{user.name}</strong>
           </span>
         </Link>
-        <IconButton icon={BellIcon} label="Уведомления" to="/specialist/notifications" badge={counts.notifications} size="lg" />
+        <IconButton icon={BellIcon} label={t('Уведомления')} to="/specialist/notifications" badge={counts.notifications} size="lg" />
       </header>
 
       <motion.h1 className="home__greeting" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
         {greeting(now)}, {firstName(user.name)}!{' '}
         {stats.pending.length > 0
-          ? `${plural(stats.pending.length, ['Вас ждёт', 'Вас ждут', 'Вас ждут'])} ${stats.pending.length} ${plural(stats.pending.length, ['запрос', 'запроса', 'запросов'])}.`
-          : 'Спасибо, что помогаете детям.'}
+          ? `${plural(stats.pending.length, [t('Вас ждёт'), t('Вас ждут'), t('Вас ждут')])} ${stats.pending.length} ${plural(stats.pending.length, [t('запрос'), t('запроса'), t('запросов')])}.`
+          : t('Спасибо, что помогаете детям.')}
       </motion.h1>
 
       <ModerationCard profile={profile} issues={profileIssues(profile)} />
@@ -139,11 +140,11 @@ export default function SpecialistHome() {
         <div className="callout">
           <CalendarPlusIcon size={26} weight="fill" />
           <div>
-            <strong>Добавьте расписание</strong>
-            <span>Без свободных окон родители не смогут записаться.</span>
+            <strong>{t('Добавьте расписание')}</strong>
+            <span>{t('Без свободных окон родители не смогут записаться.')}</span>
           </div>
           <ButtonLink to="/specialist/availability" variant="dark" size="sm">
-            Настроить
+            {t('Настроить')}
           </ButtonLink>
         </div>
       )}
@@ -152,20 +153,20 @@ export default function SpecialistHome() {
         <div className="callout callout--blue">
           <ClipboardTextIcon size={26} weight="fill" />
           <div>
-            <strong>Заполните отчёт</strong>
+            <strong>{t('Заполните отчёт')}</strong>
             <span>
-              Занятие: {stats.needReport[0].child?.name ?? 'ребёнок'} · {fmtDay(stats.needReport[0].start, now).toLowerCase()}
+              {t('Занятие:')}{' '}{stats.needReport[0].child?.name ?? t('ребёнок')} · {fmtDay(stats.needReport[0].start, now).toLowerCase()}
             </span>
           </div>
           <ButtonLink to={`/specialist/requests/${stats.needReport[0].id}`} variant="dark" size="sm">
-            Заполнить
+            {t('Заполнить')}
           </ButtonLink>
         </div>
       )}
 
       {stats.pending.length > 0 && (
         <>
-          <SectionLabel action={<Link to="/specialist/requests">Все</Link>}>Новые запросы</SectionLabel>
+          <SectionLabel action={<Link to="/specialist/requests">{t('Все')}</Link>}>{t('Новые запросы')}</SectionLabel>
           <Stagger className="list">
             {stats.pending.slice(0, 3).map((b) => (
               <BookingCard
@@ -179,10 +180,10 @@ export default function SpecialistHome() {
                 actions={
                   <>
                     <Button size="sm" variant="primary" icon={CheckIcon} onClick={() => accept(b.id)}>
-                      Принять
+                      {t('Принять')}
                     </Button>
                     <Button size="sm" variant="soft" icon={XIcon} onClick={() => setDeclineId(b.id)}>
-                      Отклонить
+                      {t('Отклонить')}
                     </Button>
                   </>
                 }
@@ -192,7 +193,7 @@ export default function SpecialistHome() {
         </>
       )}
 
-      <SectionLabel action={<Link to="/specialist/requests?tab=upcoming">Расписание</Link>}>Ближайшие занятия</SectionLabel>
+      <SectionLabel action={<Link to="/specialist/requests?tab=upcoming">{t('Расписание')}</Link>}>{t('Ближайшие занятия')}</SectionLabel>
       {stats.upcoming.length ? (
         <Stagger className="list">
           {stats.upcoming.slice(0, 3).map((b) => (
@@ -208,27 +209,27 @@ export default function SpecialistHome() {
           ))}
         </Stagger>
       ) : (
-        <p className="muted">Подтверждённых занятий пока нет.</p>
+        <p className="muted">{t('Подтверждённых занятий пока нет.')}</p>
       )}
 
       <div className="tip">
         <Pingo size={64} mood="wink" outfit="scarf" />
         <div>
           <strong>
-            <LightbulbIcon size={18} weight="fill" /> Совет от Pingo
+            <LightbulbIcon size={18} weight="fill" />{' '}{t('Совет от Pingo')}
           </strong>
-          <p>Посмотрите профиль ребёнка перед занятием: особенности, цели и настройки интерфейса подскажут, как начать.</p>
+          <p>{t('Посмотрите профиль ребёнка перед занятием: особенности, цели и настройки интерфейса подскажут, как начать.')}</p>
         </div>
       </div>
 
       <ReasonDialog
         open={!!declineId}
         onClose={() => setDeclineId(null)}
-        title="Отклонить запрос"
-        text="Родитель увидит причину и сможет выбрать другое время."
+        title={t('Отклонить запрос')}
+        text={t('Родитель увидит причину и сможет выбрать другое время.')}
         templates={DECLINE_TEMPLATES}
-        confirmLabel="Отклонить"
-        onConfirm={(reason) => declineBooking(user.id, declineId, reason).then(() => toast.info('Запрос отклонён'))}
+        confirmLabel={t('Отклонить')}
+        onConfirm={(reason) => declineBooking(user.id, declineId, reason).then(() => toast.info(t('Запрос отклонён')))}
       />
     </div>
   );

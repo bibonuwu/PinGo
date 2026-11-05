@@ -8,12 +8,13 @@ import { sendVerificationEmail } from '../services/auth';
 import { recheckAccount } from '../services/sync';
 import { Pingo } from '../components/Pingo';
 import { Button } from '../components/ui';
+import { t } from '../i18n';
 
 const JUST_REGISTERED_MS = 10 * 60 * 1000;
 
 export function FullScreenLoader() {
   return (
-    <div className="fullscreen-loader" role="status" aria-label="Загрузка">
+    <div className="fullscreen-loader" role="status" aria-label={t('Загрузка')}>
       <Pingo size={88} mood="happy" />
     </div>
   );
@@ -34,30 +35,29 @@ function VerifyAdminEmail({ email, onSignOut }) {
     }
   };
   const check = run('check', async () => {
-    if (!(await recheckAccount())) toast.info('Почта ещё не подтверждена — откройте ссылку из письма Pingo.');
+    if (!(await recheckAccount())) toast.info(t('Почта ещё не подтверждена — откройте ссылку из письма Pingo.'));
   });
   const send = run('send', async () => {
     await sendVerificationEmail();
-    toast.success(`Письмо отправлено на ${email}. Проверьте и папку «Спам».`);
+    toast.success(t('Письмо отправлено на {email}. Проверьте и папку «Спам».', { email }));
   });
   return (
     <div className="gate">
       <Pingo size={96} mood="open" wave />
-      <h1>Подтвердите почту</h1>
+      <h1>{t('Подтвердите почту')}</h1>
       <p>
-        Админ-панель Pingo откроется для {email} после подтверждения адреса. Перейдите по ссылке из письма, затем нажмите
-        «Я подтвердил(а) почту».
+        {t('Админ-панель Pingo откроется для {email} после подтверждения адреса. Перейдите по ссылке из письма, затем нажмите «Я подтвердил(а) почту».', { email })}
       </p>
       <div className="btn-row">
         <Button variant="primary" icon={ArrowsClockwiseIcon} loading={busy === 'check'} onClick={check}>
-          Я подтвердил(а) почту
+          {t('Я подтвердил(а) почту')}
         </Button>
         <Button variant="soft" icon={EnvelopeSimpleIcon} loading={busy === 'send'} onClick={send}>
-          Отправить письмо ещё раз
+          {t('Отправить письмо ещё раз')}
         </Button>
       </div>
       <button type="button" className="link-btn" onClick={onSignOut}>
-        Выйти
+        {t('Выйти')}
       </button>
     </div>
   );
@@ -68,10 +68,10 @@ function NoAdminAccess({ onSignOut }) {
   return (
     <div className="gate">
       <Pingo size={96} mood="happy" />
-      <h1>Нет доступа</h1>
-      <p>Админ-панель Pingo доступна только модераторам команды. Если это ошибка — напишите в поддержку.</p>
+      <h1>{t('Нет доступа')}</h1>
+      <p>{t('Админ-панель Pingo доступна только модераторам команды. Если это ошибка — напишите в поддержку.')}</p>
       <Button variant="dark" icon={SignOutIcon} onClick={onSignOut}>
-        Выйти
+        {t('Выйти')}
       </Button>
     </div>
   );

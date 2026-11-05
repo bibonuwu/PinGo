@@ -3,19 +3,20 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { useThemeColor } from '../../hooks/useThemeColor';
 import { BackButton } from '../../components/PageHeader';
+import { t } from '../../i18n';
 
 const ROLES = [
   {
     to: '/register/parent',
-    label: 'Родитель',
-    hint: 'Ищу поддержку для ребёнка',
+    label: t('Родитель'),
+    hint: t('Ищу поддержку для ребёнка'),
     img: '/images/role-parent.png',
     className: 'role-card--parent',
   },
   {
     to: '/register/specialist',
-    label: 'Специалист / волонтёр',
-    hint: 'Хочу заниматься с детьми',
+    label: t('Специалист / волонтёр'),
+    hint: t('Хочу заниматься с детьми'),
     img: '/images/role-specialist.png',
     className: 'role-card--specialist',
   },
@@ -30,10 +31,10 @@ export default function RoleSelect() {
         <BackButton to="/" />
       </div>
       <motion.h1 className="roles__title" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
-        Я…
+        {t('Я…')}
       </motion.h1>
       <motion.p className="roles__sub" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-        выберите, что подходит вам
+        {t('выберите, что подходит вам')}
       </motion.p>
       <div className="roles__grid">
         {ROLES.map((r, i) => (
@@ -55,17 +56,17 @@ export default function RoleSelect() {
       </div>
       {needsProfile ? (
         <p className="roles__footer">
-          Вы вошли как {account?.email} — выберите роль, чтобы завершить регистрацию.{' '}
+          {t('Вы вошли как {email} — выберите роль, чтобы завершить регистрацию.', { email: account?.email })}{' '}
           <button type="button" className="link-btn" onClick={signOut}>
-            Выйти
+            {t('Выйти')}
           </button>
         </p>
       ) : (
         <p className="roles__footer">
-          Уже есть аккаунт? <Link to="/login">Войти</Link>
+          {t('Уже есть аккаунт?')}{' '}<Link to="/login">{t('Войти')}</Link>
         </p>
       )}
-      <p className="roles__note">Модераторов добавляет команда Pingo — регистрация для них не нужна.</p>
+      <p className="roles__note">{t('Модераторов добавляет команда Pingo — регистрация для них не нужна.')}</p>
     </div>
   );
 }

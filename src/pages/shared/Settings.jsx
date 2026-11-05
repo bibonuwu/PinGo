@@ -6,6 +6,7 @@ import {
   DownloadSimpleIcon,
   HandWavingIcon,
   SignOutIcon,
+  TranslateIcon,
   TrashIcon,
 } from '@phosphor-icons/react';
 import { APP_VERSION, SLOGAN, suggestAccessibility } from '../../lib/constants';
@@ -22,12 +23,13 @@ import { PageHeader } from '../../components/PageHeader';
 import { Pingo } from '../../components/Pingo';
 import { ConfirmDialog } from '../../components/Sheet';
 import { Button, ButtonLink, Segmented } from '../../components/ui';
+import { LANGS, lang, setLang, t } from '../../i18n';
 
 const PERMISSION_TEXT = {
-  granted: 'Разрешены — Pingo пришлёт уведомление, даже если вкладка свёрнута.',
-  denied: 'Запрещены в браузере. Разрешите их в настройках сайта (значок замка в адресной строке).',
-  default: 'Включите, чтобы узнавать о подтверждении записей и открытии видеокомнаты.',
-  unsupported: 'Этот браузер не поддерживает уведомления.',
+  granted: t('Разрешены — Pingo пришлёт уведомление, даже если вкладка свёрнута.'),
+  denied: t('Запрещены в браузере. Разрешите их в настройках сайта (значок замка в адресной строке).'),
+  default: t('Включите, чтобы узнавать о подтверждении записей и открытии видеокомнаты.'),
+  unsupported: t('Этот браузер не поддерживает уведомления.'),
 };
 
 export default function Settings() {
@@ -46,8 +48,8 @@ export default function Settings() {
     const result = await requestNotificationPermission();
     setPerm(result);
     if (result === 'granted') {
-      toast.success('Уведомления включены');
-      showSystemNotification('Pingo на связи 🐧', { body: 'Так будут выглядеть уведомления о записях и занятиях.', tag: 'pingo-test' });
+      toast.success(t('Уведомления включены'));
+      showSystemNotification(t('Pingo на связи 🐧'), { body: t('Так будут выглядеть уведомления о записях и занятиях.'), tag: 'pingo-test' });
     }
   };
 
@@ -58,22 +60,39 @@ export default function Settings() {
 
   return (
     <div className="page settings">
-      <PageHeader back={`/${user.role}${user.role === 'admin' ? '' : '/profile'}`} title="Настройки" />
+      <PageHeader back={`/${user.role}${user.role === 'admin' ? '' : '/profile'}`} title={t('Настройки')} />
 
       <section className="settings__section">
         <h2 className="section-label">
-          <span>Приложение</span>
+          <span>{t('Язык')}</span>
+        </h2>
+        <div className="card-section">
+          <div className="setting-row">
+            <TranslateIcon size={26} weight="fill" className="ico-yellow" />
+            <div>
+              <strong>{t('Язык интерфейса')}</strong>
+              <span>{t('Страница перезагрузится на выбранном языке.')}</span>
+            </div>
+          </div>
+          {/* Названия языков — на самих языках: «Русский», «Қазақша». */}
+          <Segmented value={lang} onChange={setLang} options={LANGS} />
+        </div>
+      </section>
+
+      <section className="settings__section">
+        <h2 className="section-label">
+          <span>{t('Приложение')}</span>
         </h2>
         <InstallCard />
         <div className="card-section setting-row">
           <BellRingingIcon size={26} weight="fill" className="ico-yellow" />
           <div>
-            <strong>Уведомления на устройстве</strong>
+            <strong>{t('Уведомления на устройстве')}</strong>
             <span>{PERMISSION_TEXT[perm] ?? PERMISSION_TEXT.default}</span>
           </div>
           {perm === 'default' && (
             <Button size="sm" variant="dark" onClick={enableNotifications}>
-              Включить
+              {t('Включить')}
             </Button>
           )}
         </div>
@@ -82,15 +101,14 @@ export default function Settings() {
       {user.role !== 'admin' && (
         <section className="settings__section">
           <h2 className="section-label">
-            <span>Доступность</span>
+            <span>{t('Доступность')}</span>
           </h2>
           <div className="card-section">
             {isParent ? (
               children?.length ? (
                 <>
                   <p className="muted small">
-                    Настройки свои для каждого ребёнка и применяются ко всему приложению, когда ребёнок выбран в «Кто занимается
-                    сегодня?».
+                    {t('Настройки свои для каждого ребёнка и применяются ко всему приложению, когда ребёнок выбран в «Кто занимается сегодня?».')}
                   </p>
                   {children.length > 1 && (
                     <Segmented
@@ -112,11 +130,11 @@ export default function Settings() {
               ) : (
                 <div className="setting-row">
                   <div>
-                    <strong>Сначала добавьте ребёнка</strong>
-                    <span>Настройки доступности задаются для каждого ребёнка отдельно.</span>
+                    <strong>{t('Сначала добавьте ребёнка')}</strong>
+                    <span>{t('Настройки доступности задаются для каждого ребёнка отдельно.')}</span>
                   </div>
                   <ButtonLink to="/parent/children/new" size="sm" variant="dark">
-                    Добавить
+                    {t('Добавить')}
                   </ButtonLink>
                 </div>
               )
@@ -130,13 +148,13 @@ export default function Settings() {
       {user.role !== 'admin' && (
         <section className="settings__section">
           <h2 className="section-label">
-            <span>Pingo-гид</span>
+            <span>{t('Pingo-гид')}</span>
           </h2>
           <div className="card-section setting-row">
             <HandWavingIcon size={26} weight="fill" className="ico-yellow" />
             <div>
-              <strong>Знакомство с приложением</strong>
-              <span>Пингвин ещё раз покажет, что где находится.</span>
+              <strong>{t('Знакомство с приложением')}</strong>
+              <span>{t('Пингвин ещё раз покажет, что где находится.')}</span>
             </div>
             <Button
               size="sm"
@@ -146,7 +164,7 @@ export default function Settings() {
                 navigate(`/${user.role}`);
               }}
             >
-              Показать
+              {t('Показать')}
             </Button>
           </div>
         </section>
@@ -154,26 +172,25 @@ export default function Settings() {
 
       <section className="settings__section">
         <h2 className="section-label">
-          <span>Данные</span>
+          <span>{t('Данные')}</span>
         </h2>
         <div className="card-section">
           <div className="setting-row">
             <CloudCheckIcon size={26} weight="fill" className="ico-yellow" />
             <div>
-              <strong>Данные в облаке Pingo</strong>
+              <strong>{t('Данные в облаке Pingo')}</strong>
               <span>
-                Аккаунт, профили детей, записи и сообщения хранятся на защищённом сервере и доступны с любого устройства. Видят
-                их только участники записи и модератор.
+                {t('Аккаунт, профили детей, записи и сообщения хранятся на защищённом сервере и доступны с любого устройства. Видят их только участники записи и модератор.')}
               </span>
             </div>
           </div>
           <div className="btn-row">
-            <Button variant="soft" icon={DownloadSimpleIcon} onClick={() => exportData().then(() => toast.success('Файл с данными сохранён'))}>
-              Экспорт в JSON
+            <Button variant="soft" icon={DownloadSimpleIcon} onClick={() => exportData().then(() => toast.success(t('Файл с данными сохранён')))}>
+              {t('Экспорт в JSON')}
             </Button>
             {user.role !== 'admin' && (
               <Button variant="danger-ghost" icon={TrashIcon} onClick={() => setDialog('delete')}>
-                Удалить аккаунт
+                {t('Удалить аккаунт')}
               </Button>
             )}
           </div>
@@ -186,26 +203,25 @@ export default function Settings() {
           <div>
             <strong>Pingo · {SLOGAN}</strong>
             <span>
-              Версия {APP_VERSION}. Платформа, где родители находят волонтёров и специалистов для занятий с детьми с особыми
-              потребностями.
+              {t('Версия {APP_VERSION}. Платформа, где родители находят волонтёров и специалистов для занятий с детьми с особыми потребностями.', { APP_VERSION })}
             </span>
           </div>
         </div>
         <Button variant="danger-ghost" size="lg" icon={SignOutIcon} block onClick={logout}>
-          Выйти из аккаунта
+          {t('Выйти из аккаунта')}
         </Button>
       </section>
 
       <ConfirmDialog
         open={dialog === 'delete'}
         onClose={() => setDialog(null)}
-        title="Удалить аккаунт?"
+        title={t('Удалить аккаунт?')}
         text={
           isParent
-            ? 'Будут удалены аккаунт, профили детей и уведомления. Прошедшие записи и переписка останутся у специалистов. Это действие нельзя отменить.'
-            : 'Будут удалены аккаунт, анкета, расписание, документы и уведомления — вы пропадёте из каталога. Прошедшие записи и переписка останутся у родителей. Это действие нельзя отменить.'
+            ? t('Будут удалены аккаунт, профили детей и уведомления. Прошедшие записи и переписка останутся у специалистов. Это действие нельзя отменить.')
+            : t('Будут удалены аккаунт, анкета, расписание, документы и уведомления — вы пропадёте из каталога. Прошедшие записи и переписка останутся у родителей. Это действие нельзя отменить.')
         }
-        confirmLabel="Удалить аккаунт"
+        confirmLabel={t('Удалить аккаунт')}
         tone="danger"
         onConfirm={async () => {
           try {
@@ -215,7 +231,7 @@ export default function Settings() {
             setLeaving(false);
             throw e;
           }
-          toast.success('Аккаунт удалён');
+          toast.success(t('Аккаунт удалён'));
           navigate('/', { replace: true });
         }}
       />

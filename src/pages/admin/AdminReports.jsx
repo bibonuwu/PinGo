@@ -13,6 +13,7 @@ import { EmptyState } from '../../components/EmptyState';
 import { PageHeader } from '../../components/PageHeader';
 import { ReasonDialog } from '../../components/Sheet';
 import { Button, Stagger, StaggerItem, Tabs } from '../../components/ui';
+import { t } from '../../i18n';
 
 export default function AdminReports() {
   const { user } = useAuth();
@@ -34,18 +35,18 @@ export default function AdminReports() {
 
   return (
     <div className="page">
-      <PageHeader title="Жалобы" subtitle="Сообщения родителей и специалистов о нарушениях. Безопасность детей — в приоритете." />
+      <PageHeader title={t('Жалобы')} subtitle={t('Сообщения родителей и специалистов о нарушениях. Безопасность детей — в приоритете.')} />
       <Tabs
         value={tab}
         onChange={setTab}
         layoutId="complaint-tabs"
         items={[
-          { value: 'open', label: 'Открытые', count: open.length },
-          { value: 'resolved', label: 'Решённые' },
+          { value: 'open', label: t('Открытые'), count: open.length },
+          { value: 'resolved', label: t('Решённые') },
         ]}
       />
       {list.length === 0 ? (
-        <EmptyState icon={FlagIcon} title={tab === 'open' ? 'Открытых жалоб нет' : 'Пока пусто'} text="Здесь появятся жалобы из чатов и анкет." />
+        <EmptyState icon={FlagIcon} title={tab === 'open' ? t('Открытых жалоб нет') : t('Пока пусто')} text={t('Здесь появятся жалобы из чатов и анкет.')} />
       ) : (
         <Stagger key={tab} as="ul" className="list">
           {list.map((c) => (
@@ -53,25 +54,25 @@ export default function AdminReports() {
               <div className="complaint__head">
                 <Avatar avatar={c.target?.avatar} name={c.target?.name} size={44} />
                 <div>
-                  <strong>{c.target?.name ?? 'Пользователь удалён'}</strong>
+                  <strong>{c.target?.name ?? t('Пользователь удалён')}</strong>
                   <span>
-                    от {c.reporter?.name ?? 'пользователя'} · {fmtAgo(c.createdAt)}
+                    {t('от')}{' '}{c.reporter?.name ?? t('пользователя')} · {fmtAgo(c.createdAt)}
                   </span>
                 </div>
                 <span className="tag tag--red">{COMPLAINT_REASON_MAP[c.reason]?.label}</span>
               </div>
               {c.details && <p className="complaint__text">{c.details}</p>}
-              {c.status === 'resolved' && <p className="muted small">Решение: {c.resolution}</p>}
+              {c.status === 'resolved' && <p className="muted small">{t('Решение: {resolution}', { resolution: c.resolution })}</p>}
               <div className="btn-row">
                 {c.target?.role === 'specialist' && (
                   <Link to={`/admin/profiles/${c.targetId}`} className="btn btn--soft btn--sm">
-                    <span>Открыть анкету</span>
+                    <span>{t('Открыть анкету')}</span>
                     <ArrowRightIcon size={18} weight="bold" />
                   </Link>
                 )}
                 {c.status === 'open' && (
                   <Button size="sm" variant="dark" icon={CheckIcon} onClick={() => setResolving(c.id)}>
-                    Отметить решённой
+                    {t('Отметить решённой')}
                   </Button>
                 )}
               </div>
@@ -82,13 +83,13 @@ export default function AdminReports() {
       <ReasonDialog
         open={!!resolving}
         onClose={() => setResolving(null)}
-        title="Закрыть жалобу"
-        text="Опишите, что сделано: например, предупреждение или снятие анкеты."
-        templates={['Проведена беседа, нарушение не повторится.', 'Анкета снята с публикации.', 'Нарушение не подтвердилось.']}
-        placeholder="Решение"
+        title={t('Закрыть жалобу')}
+        text={t('Опишите, что сделано: например, предупреждение или снятие анкеты.')}
+        templates={[t('Проведена беседа, нарушение не повторится.'), t('Анкета снята с публикации.'), t('Нарушение не подтвердилось.')]}
+        placeholder={t('Решение')}
         tone="dark"
-        confirmLabel="Закрыть жалобу"
-        onConfirm={(text) => resolveComplaint(resolving, user.id, text).then(() => toast.success('Жалоба закрыта'))}
+        confirmLabel={t('Закрыть жалобу')}
+        onConfirm={(text) => resolveComplaint(resolving, user.id, text).then(() => toast.success(t('Жалоба закрыта')))}
       />
     </div>
   );

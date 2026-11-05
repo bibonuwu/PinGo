@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { CheckIcon } from '@phosphor-icons/react';
 import { AVATARS, AVATAR_MAP, avatarSrc } from '../lib/constants';
 import { cx, initials } from '../lib/utils';
+import { t } from '../i18n';
 
 export function Avatar({ avatar, name = '', size = 48, ring = false, className }) {
   const a = avatar ? AVATAR_MAP[avatar] : null;
@@ -26,7 +27,7 @@ export function Avatar({ avatar, name = '', size = 48, ring = false, className }
 
 export function AvatarPicker({ value, onChange, size = 76 }) {
   return (
-    <div className="avatar-picker" role="radiogroup" aria-label="Аватар">
+    <div className="avatar-picker" role="radiogroup" aria-label={t('Аватар')}>
       {AVATARS.map((a, i) => {
         const active = value === a.id;
         return (

@@ -32,6 +32,7 @@ import { AvatarPicker } from '../../components/Avatar';
 import { PageHeader } from '../../components/PageHeader';
 import { PingoGuide } from '../../components/Pingo';
 import { Button, Checkbox, Chip, Field, Input, Segmented, Select, Textarea } from '../../components/ui';
+import { t } from '../../i18n';
 
 const AGES = Array.from({ length: 18 }, (_, i) => i + 1);
 
@@ -106,7 +107,7 @@ export default function ProfileEditor() {
       await saveDraft(user.id, draft);
       dirty.current = false;
       await submitProfile(user.id);
-      toast.success('Анкета отправлена на модерацию. Я сообщу о решении!');
+      toast.success(t('Анкета отправлена на модерацию. Я сообщу о решении!'));
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e) {
       toast.error(e.message);
@@ -117,7 +118,7 @@ export default function ProfileEditor() {
 
   const withdraw = async () => {
     await withdrawProfile(user.id);
-    toast.info('Заявка отозвана — можно редактировать');
+    toast.info(t('Заявка отозвана — можно редактировать'));
   };
 
   const upload = async (files) => {
@@ -144,12 +145,12 @@ export default function ProfileEditor() {
     <div className="page form-page editor">
       <PageHeader
         back="/specialist/profile"
-        title="Анкета"
+        title={t('Анкета')}
         actions={
           <AnimatePresence mode="wait">
             {saved !== 'idle' && (
               <motion.span key={saved} className="autosave" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                <CloudCheckIcon size={18} weight="bold" /> {saved === 'saving' ? 'Сохраняю…' : 'Сохранено'}
+                <CloudCheckIcon size={18} weight="bold" /> {saved === 'saving' ? t('Сохраняю…') : t('Сохранено')}
               </motion.span>
             )}
           </AnimatePresence>
@@ -158,8 +159,7 @@ export default function ProfileEditor() {
 
       {welcome && profile.status === 'draft' && (
         <PingoGuide outfit="scarf" mood="happy" wave bubbleKey="welcome">
-          Добро пожаловать в Pingo! Заполните анкету — я сохраняю всё автоматически. Затем пройдите короткое обучение и
-          отправьте анкету на модерацию.
+          {t('Добро пожаловать в Pingo! Заполните анкету — я сохраняю всё автоматически. Затем пройдите короткое обучение и отправьте анкету на модерацию.')}
         </PingoGuide>
       )}
 
@@ -167,11 +167,11 @@ export default function ProfileEditor() {
         <div className="notice notice--warning">
           <LockIcon size={22} weight="fill" />
           <div>
-            <strong>Анкета на проверке</strong>
-            <span>Чтобы что-то изменить, отзовите заявку — потом отправите её снова.</span>
+            <strong>{t('Анкета на проверке')}</strong>
+            <span>{t('Чтобы что-то изменить, отзовите заявку — потом отправите её снова.')}</span>
           </div>
           <Button size="sm" variant="dark" onClick={withdraw}>
-            Отозвать
+            {t('Отозвать')}
           </Button>
         </div>
       )}
@@ -179,7 +179,7 @@ export default function ProfileEditor() {
         <div className="notice notice--danger">
           <WarningCircleIcon size={22} weight="fill" />
           <div>
-            <strong>Модератор вернул анкету</strong>
+            <strong>{t('Модератор вернул анкету')}</strong>
             <span>{profile.rejectionReason}</span>
           </div>
         </div>
@@ -188,45 +188,45 @@ export default function ProfileEditor() {
         <div className="notice">
           <PaperPlaneTiltIcon size={22} weight="fill" />
           <div>
-            <strong>Есть неопубликованные изменения</strong>
-            <span>{changes.join(', ')}. Отправьте их на модерацию — до проверки родители видят прежнюю версию.</span>
+            <strong>{t('Есть неопубликованные изменения')}</strong>
+            <span>{t('{join}. Отправьте их на модерацию — до проверки родители видят прежнюю версию.', { join: changes.join(', ') })}</span>
           </div>
         </div>
       )}
 
       <fieldset disabled={locked} className="editor__fields">
         <section className="card-section">
-          <h2>Кто вы</h2>
+          <h2>{t('Кто вы')}</h2>
           <Segmented value={draft.kind} onChange={(kind) => set({ kind })} options={PROFILE_KINDS} layoutId="kind" />
-          <Field label="Аватар" hint="Пингвин вместо фото — так спокойнее детям">
+          <Field label={t('Аватар')} hint={t('Пингвин вместо фото — так спокойнее детям')}>
             <AvatarPicker value={user.avatar} onChange={(avatar) => updateAccount(user.id, { avatar })} size={60} />
           </Field>
         </section>
 
         <section className="card-section">
-          <h2>О себе</h2>
-          <Field label="Заголовок анкеты" counter={`${draft.title.length}/80`} hint="Коротко: кто вы и с чем помогаете">
+          <h2>{t('О себе')}</h2>
+          <Field label={t('Заголовок анкеты')} counter={`${draft.title.length}/80`} hint={t('Коротко: кто вы и с чем помогаете')}>
             <Input
               value={draft.title}
               maxLength={80}
-              placeholder="Например: Логопед для малышей с задержкой речи"
+              placeholder={t('Например: Логопед для малышей с задержкой речи')}
               onChange={(e) => set({ title: e.target.value })}
             />
           </Field>
-          <Field label="Описание" counter={`${draft.description.length}/1500`} hint="Как проходят занятия, с какими запросами работаете (от 60 символов)">
+          <Field label={t('Описание')} counter={`${draft.description.length}/1500`} hint={t('Как проходят занятия, с какими запросами работаете (от 60 символов)')}>
             <Textarea
               rows={6}
               maxLength={1500}
               value={draft.description}
-              placeholder="Расскажите родителям о своём подходе"
+              placeholder={t('Расскажите родителям о своём подходе')}
               onChange={(e) => set({ description: e.target.value })}
             />
           </Field>
         </section>
 
         <section className="card-section">
-          <h2>Опыт</h2>
-          <Field label="Стаж работы с детьми, лет">
+          <h2>{t('Опыт')}</h2>
+          <Field label={t('Стаж работы с детьми, лет')}>
             <Input
               type="number"
               min={0}
@@ -237,19 +237,19 @@ export default function ProfileEditor() {
             />
           </Field>
           <Field
-            label="Образование и опыт"
+            label={t('Образование и опыт')}
             optional={draft.kind === 'volunteer'}
             counter={`${draft.experienceText.length}/800`}
-            hint={draft.kind === 'specialist' ? 'Вуз, курсы, места работы (от 20 символов)' : 'Учёба, волонтёрский опыт'}
+            hint={draft.kind === 'specialist' ? t('Вуз, курсы, места работы (от 20 символов)') : t('Учёба, волонтёрский опыт')}
           >
             <Textarea rows={4} maxLength={800} value={draft.experienceText} onChange={(e) => set({ experienceText: e.target.value })} />
           </Field>
         </section>
 
         <section className="card-section">
-          <h2>Специализации</h2>
+          <h2>{t('Специализации')}</h2>
           <p className="muted small">
-            Выберите до {MAX_SPECIALIZATIONS} из 12 · выбрано {draft.specializations.length}
+            {t('Выберите до {MAX_SPECIALIZATIONS} из 12 · выбрано {length}', { MAX_SPECIALIZATIONS, length: draft.specializations.length })}
           </p>
           {CATEGORIES.filter((c) => c.id !== 'volunteers').map((c) => (
             <div key={c.id} className="spec-group">
@@ -276,39 +276,39 @@ export default function ProfileEditor() {
         </section>
 
         <section className="card-section">
-          <h2>Формат и возраст</h2>
-          <Field label="Возраст детей">
+          <h2>{t('Формат и возраст')}</h2>
+          <Field label={t('Возраст детей')}>
             <div className="time-range">
-              <Select value={draft.ageMin} onChange={(e) => set({ ageMin: Number(e.target.value) })} aria-label="От">
+              <Select value={draft.ageMin} onChange={(e) => set({ ageMin: Number(e.target.value) })} aria-label={t('От')}>
                 {AGES.map((a) => (
                   <option key={a} value={a}>
-                    от {a}
+                    {t('от {a}', { a })}
                   </option>
                 ))}
               </Select>
               <span>—</span>
-              <Select value={draft.ageMax} onChange={(e) => set({ ageMax: Number(e.target.value) })} aria-label="До">
+              <Select value={draft.ageMax} onChange={(e) => set({ ageMax: Number(e.target.value) })} aria-label={t('До')}>
                 {AGES.map((a) => (
                   <option key={a} value={a}>
-                    до {a} лет
+                    {t('до {a} лет', { a })}
                   </option>
                 ))}
               </Select>
             </div>
           </Field>
-          <Field label="Формат занятий">
+          <Field label={t('Формат занятий')}>
             <Segmented multiple value={draft.formats} onChange={(formats) => set({ formats })} options={FORMATS} />
           </Field>
           <AnimatePresence initial={false}>
             {draft.formats.includes('offline') && (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-                <Field label="Город для очных занятий">
-                  <Input value={draft.city} maxLength={60} placeholder="Например, Алматы" onChange={(e) => set({ city: e.target.value })} />
+                <Field label={t('Город для очных занятий')}>
+                  <Input value={draft.city} maxLength={60} placeholder={t('Например, Алматы')} onChange={(e) => set({ city: e.target.value })} />
                 </Field>
               </motion.div>
             )}
           </AnimatePresence>
-          <Field label="Языки занятий">
+          <Field label={t('Языки занятий')}>
             <div className="chips chips--wrap">
               {LANGUAGES.map((l) => (
                 <Chip key={l.id} active={draft.languages.includes(l.id)} onClick={() => set({ languages: toggle(draft.languages, l.id) })}>
@@ -320,9 +320,9 @@ export default function ProfileEditor() {
         </section>
 
         <section className="card-section">
-          <h2>Документы</h2>
+          <h2>{t('Документы')}</h2>
           <p className="muted small">
-            Диплом, сертификаты или справка о волонтёрстве. Их видит только модератор. PDF или фото до 5 МБ.
+            {t('Диплом, сертификаты или справка о волонтёрстве. Их видит только модератор. PDF или фото до 5 МБ.')}
           </p>
           {draft.documents.length > 0 && (
             <ul className="docs">
@@ -335,7 +335,7 @@ export default function ProfileEditor() {
                       <span>{fmtBytes(d.size)}</span>
                     </span>
                   </button>
-                  <button type="button" className="icon-btn icon-btn--ghost icon-btn--sm" aria-label={`Удалить ${d.name}`} onClick={() => removeDoc(d)}>
+                  <button type="button" className="icon-btn icon-btn--ghost icon-btn--sm" aria-label={t('Удалить {name}', { name: d.name })} onClick={() => removeDoc(d)}>
                     <TrashIcon size={18} weight="bold" />
                   </button>
                 </li>
@@ -344,17 +344,17 @@ export default function ProfileEditor() {
           )}
           <input ref={fileRef} type="file" accept={ACCEPTED_FILES} multiple hidden onChange={(e) => upload(e.target.files)} />
           <Button variant="soft" icon={UploadSimpleIcon} loading={uploading} onClick={() => fileRef.current?.click()}>
-            Прикрепить файлы
+            {t('Прикрепить файлы')}
           </Button>
         </section>
 
         <section className="card-section" id="agreements">
-          <h2>Подтверждения</h2>
+          <h2>{t('Подтверждения')}</h2>
           <Checkbox checked={draft.agreements.truth} onChange={(v) => set({ agreements: { ...draft.agreements, truth: v } })}>
-            Подтверждаю, что данные в анкете достоверны
+            {t('Подтверждаю, что данные в анкете достоверны')}
           </Checkbox>
           <Checkbox checked={draft.agreements.safety} onChange={(v) => set({ agreements: { ...draft.agreements, safety: v } })}>
-            Обязуюсь соблюдать правила безопасности детей и общаться с семьями только через Pingo
+            {t('Обязуюсь соблюдать правила безопасности детей и общаться с семьями только через Pingo')}
           </Checkbox>
         </section>
       </fieldset>
@@ -362,12 +362,12 @@ export default function ProfileEditor() {
       {/* Обучение — последний шаг перед отправкой: из него возвращаемся сюда же, к кнопке отправки. */}
       <section className="card-section" id="training">
         <h2>
-          <GraduationCapIcon size={22} weight="fill" /> Обучение Pingo
+          <GraduationCapIcon size={22} weight="fill" />{' '}{t('Обучение Pingo')}
         </h2>
         <p className="muted small">
           {training.complete
-            ? 'Все модули пройдены — спасибо!'
-            : `Пройдено ${training.done} из ${training.total}. Без обучения анкету нельзя отправить.`}
+            ? t('Все модули пройдены — спасибо!')
+            : t('Пройдено {done} из {total}. Без обучения анкету нельзя отправить.', { done: training.done, total: training.total })}
         </p>
         <Link
           to="/specialist/training"
@@ -378,10 +378,10 @@ export default function ProfileEditor() {
         >
           {training.complete ? (
             <>
-              <CheckCircleIcon size={20} weight="fill" /> <span>Повторить материалы</span>
+              <CheckCircleIcon size={20} weight="fill" /> <span>{t('Повторить материалы')}</span>
             </>
           ) : (
-            <span>Пройти обучение</span>
+            <span>{t('Пройти обучение')}</span>
           )}
         </Link>
       </section>
@@ -396,7 +396,7 @@ export default function ProfileEditor() {
             </ul>
           ) : (
             <p className="submit-box__ok">
-              <CheckCircleIcon size={20} weight="fill" /> Всё готово к модерации
+              <CheckCircleIcon size={20} weight="fill" />{' '}{t('Всё готово к модерации')}
             </p>
           )}
           <Button
@@ -407,7 +407,7 @@ export default function ProfileEditor() {
             loading={busy}
             disabled={issues.length > 0 || (profile.status === 'approved' && changes.length === 0)}
           >
-            {profile.status === 'approved' ? 'Отправить изменения' : 'Отправить на модерацию'}
+            {profile.status === 'approved' ? t('Отправить изменения') : t('Отправить на модерацию')}
           </Button>
         </div>
       )}

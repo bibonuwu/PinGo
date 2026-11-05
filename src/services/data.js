@@ -5,6 +5,7 @@ import { batch, commit, commitEach, friendlyError, ref } from '../lib/remote';
 import { downloadFile, toDateKey } from '../lib/utils';
 import { isActiveBooking } from '../lib/slots';
 import { deleteFile } from './files';
+import { t } from '../i18n';
 
 const RECENT_LOGIN_MS = 5 * 60 * 1000;
 
@@ -23,15 +24,15 @@ export async function exportData() {
 // onStart вызывается, когда проверки пройдены и начинается удаление.
 export async function deleteAccount(user, onStart) {
   const account = auth.currentUser;
-  if (!account || account.uid !== user.id) throw new Error('Сначала войдите в аккаунт');
+  if (!account || account.uid !== user.id) throw new Error(t('Сначала войдите в аккаунт'));
   // Firebase удаляет вход только после недавней авторизации — проверяем заранее, до удаления данных.
   const lastLogin = Date.parse(account.metadata.lastSignInTime || '') || 0;
   if (Date.now() - lastLogin > RECENT_LOGIN_MS) {
-    throw new Error('Для удаления аккаунта выйдите и войдите снова, затем повторите удаление.');
+    throw new Error(t('Для удаления аккаунта выйдите и войдите снова, затем повторите удаление.'));
   }
   const now = Date.now();
   if ((await db.bookings.toArray()).some((b) => isActiveBooking(b) && b.end > now)) {
-    throw new Error('Сначала отмените активные записи');
+    throw new Error(t('Сначала отмените активные записи'));
   }
   onStart?.();
 

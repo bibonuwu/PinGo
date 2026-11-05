@@ -13,6 +13,7 @@ import { toggleFavorite } from '../../services/auth';
 import { EmptyState } from '../../components/EmptyState';
 import { SpecialistCard } from '../../components/SpecialistCard';
 import { Button, Chip, IconButton, Input, listVariants } from '../../components/ui';
+import { t } from '../../i18n';
 
 export default function Specialists() {
   const { user } = useAuth();
@@ -64,12 +65,12 @@ export default function Specialists() {
       <header className="page-header">
         <div className="page-header__text">
           <motion.h1 className="page-title" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-            Найти специалиста
+            {t('Найти специалиста')}
           </motion.h1>
         </div>
         <IconButton
           icon={searchOpen ? XIcon : MagnifyingGlassIcon}
-          label={searchOpen ? 'Закрыть поиск' : 'Поиск'}
+          label={searchOpen ? t('Закрыть поиск') : t('Поиск')}
           size="lg"
           onClick={() => {
             setSearchOpen((o) => !o);
@@ -85,11 +86,11 @@ export default function Specialists() {
             <Input
               ref={searchRef}
               icon={MagnifyingGlassIcon}
-              placeholder="Имя, направление или город"
+              placeholder={t('Имя, направление или город')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               type="search"
-              aria-label="Поиск специалиста"
+              aria-label={t('Поиск специалиста')}
             />
           </motion.div>
         )}
@@ -97,7 +98,7 @@ export default function Specialists() {
 
       <div className="chips chips--scroll">
         <Chip active={cat === 'all'} onClick={() => setParam('cat', null)}>
-          Все
+          {t('Все')}
         </Chip>
         {CATEGORIES.map((c) => (
           <Chip key={c.id} active={cat === c.id} onClick={() => setParam('cat', cat === c.id ? null : c.id)} dot={c.color}>
@@ -108,28 +109,28 @@ export default function Specialists() {
       <div className="chips chips--scroll chips--sm">
         {activeChild && (
           <Chip active={onlyMatch} icon={SparkleIcon} onClick={() => setParam('match', onlyMatch ? null : '1')}>
-            Подходит · {activeChild.name}
+            {t('Подходит · {name}', { name: activeChild.name })}
           </Chip>
         )}
         <Chip active={today} icon={CalendarCheckIcon} onClick={() => setParam('today', today ? null : '1')}>
-          Свободны сегодня
+          {t('Свободны сегодня')}
         </Chip>
         <Chip active={onlyFav} icon={HeartIcon} onClick={() => setParam('fav', onlyFav ? null : '1')}>
-          Избранные
+          {t('Избранные')}
         </Chip>
       </div>
 
       {catalog && (
         <p className="catalog__count">
-          {filtered ? 'Найдено' : 'В каталоге'}: {list.length} {plural(list.length, ['анкета', 'анкеты', 'анкет'])}
+          {filtered ? t('Найдено') : t('В каталоге')}: {list.length} {plural(list.length, [t('анкета'), t('анкеты'), t('анкет')])}
         </p>
       )}
 
       {catalog && list.length === 0 ? (
         <EmptyState
           icon={UsersThreeIcon}
-          title="Никого не нашли"
-          text="Попробуйте убрать часть фильтров или изменить запрос."
+          title={t('Никого не нашли')}
+          text={t('Попробуйте убрать часть фильтров или изменить запрос.')}
           action={
             <Button
               variant="primary"
@@ -138,7 +139,7 @@ export default function Specialists() {
                 setParams(new URLSearchParams(), { replace: true });
               }}
             >
-              Сбросить фильтры
+              {t('Сбросить фильтры')}
             </Button>
           }
         />

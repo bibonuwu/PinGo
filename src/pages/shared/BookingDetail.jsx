@@ -45,6 +45,7 @@ import { EmptyState } from '../../components/EmptyState';
 import { PageHeader } from '../../components/PageHeader';
 import { ReasonDialog } from '../../components/Sheet';
 import { Button, ButtonLink, Field, StarInput, Stars, StatusBadge, Textarea } from '../../components/ui';
+import { t } from '../../i18n';
 
 function RoomBlock({ booking, now }) {
   const room = roomState(booking, now);
@@ -55,26 +56,26 @@ function RoomBlock({ booking, now }) {
       <motion.div className="room-block room-block--open" initial={{ scale: 0.97, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
         <span className="live-dot" aria-hidden="true" />
         <div>
-          <strong>Видеокомната открыта</strong>
-          <span>Занятие начнётся {fmtDayTime(booking.start, now).toLowerCase()}. Проверьте камеру и звук заранее.</span>
+          <strong>{t('Видеокомната открыта')}</strong>
+          <span>{t('Занятие начнётся {toLowerCase}. Проверьте камеру и звук заранее.', { toLowerCase: fmtDayTime(booking.start, now).toLowerCase() })}</span>
         </div>
         <ButtonLink to={`/room/${booking.id}`} variant="dark" icon={VideoCameraIcon}>
-          Войти
+          {t('Войти')}
         </ButtonLink>
       </motion.div>
     );
   }
   const text =
     room === 'waiting'
-      ? `Откроется за 15 минут до начала — через ${fmtCountdown(opensAt - now)}`
+      ? t('Откроется за 15 минут до начала — через {fmtCountdown}', { fmtCountdown: fmtCountdown(opensAt - now) })
       : room === 'unconfirmed'
-        ? 'Станет доступна, когда специалист подтвердит запись'
-        : 'Занятие завершено — комната закрыта';
+        ? t('Станет доступна, когда специалист подтвердит запись')
+        : t('Занятие завершено — комната закрыта');
   return (
     <div className="room-block">
       {room === 'ended' ? <VideoCameraIcon size={24} weight="bold" /> : <HourglassMediumIcon size={24} weight="bold" />}
       <div>
-        <strong>Видеокомната</strong>
+        <strong>{t('Видеокомната')}</strong>
         <span>{text}</span>
       </div>
     </div>
@@ -83,18 +84,18 @@ function RoomBlock({ booking, now }) {
 
 function Timeline({ b, now, viewer }) {
   const status = displayStatus(b, now);
-  const items = [{ at: b.createdAt, text: 'Запрос отправлен', tone: 'done' }];
-  if (b.confirmedAt) items.push({ at: b.confirmedAt, text: 'Подтверждено специалистом', tone: 'done' });
-  if (b.status === 'declined') items.push({ at: b.updatedAt, text: `Отклонено${b.statusReason ? `: ${b.statusReason}` : ''}`, tone: 'bad' });
+  const items = [{ at: b.createdAt, text: t('Запрос отправлен'), tone: 'done' }];
+  if (b.confirmedAt) items.push({ at: b.confirmedAt, text: t('Подтверждено специалистом'), tone: 'done' });
+  if (b.status === 'declined') items.push({ at: b.updatedAt, text: t('Отклонено{p0}', { p0: b.statusReason ? `: ${b.statusReason}` : '' }), tone: 'bad' });
   if (b.status === 'cancelled') {
-    const who = b.cancelledBy === b.parentId ? 'родителем' : 'специалистом';
-    items.push({ at: b.updatedAt, text: `Отменено ${who}${b.statusReason ? `: ${b.statusReason}` : ''}`, tone: 'bad' });
+    const who = b.cancelledBy === b.parentId ? t('родителем') : t('специалистом');
+    items.push({ at: b.updatedAt, text: t('Отменено {who}{p1}', { who, p1: b.statusReason ? `: ${b.statusReason}` : '' }), tone: 'bad' });
   }
-  if (status === 'expired') items.push({ at: b.start, text: 'Запрос не подтвердили до начала занятия', tone: 'bad' });
-  if (status === 'completed') items.push({ at: b.end, text: 'Занятие проведено', tone: 'done' });
-  if (b.report) items.push({ at: b.report.createdAt, text: 'Специалист добавил отчёт', tone: 'done' });
-  if (status === 'pending') items.push({ at: null, text: viewer === 'parent' ? 'Ждём ответа специалиста' : 'Ждёт вашего ответа', tone: 'wait' });
-  if (status === 'confirmed') items.push({ at: b.start, text: 'Занятие', tone: 'wait' });
+  if (status === 'expired') items.push({ at: b.start, text: t('Запрос не подтвердили до начала занятия'), tone: 'bad' });
+  if (status === 'completed') items.push({ at: b.end, text: t('Занятие проведено'), tone: 'done' });
+  if (b.report) items.push({ at: b.report.createdAt, text: t('Специалист добавил отчёт'), tone: 'done' });
+  if (status === 'pending') items.push({ at: null, text: viewer === 'parent' ? t('Ждём ответа специалиста') : t('Ждёт вашего ответа'), tone: 'wait' });
+  if (status === 'confirmed') items.push({ at: b.start, text: t('Занятие'), tone: 'wait' });
   return (
     <ol className="timeline">
       {items.map((it, i) => (
@@ -118,20 +119,20 @@ function ReportView({ report }) {
   return (
     <section className="card-section report">
       <h2>
-        <ClipboardTextIcon size={22} weight="fill" /> Отчёт о занятии
+        <ClipboardTextIcon size={22} weight="fill" />{' '}{t('Отчёт о занятии')}
       </h2>
       <dl>
-        <dt>Что делали</dt>
+        <dt>{t('Что делали')}</dt>
         <dd>{report.summary}</dd>
         {report.progress && (
           <>
-            <dt>Успехи</dt>
+            <dt>{t('Успехи')}</dt>
             <dd>{report.progress}</dd>
           </>
         )}
         {report.homework && (
           <>
-            <dt>Рекомендации и задания</dt>
+            <dt>{t('Рекомендации и задания')}</dt>
             <dd>{report.homework}</dd>
           </>
         )}
@@ -149,7 +150,7 @@ function ReportForm({ booking, userId }) {
     setBusy(true);
     try {
       await addSessionReport(userId, booking.id, form);
-      toast.success('Отчёт отправлен родителю');
+      toast.success(t('Отчёт отправлен родителю'));
     } catch (e) {
       toast.error(e.message);
     } finally {
@@ -159,20 +160,20 @@ function ReportForm({ booking, userId }) {
   return (
     <section className="card-section report-form">
       <h2>
-        <ClipboardTextIcon size={22} weight="fill" /> Отчёт о занятии
+        <ClipboardTextIcon size={22} weight="fill" />{' '}{t('Отчёт о занятии')}
       </h2>
-      <p className="muted">Коротко расскажите родителю, как прошло занятие — это помогает видеть прогресс.</p>
-      <Field label="Что делали">
-        <Textarea rows={3} maxLength={800} value={form.summary} onChange={set('summary')} placeholder="Игры, упражнения, темы" />
+      <p className="muted">{t('Коротко расскажите родителю, как прошло занятие — это помогает видеть прогресс.')}</p>
+      <Field label={t('Что делали')}>
+        <Textarea rows={3} maxLength={800} value={form.summary} onChange={set('summary')} placeholder={t('Игры, упражнения, темы')} />
       </Field>
-      <Field label="Успехи" optional>
-        <Textarea rows={2} maxLength={600} value={form.progress} onChange={set('progress')} placeholder="Что получилось лучше, чем в прошлый раз" />
+      <Field label={t('Успехи')} optional>
+        <Textarea rows={2} maxLength={600} value={form.progress} onChange={set('progress')} placeholder={t('Что получилось лучше, чем в прошлый раз')} />
       </Field>
-      <Field label="Рекомендации и задания" optional>
-        <Textarea rows={2} maxLength={600} value={form.homework} onChange={set('homework')} placeholder="Что повторить дома до следующей встречи" />
+      <Field label={t('Рекомендации и задания')} optional>
+        <Textarea rows={2} maxLength={600} value={form.homework} onChange={set('homework')} placeholder={t('Что повторить дома до следующей встречи')} />
       </Field>
       <Button variant="dark" onClick={submit} loading={busy} disabled={form.summary.trim().length < 10}>
-        Отправить отчёт
+        {t('Отправить отчёт')}
       </Button>
     </section>
   );
@@ -187,7 +188,7 @@ function ReviewForm({ booking, userId }) {
     setBusy(true);
     try {
       await addReview(userId, booking.id, { rating, text });
-      toast.success('Спасибо за отзыв!');
+      toast.success(t('Спасибо за отзыв!'));
     } catch (e) {
       toast.error(e.message);
     } finally {
@@ -197,15 +198,15 @@ function ReviewForm({ booking, userId }) {
   return (
     <section className="card-section review-form">
       <h2>
-        <StarIcon size={22} weight="fill" /> Как прошло занятие?
+        <StarIcon size={22} weight="fill" />{' '}{t('Как прошло занятие?')}
       </h2>
-      <p className="muted">Ваш отзыв увидят другие родители — он поможет им выбрать специалиста.</p>
+      <p className="muted">{t('Ваш отзыв увидят другие родители — он поможет им выбрать специалиста.')}</p>
       <StarInput value={rating} onChange={setRating} />
-      <Field label="Комментарий" optional>
-        <Textarea rows={3} maxLength={1000} value={text} onChange={(e) => setText(e.target.value)} placeholder="Что понравилось, что изменилось у ребёнка" />
+      <Field label={t('Комментарий')} optional>
+        <Textarea rows={3} maxLength={1000} value={text} onChange={(e) => setText(e.target.value)} placeholder={t('Что понравилось, что изменилось у ребёнка')} />
       </Field>
       <Button variant="dark" onClick={submit} loading={busy} disabled={!rating}>
-        Оставить отзыв
+        {t('Оставить отзыв')}
       </Button>
     </section>
   );
@@ -227,8 +228,8 @@ export default function BookingDetail({ viewer }) {
   if (!b || !mine) {
     return (
       <div className="page">
-        <PageHeader back={listPath} title="Запись" />
-        <EmptyState icon={CalendarXIcon} title="Запись не найдена" text="Возможно, её удалили." action={<ButtonLink to={listPath}>К списку</ButtonLink>} />
+        <PageHeader back={listPath} title={t('Запись')} />
+        <EmptyState icon={CalendarXIcon} title={t('Запись не найдена')} text={t('Возможно, её удалили.')} action={<ButtonLink to={listPath}>{t('К списку')}</ButtonLink>} />
       </div>
     );
   }
@@ -258,7 +259,7 @@ export default function BookingDetail({ viewer }) {
     <div className="page booking">
       <PageHeader
         back={listPath}
-        title={viewer === 'parent' ? 'Запись на занятие' : 'Запрос на занятие'}
+        title={viewer === 'parent' ? t('Запись на занятие') : t('Запрос на занятие')}
       />
 
       <div className="booking__layout">
@@ -273,16 +274,16 @@ export default function BookingDetail({ viewer }) {
               <StatusBadge status={status} />
               <strong>{fmtDay(b.start, now)}</strong>
               <span>
-                {fmtRange(b.start, b.end)} · {b.duration} мин
+                {t('{fmtRange} · {duration} мин', { fmtRange: fmtRange(b.start, b.end), duration: b.duration })}
               </span>
               <span>
                 {b.format === 'online' ? (
                   <>
-                    <VideoCameraIcon size={15} weight="bold" /> Онлайн, видеокомната Pingo
+                    <VideoCameraIcon size={15} weight="bold" />{' '}{t('Онлайн, видеокомната Pingo')}
                   </>
                 ) : (
                   <>
-                    <MapPinIcon size={15} weight="bold" /> Очно — адрес согласуйте в чате
+                    <MapPinIcon size={15} weight="bold" />{' '}{t('Очно — адрес согласуйте в чате')}
                   </>
                 )}
               </span>
@@ -296,10 +297,10 @@ export default function BookingDetail({ viewer }) {
               <Avatar avatar={b.specialist?.avatar} name={b.specialist?.name} size={56} />
               <div>
                 <strong>{b.specialist?.name}</strong>
-                <span>Ребёнок: {child?.name ?? '—'}</span>
+                <span>{t('Ребёнок: {p0}', { p0: child?.name ?? '—' })}</span>
               </div>
               <Link to={`/parent/specialists/${b.specialistId}`} className="link-arrow">
-                Анкета <ArrowRightIcon size={16} />
+                {t('Анкета')}{' '}<ArrowRightIcon size={16} />
               </Link>
             </section>
           ) : (
@@ -310,14 +311,14 @@ export default function BookingDetail({ viewer }) {
                   <strong>
                     {child?.name}, {fmtAge(ageFromBirthDate(child?.birthDate))}
                   </strong>
-                  <span>Родитель: {b.parent?.name}</span>
+                  <span>{t('Родитель: {name}', { name: b.parent?.name })}</span>
                 </div>
               </div>
               {child?.needs?.length > 0 && (
                 <div className="tags">
                   {child.needs.map((n) => (
                     <span key={n} className="tag">
-                      {n === 'other' ? child.needsOther || 'Другое' : NEED_MAP[n]?.label}
+                      {n === 'other' ? child.needsOther || t('Другое') : NEED_MAP[n]?.label}
                     </span>
                   ))}
                 </div>
@@ -325,25 +326,25 @@ export default function BookingDetail({ viewer }) {
               <dl className="info-list">
                 {child?.learningStyles?.length > 0 && (
                   <>
-                    <dt>Как учится</dt>
+                    <dt>{t('Как учится')}</dt>
                     <dd>{child.learningStyles.map((s) => LEARNING_STYLE_MAP[s]?.label).join(', ')}</dd>
                   </>
                 )}
                 {describeAccessibility(child?.accessibility).length > 0 && (
                   <>
-                    <dt>Комфортный интерфейс</dt>
+                    <dt>{t('Комфортный интерфейс')}</dt>
                     <dd>{describeAccessibility(child.accessibility).join(', ')}</dd>
                   </>
                 )}
                 {child?.goals && (
                   <>
-                    <dt>Цели</dt>
+                    <dt>{t('Цели')}</dt>
                     <dd>{child.goals}</dd>
                   </>
                 )}
                 {child?.notes && (
                   <>
-                    <dt>Важно знать</dt>
+                    <dt>{t('Важно знать')}</dt>
                     <dd>{child.notes}</dd>
                   </>
                 )}
@@ -353,7 +354,7 @@ export default function BookingDetail({ viewer }) {
 
           {b.note && (
             <section className="card-section">
-              <h2>Заметка родителя</h2>
+              <h2>{t('Заметка родителя')}</h2>
               <p className="prewrap">{b.note}</p>
             </section>
           )}
@@ -365,14 +366,14 @@ export default function BookingDetail({ viewer }) {
               <ReportForm booking={b} userId={user.id} />
             ) : (
               <section className="card-section">
-                <h2>Отчёт о занятии</h2>
-                <p className="muted">Специалист ещё не добавил отчёт — мы пришлём уведомление.</p>
+                <h2>{t('Отчёт о занятии')}</h2>
+                <p className="muted">{t('Специалист ещё не добавил отчёт — мы пришлём уведомление.')}</p>
               </section>
             ))}
 
           {status === 'completed' && b.review && (
             <section className="card-section">
-              <h2>Отзыв родителя</h2>
+              <h2>{t('Отзыв родителя')}</h2>
               <Stars value={b.review.rating} size={20} />
               {b.review.text && <p className="review-text">{b.review.text}</p>}
             </section>
@@ -382,7 +383,7 @@ export default function BookingDetail({ viewer }) {
           )}
 
           <section className="card-section">
-            <h2>История</h2>
+            <h2>{t('История')}</h2>
             <Timeline b={b} now={now} viewer={viewer} />
           </section>
         </div>
@@ -391,21 +392,21 @@ export default function BookingDetail({ viewer }) {
           <div className={cx('action-box', canRespond && 'action-box--attention')}>
             {canRespond && (
               <>
-                <p className="action-box__title">Ответьте на запрос</p>
-                <Button variant="primary" size="lg" icon={CheckIcon} block loading={busy} onClick={() => run(() => confirmBooking(user.id, b.id), 'Занятие подтверждено')}>
-                  Принять
+                <p className="action-box__title">{t('Ответьте на запрос')}</p>
+                <Button variant="primary" size="lg" icon={CheckIcon} block loading={busy} onClick={() => run(() => confirmBooking(user.id, b.id), t('Занятие подтверждено'))}>
+                  {t('Принять')}
                 </Button>
                 <Button variant="soft" size="lg" icon={XIcon} block onClick={() => setDialog('decline')}>
-                  Отклонить
+                  {t('Отклонить')}
                 </Button>
               </>
             )}
             <ButtonLink to={convPath} variant={canRespond ? 'ghost' : 'soft'} size="lg" icon={ChatCircleDotsIcon} block>
-              Написать {viewer === 'parent' ? 'специалисту' : 'родителю'}
+              {viewer === 'parent' ? t('Написать специалисту') : t('Написать родителю')}
             </ButtonLink>
             {canCancel && (
               <Button variant="danger-ghost" block onClick={() => setDialog('cancel')}>
-                {b.status === 'pending' ? 'Отменить запрос' : 'Отменить занятие'}
+                {b.status === 'pending' ? t('Отменить запрос') : t('Отменить занятие')}
               </Button>
             )}
           </div>
@@ -415,21 +416,21 @@ export default function BookingDetail({ viewer }) {
       <ReasonDialog
         open={dialog === 'decline'}
         onClose={() => setDialog(null)}
-        title="Отклонить запрос"
-        text="Родитель увидит причину и сможет выбрать другое время или специалиста."
+        title={t('Отклонить запрос')}
+        text={t('Родитель увидит причину и сможет выбрать другое время или специалиста.')}
         templates={DECLINE_TEMPLATES}
-        placeholder="Например: в это время у меня другое занятие"
-        confirmLabel="Отклонить"
-        onConfirm={(reason) => declineBooking(user.id, b.id, reason).then(() => toast.info('Запрос отклонён'))}
+        placeholder={t('Например: в это время у меня другое занятие')}
+        confirmLabel={t('Отклонить')}
+        onConfirm={(reason) => declineBooking(user.id, b.id, reason).then(() => toast.info(t('Запрос отклонён')))}
       />
       <ReasonDialog
         open={dialog === 'cancel'}
         onClose={() => setDialog(null)}
-        title={b.status === 'pending' ? 'Отменить запрос?' : 'Отменить занятие?'}
-        text={`${viewer === 'parent' ? 'Специалист' : 'Родитель'} получит уведомление. Время освободится для других.`}
-        templates={viewer === 'parent' ? CANCEL_TEMPLATES : ['Заболел(а).', 'Непредвиденные обстоятельства.']}
-        confirmLabel="Отменить запись"
-        onConfirm={(reason) => cancelBooking(user.id, b.id, reason).then(() => toast.info('Запись отменена'))}
+        title={b.status === 'pending' ? t('Отменить запрос?') : t('Отменить занятие?')}
+        text={t('{p0} получит уведомление. Время освободится для других.', { p0: viewer === 'parent' ? t('Специалист') : t('Родитель') })}
+        templates={viewer === 'parent' ? CANCEL_TEMPLATES : [t('Заболел(а).'), t('Непредвиденные обстоятельства.')]}
+        confirmLabel={t('Отменить запись')}
+        onConfirm={(reason) => cancelBooking(user.id, b.id, reason).then(() => toast.info(t('Запись отменена')))}
       />
     </div>
   );

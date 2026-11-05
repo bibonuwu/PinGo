@@ -3,8 +3,9 @@ import { motion } from 'framer-motion';
 import { ArrowLeftIcon } from '@phosphor-icons/react';
 import { cx } from '../lib/utils';
 import { IconButton } from './ui';
+import { t } from '../i18n';
 
-export function BackButton({ to, label = 'Назад', variant = 'soft', className }) {
+export function BackButton({ to, label = t('Назад'), variant = 'soft', className }) {
   const navigate = useNavigate();
   const goBack = () => {
     if (window.history.state?.idx > 0) navigate(-1);

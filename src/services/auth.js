@@ -15,6 +15,7 @@ import { batch, commit, friendlyError, ref, update } from '../lib/remote';
 import { DEFAULT_A11Y, isAdminEmail } from '../lib/constants';
 import { isEmail } from '../lib/utils';
 import { newProfile } from './profiles';
+import { t } from '../i18n';
 
 export const MIN_PASSWORD = 6;
 
@@ -24,8 +25,8 @@ export const personOf = (u) => ({ id: u.id, role: u.role, name: u.name, avatar: 
 
 function checkName(name) {
   const n = (name || '').trim();
-  if (n.length < 2) throw new Error('Введите имя — минимум 2 символа');
-  if (n.length > 60) throw new Error('Имя слишком длинное');
+  if (n.length < 2) throw new Error(t('Введите имя — минимум 2 символа'));
+  if (n.length > 60) throw new Error(t('Имя слишком длинное'));
   return n;
 }
 
@@ -34,7 +35,7 @@ export const isAdminAccount = (account) => !!account?.emailVerified && isAdminEm
 
 async function createAccountDocs(account, { role, name }) {
   const allowed = ['parent', 'specialist'].includes(role) || (role === 'admin' && isAdminAccount(account));
-  if (!allowed) throw new Error('Выберите, кто вы: родитель или специалист');
+  if (!allowed) throw new Error(t('Выберите, кто вы: родитель или специалист'));
   const user = {
     id: account.uid,
     role,
@@ -56,10 +57,10 @@ async function createAccountDocs(account, { role, name }) {
 }
 
 export async function registerUser({ role, name, email, password }) {
-  if (!['parent', 'specialist'].includes(role)) throw new Error('Выберите, кто вы: родитель или специалист');
+  if (!['parent', 'specialist'].includes(role)) throw new Error(t('Выберите, кто вы: родитель или специалист'));
   const cleanName = checkName(name);
-  if (!isEmail(email)) throw new Error('Проверьте адрес электронной почты');
-  if (password.length < MIN_PASSWORD) throw new Error(`Пароль — минимум ${MIN_PASSWORD} символов`);
+  if (!isEmail(email)) throw new Error(t('Проверьте адрес электронной почты'));
+  if (password.length < MIN_PASSWORD) throw new Error(t('Пароль — минимум {MIN_PASSWORD} символов', { MIN_PASSWORD }));
   let cred;
   try {
     cred = await createUserWithEmailAndPassword(auth, email.trim(), password);
@@ -77,7 +78,7 @@ export async function registerUser({ role, name, email, password }) {
 export async function claimAdmin(account, current) {
   if (!current) {
     const name = (account.displayName || account.email.split('@')[0]).trim().slice(0, 60);
-    return createAccountDocs(account, { role: 'admin', name: name.length >= 2 ? name : 'Модератор' });
+    return createAccountDocs(account, { role: 'admin', name: name.length >= 2 ? name : t('Модератор') });
   }
   const w = batch();
   w.update(ref('users', account.uid), { role: 'admin' });
@@ -89,7 +90,7 @@ export async function claimAdmin(account, current) {
 }
 
 export async function sendVerificationEmail() {
-  if (!auth.currentUser) throw new Error('Сначала войдите в аккаунт');
+  if (!auth.currentUser) throw new Error(t('Сначала войдите в аккаунт'));
   try {
     await sendEmailVerification(auth.currentUser);
   } catch (e) {
@@ -99,12 +100,12 @@ export async function sendVerificationEmail() {
 
 // Вошли (например, через Google), но аккаунт в Pingo ещё не создан — выбрать роль и имя.
 export function completeRegistration({ role, name }) {
-  if (!auth.currentUser) throw new Error('Сначала войдите в аккаунт');
+  if (!auth.currentUser) throw new Error(t('Сначала войдите в аккаунт'));
   return createAccountDocs(auth.currentUser, { role, name });
 }
 
 export async function loginUser(email, password) {
-  if (!isEmail(email)) throw new Error('Проверьте адрес электронной почты');
+  if (!isEmail(email)) throw new Error(t('Проверьте адрес электронной почты'));
   try {
     await signInWithEmailAndPassword(auth, email.trim(), password);
   } catch (e) {
@@ -136,7 +137,7 @@ export async function registerWithGoogle(role) {
 }
 
 export async function resetPassword(email) {
-  if (!isEmail(email)) throw new Error('Введите email, на который зарегистрирован аккаунт');
+  if (!isEmail(email)) throw new Error(t('Введите email, на который зарегистрирован аккаунт'));
   try {
     await sendPasswordResetEmail(auth, email.trim());
   } catch (e) {

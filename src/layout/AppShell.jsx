@@ -25,23 +25,24 @@ import { Avatar } from '../components/Avatar';
 import { InstallCard } from '../components/InstallCard';
 import { Tour } from '../components/Tour';
 import { AnimatedOutlet } from './AnimatedOutlet';
+import { t } from '../i18n';
 
 export const NAV = {
   parent: [
-    { to: '/parent', end: true, label: 'Главная', icon: HouseIcon },
-    { to: '/parent/specialists', label: 'Специалисты', icon: UsersThreeIcon },
-    { to: '/parent/bookings', label: 'Записи', icon: CalendarDotsIcon },
-    { to: '/parent/messages', label: 'Сообщения', icon: ChatCircleDotsIcon, badge: 'messages' },
-    { to: '/parent/profile', label: 'Профиль', icon: UserIcon, also: ['/parent/children', '/parent/settings', '/parent/help'] },
+    { to: '/parent', end: true, label: t('Главная'), icon: HouseIcon },
+    { to: '/parent/specialists', label: t('Специалисты'), icon: UsersThreeIcon },
+    { to: '/parent/bookings', label: t('Записи'), icon: CalendarDotsIcon },
+    { to: '/parent/messages', label: t('Сообщения'), icon: ChatCircleDotsIcon, badge: 'messages' },
+    { to: '/parent/profile', label: t('Профиль'), icon: UserIcon, also: ['/parent/children', '/parent/settings', '/parent/help'] },
   ],
   specialist: [
-    { to: '/specialist', end: true, label: 'Главная', icon: HouseIcon },
-    { to: '/specialist/availability', label: 'Расписание', icon: CalendarDotsIcon },
-    { to: '/specialist/requests', label: 'Запросы', icon: TrayIcon, badge: 'requests' },
-    { to: '/specialist/messages', label: 'Сообщения', icon: ChatCircleDotsIcon, badge: 'messages' },
+    { to: '/specialist', end: true, label: t('Главная'), icon: HouseIcon },
+    { to: '/specialist/availability', label: t('Расписание'), icon: CalendarDotsIcon },
+    { to: '/specialist/requests', label: t('Запросы'), icon: TrayIcon, badge: 'requests' },
+    { to: '/specialist/messages', label: t('Сообщения'), icon: ChatCircleDotsIcon, badge: 'messages' },
     {
       to: '/specialist/profile',
-      label: 'Профиль',
+      label: t('Профиль'),
       icon: UserIcon,
       also: ['/specialist/training', '/specialist/settings', '/specialist/help'],
     },
@@ -52,20 +53,20 @@ export const NAV = {
     {
       to: '/admin',
       end: true,
-      label: 'Обзор',
+      label: t('Обзор'),
       icon: SquaresFourIcon,
       mobileAlso: ['/admin/users', '/admin/broadcast', '/admin/notifications', '/admin/settings', '/admin/help'],
     },
-    { to: '/admin/profiles', label: 'Анкеты', icon: IdentificationCardIcon, badge: 'profiles' },
-    { to: '/admin/rating', label: 'Рейтинг', icon: RankingIcon },
-    { to: '/admin/volunteers', label: 'Волонтёры', icon: HandHeartIcon, badge: 'volunteers' },
-    { to: '/admin/users', label: 'Пользователи', icon: UsersThreeIcon, also: ['/admin/broadcast'], mobile: false },
-    { to: '/admin/reports', label: 'Жалобы', icon: FlagIcon, badge: 'reports' },
-    { to: '/admin/messages', label: 'Сообщения', icon: ChatCircleDotsIcon, badge: 'messages' },
+    { to: '/admin/profiles', label: t('Анкеты'), icon: IdentificationCardIcon, badge: 'profiles' },
+    { to: '/admin/rating', label: t('Рейтинг'), icon: RankingIcon },
+    { to: '/admin/volunteers', label: t('Волонтёры'), icon: HandHeartIcon, badge: 'volunteers' },
+    { to: '/admin/users', label: t('Пользователи'), icon: UsersThreeIcon, also: ['/admin/broadcast'], mobile: false },
+    { to: '/admin/reports', label: t('Жалобы'), icon: FlagIcon, badge: 'reports' },
+    { to: '/admin/messages', label: t('Сообщения'), icon: ChatCircleDotsIcon, badge: 'messages' },
   ],
 };
 
-const ROLE_LABEL = { parent: 'Родитель', specialist: 'Специалист / волонтёр', admin: 'Модератор' };
+const ROLE_LABEL = { parent: t('Родитель'), specialist: t('Специалист / волонтёр'), admin: t('Модератор') };
 
 // На телефоне нижняя панель мешает полю ввода чата и форме записи — там её прячем.
 const HIDE_NAV = [/^\/(parent|specialist|admin)\/messages\/[^/]+$/, /^\/parent\/specialists\/[^/]+\/book$/];
@@ -95,7 +96,7 @@ function BottomNav({ items, counts, path }) {
   return (
     <motion.nav
       className="bottom-nav"
-      aria-label="Основная навигация"
+      aria-label={t('Основная навигация')}
       initial={{ y: 90, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ type: 'spring', stiffness: 320, damping: 30 }}
@@ -134,7 +135,7 @@ function Sidebar({ user, items, counts, path, onLogout }) {
           <span className="brand__slogan">Support for every child</span>
         </span>
       </Link>
-      <nav className="side-nav" aria-label="Основная навигация">
+      <nav className="side-nav" aria-label={t('Основная навигация')}>
         {items.map((item) => {
           const active = isActive(item, path);
           const Icon = item.icon;
@@ -158,11 +159,11 @@ function Sidebar({ user, items, counts, path, onLogout }) {
       <div className="sidebar__bottom">
         <InstallCard compact />
         <Link to={`${base}/notifications`} className={cx('side-link', path === `${base}/notifications` && 'is-active')}>
-          <BellIcon size={20} weight="bold" /> Уведомления
+          <BellIcon size={20} weight="bold" />{' '}{t('Уведомления')}
           <Badge value={counts.notifications} className="side-nav__badge" />
         </Link>
         <Link to={`${base}/settings`} className={cx('side-link', path.startsWith(`${base}/settings`) && 'is-active')}>
-          <GearIcon size={20} weight="bold" /> Настройки
+          <GearIcon size={20} weight="bold" />{' '}{t('Настройки')}
         </Link>
         <div className="side-user">
           <Avatar avatar={user.avatar} name={user.name} size={42} />
@@ -170,7 +171,7 @@ function Sidebar({ user, items, counts, path, onLogout }) {
             <strong>{user.name}</strong>
             <span>{ROLE_LABEL[user.role]}</span>
           </div>
-          <button type="button" className="icon-btn icon-btn--ghost icon-btn--sm" aria-label="Выйти" title="Выйти" onClick={onLogout}>
+          <button type="button" className="icon-btn icon-btn--ghost icon-btn--sm" aria-label={t('Выйти')} title={t('Выйти')} onClick={onLogout}>
             <SignOutIcon size={20} weight="bold" />
           </button>
         </div>

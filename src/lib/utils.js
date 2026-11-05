@@ -1,4 +1,5 @@
-// Общие утилиты: id, классы, даты и форматирование на русском.
+// Общие утилиты: id, классы, даты и форматирование на языке интерфейса.
+import { locale, t } from '../i18n';
 
 // crypto.randomUUID недоступен вне https/localhost (например, при тесте с телефона по LAN),
 // а getRandomValues работает везде.
@@ -91,19 +92,29 @@ export function isSameDay(a, b) {
   return toDateKey(a) === toDateKey(b);
 }
 
-const dateFmt = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' });
-const dateYearFmt = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
-const shortDateFmt = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short' });
-const weekdayFmt = new Intl.DateTimeFormat('ru-RU', { weekday: 'short' });
-const weekdayLongFmt = new Intl.DateTimeFormat('ru-RU', { weekday: 'long' });
-const timeFmt = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' });
+// Chrome и Edge поставляются без казахских названий месяцев и дней недели (Intl выдаёт «M11 6» и «Fri»),
+// поэтому по-казахски дату собираем сами: «6 қараша», «жм, 6 қараша», «6 қараша 2026 ж.».
+const KK_MONTHS = ['қаңтар', 'ақпан', 'наурыз', 'сәуір', 'мамыр', 'маусым', 'шілде', 'тамыз', 'қыркүйек', 'қазан', 'қараша', 'желтоқсан'];
+const KK_MONTHS_SHORT = ['қаң', 'ақп', 'нау', 'сәу', 'мам', 'мау', 'шіл', 'там', 'қыр', 'қаз', 'қар', 'жел'];
+const KK_WEEKDAYS = ['жексенбі', 'дүйсенбі', 'сейсенбі', 'сәрсенбі', 'бейсенбі', 'жұма', 'сенбі'];
+const KK_WEEKDAYS_SHORT = ['жс', 'дс', 'сс', 'ср', 'бс', 'жм', 'сн'];
 
-export const fmtTime = (ts) => timeFmt.format(ts);
-export const fmtDate = (ts) => dateFmt.format(ts);
-export const fmtDateYear = (ts) => dateYearFmt.format(ts);
-export const fmtShortDate = (ts) => shortDateFmt.format(ts).replace('.', '');
-export const fmtWeekday = (ts) => weekdayFmt.format(ts);
-export const fmtWeekdayLong = (ts) => weekdayLongFmt.format(ts);
+const intl = (options) => {
+  const f = new Intl.DateTimeFormat(locale, options);
+  return (ts) => f.format(ts);
+};
+const withDate = (fn) => (ts) => fn(new Date(ts));
+const isKk = locale.startsWith('kk');
+
+export const fmtTime = withDate((d) => `${pad2(d.getHours())}:${pad2(d.getMinutes())}`);
+export const fmtDate = isKk ? withDate((d) => `${d.getDate()} ${KK_MONTHS[d.getMonth()]}`) : intl({ day: 'numeric', month: 'long' });
+export const fmtDateYear = isKk
+  ? withDate((d) => `${d.getDate()} ${KK_MONTHS[d.getMonth()]} ${d.getFullYear()} ж.`)
+  : intl({ day: 'numeric', month: 'long', year: 'numeric' });
+const shortDate = intl({ day: 'numeric', month: 'short' });
+export const fmtShortDate = isKk ? withDate((d) => `${d.getDate()} ${KK_MONTHS_SHORT[d.getMonth()]}`) : (ts) => shortDate(ts).replace('.', '');
+export const fmtWeekday = isKk ? withDate((d) => KK_WEEKDAYS_SHORT[d.getDay()]) : intl({ weekday: 'short' });
+export const fmtWeekdayLong = isKk ? withDate((d) => KK_WEEKDAYS[d.getDay()]) : intl({ weekday: 'long' });
 
 export function capitalize(s = '') {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -112,9 +123,9 @@ export function capitalize(s = '') {
 // «Сегодня», «Завтра», «Вчера» или «пт, 14 ноября»
 export function fmtDay(ts, now = Date.now()) {
   const diff = Math.round((startOfDay(ts) - startOfDay(now)) / DAY);
-  if (diff === 0) return 'Сегодня';
-  if (diff === 1) return 'Завтра';
-  if (diff === -1) return 'Вчера';
+  if (diff === 0) return t('Сегодня');
+  if (diff === 1) return t('Завтра');
+  if (diff === -1) return t('Вчера');
   const sameYear = new Date(ts).getFullYear() === new Date(now).getFullYear();
   return `${fmtWeekday(ts)}, ${sameYear ? fmtDate(ts) : fmtDateYear(ts)}`;
 }
@@ -136,10 +147,10 @@ export function fmtRange(start, end) {
 // Для лент сообщений и уведомлений
 export function fmtAgo(ts, now = Date.now()) {
   const diff = now - ts;
-  if (diff < MINUTE) return 'только что';
-  if (diff < HOUR) return `${Math.floor(diff / MINUTE)} мин назад`;
+  if (diff < MINUTE) return t('только что');
+  if (diff < HOUR) return t('{floor} мин назад', { floor: Math.floor(diff / MINUTE) });
   if (isSameDay(ts, now)) return fmtTime(ts);
-  if (diff < 2 * DAY && isSameDay(ts, now - DAY)) return `вчера, ${fmtTime(ts)}`;
+  if (diff < 2 * DAY && isSameDay(ts, now - DAY)) return t('вчера, {fmtTime}', { fmtTime: fmtTime(ts) });
   return fmtShortDate(ts);
 }
 
@@ -150,21 +161,21 @@ export function fmtCountdown(ms) {
   const h = Math.floor((total % 86400) / 3600);
   const m = Math.floor((total % 3600) / 60);
   const s = total % 60;
-  if (d > 0) return `${d} д ${h} ч`;
-  if (h > 0) return `${h} ч ${pad2(m)} мин`;
+  if (d > 0) return t('{d} д {h} ч', { d, h });
+  if (h > 0) return t('{h} ч {pad2} мин', { h, pad2: pad2(m) });
   return `${m}:${pad2(s)}`;
 }
 
 export function fmtDuration(minutes) {
-  if (minutes < 60) return `${minutes} мин`;
+  if (minutes < 60) return t('{minutes} мин', { minutes });
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
-  return m ? `${h} ч ${m} мин` : `${h} ч`;
+  return m ? t('{h} ч {m} мин', { h, m }) : t('{h} ч', { h });
 }
 
 export function fmtHours(minutes) {
   const h = minutes / 60;
-  return `${Number.isInteger(h) ? h : h.toFixed(1).replace('.', ',')} ч`;
+  return t('{p0} ч', { p0: Number.isInteger(h) ? h : h.toFixed(1).replace('.', ',') });
 }
 
 // ---------- Возраст ----------
@@ -181,7 +192,7 @@ export function ageFromBirthDate(birthDate, now = Date.now()) {
 
 export function fmtAge(age) {
   if (age == null) return '';
-  return pluralize(age, ['год', 'года', 'лет']);
+  return pluralize(age, [t('год', null, 'возраст'), t('года', null, 'возраст'), t('лет', null, 'возраст')]);
 }
 
 export function birthDateBounds(now = Date.now()) {
@@ -215,9 +226,9 @@ export function downloadFile(name, content, type = 'application/json') {
 }
 
 export function fmtBytes(n) {
-  if (n < 1024) return `${n} Б`;
-  if (n < 1024 * 1024) return `${Math.round(n / 1024)} КБ`;
-  return `${(n / 1024 / 1024).toFixed(1).replace('.', ',')} МБ`;
+  if (n < 1024) return t('{n} Б', { n });
+  if (n < 1024 * 1024) return t('{round} КБ', { round: Math.round(n / 1024) });
+  return t('{replace} МБ', { replace: (n / 1024 / 1024).toFixed(1).replace('.', ',') });
 }
 
 export const storage = {

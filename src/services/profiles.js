@@ -10,6 +10,8 @@ import {
   TRAINING_MODULES,
 } from '../lib/constants';
 import { notifyAdminsRaw, notifyRaw } from './notifications';
+import { msg } from '../i18n/stored';
+import { t } from '../i18n';
 
 // Анкета специалиста/волонтёра.
 // draft — то, что редактирует специалист; published — последняя одобренная версия (её видят родители).
@@ -54,7 +56,7 @@ export function newProfile(userId, now = Date.now()) {
   };
 }
 
-export const kindLabel = (kind) => PROFILE_KINDS.find((k) => k.id === kind)?.label ?? 'Специалист';
+export const kindLabel = (kind) => PROFILE_KINDS.find((k) => k.id === kind)?.label ?? t('Специалист');
 
 export function trainingProgress(profile) {
   const done = TRAINING_MODULES.filter((m) => profile?.trainingDone?.includes(m.id)).length;
@@ -65,38 +67,38 @@ export function trainingProgress(profile) {
 export function profileIssues(profile) {
   const d = profile.draft;
   const issues = [];
-  if (d.title.trim().length < 5) issues.push({ field: 'title', text: 'Добавьте заголовок анкеты (от 5 символов)' });
+  if (d.title.trim().length < 5) issues.push({ field: 'title', text: t('Добавьте заголовок анкеты (от 5 символов)') });
   if (d.description.trim().length < 60)
-    issues.push({ field: 'description', text: 'Расскажите о себе подробнее (от 60 символов)' });
+    issues.push({ field: 'description', text: t('Расскажите о себе подробнее (от 60 символов)') });
   if (d.kind === 'specialist' && d.experienceText.trim().length < 20)
-    issues.push({ field: 'experience', text: 'Опишите образование и опыт (от 20 символов)' });
-  if (!d.specializations.length) issues.push({ field: 'specializations', text: 'Выберите хотя бы одну специализацию' });
+    issues.push({ field: 'experience', text: t('Опишите образование и опыт (от 20 символов)') });
+  if (!d.specializations.length) issues.push({ field: 'specializations', text: t('Выберите хотя бы одну специализацию') });
   if (d.specializations.length > MAX_SPECIALIZATIONS)
-    issues.push({ field: 'specializations', text: `Не больше ${MAX_SPECIALIZATIONS} специализаций` });
-  if (d.ageMin > d.ageMax) issues.push({ field: 'age', text: 'Проверьте возраст детей: «от» больше, чем «до»' });
-  if (!d.formats.length) issues.push({ field: 'formats', text: 'Выберите формат занятий' });
+    issues.push({ field: 'specializations', text: t('Не больше {MAX_SPECIALIZATIONS} специализаций', { MAX_SPECIALIZATIONS }) });
+  if (d.ageMin > d.ageMax) issues.push({ field: 'age', text: t('Проверьте возраст детей: «от» больше, чем «до»') });
+  if (!d.formats.length) issues.push({ field: 'formats', text: t('Выберите формат занятий') });
   if (d.formats.includes('offline') && !d.city.trim())
-    issues.push({ field: 'formats', text: 'Укажите город для очных занятий' });
-  if (!d.languages.length) issues.push({ field: 'languages', text: 'Укажите язык занятий' });
-  if (!trainingProgress(profile).complete) issues.push({ field: 'training', text: 'Пройдите обучение Pingo' });
+    issues.push({ field: 'formats', text: t('Укажите город для очных занятий') });
+  if (!d.languages.length) issues.push({ field: 'languages', text: t('Укажите язык занятий') });
+  if (!trainingProgress(profile).complete) issues.push({ field: 'training', text: t('Пройдите обучение Pingo') });
   if (!d.agreements.truth || !d.agreements.safety)
-    issues.push({ field: 'agreements', text: 'Подтвердите достоверность данных и правила безопасности' });
+    issues.push({ field: 'agreements', text: t('Подтвердите достоверность данных и правила безопасности') });
   return issues;
 }
 
 const FIELD_LABELS = {
-  kind: 'Тип анкеты',
-  title: 'Заголовок',
-  description: 'Описание',
-  experienceYears: 'Стаж',
-  experienceText: 'Опыт и образование',
-  specializations: 'Специализации',
-  ageMin: 'Возраст детей',
-  ageMax: 'Возраст детей',
-  formats: 'Формат',
-  city: 'Город',
-  languages: 'Языки',
-  documents: 'Документы',
+  kind: t('Тип анкеты'),
+  title: t('Заголовок'),
+  description: t('Описание'),
+  experienceYears: t('Стаж'),
+  experienceText: t('Опыт и образование'),
+  specializations: t('Специализации'),
+  ageMin: t('Возраст детей'),
+  ageMax: t('Возраст детей'),
+  formats: t('Формат'),
+  city: t('Город'),
+  languages: t('Языки'),
+  documents: t('Документы'),
 };
 
 // Какие поля изменились относительно опубликованной версии — для модератора.
@@ -121,7 +123,7 @@ export function describeProfile(data) {
 
 function getOwnProfile(userId) {
   const p = db.profiles.peek(userId);
-  if (!p) throw new Error('Анкета не найдена');
+  if (!p) throw new Error(t('Анкета не найдена'));
   return p;
 }
 
@@ -138,7 +140,7 @@ const catalogEntry = (id, published, sessionMinutes, verifiedAt, now) => ({
 // Автосохранение: пишем только изменённые поля черновика, чтобы быстрые правки не затирали друг друга.
 export async function saveDraft(userId, patch) {
   const p = getOwnProfile(userId);
-  if (p.status === 'pending') throw new Error('Анкета на проверке — отзовите её, чтобы редактировать');
+  if (p.status === 'pending') throw new Error(t('Анкета на проверке — отзовите её, чтобы редактировать'));
   const fields = Object.fromEntries(Object.entries(patch).map(([k, v]) => [`draft.${k}`, v]));
   await update('profiles', userId, { ...fields, updatedAt: Date.now() });
 }
@@ -160,7 +162,7 @@ export async function completeTrainingModule(userId, moduleId) {
 
 export async function submitProfile(userId) {
   const p = getOwnProfile(userId);
-  if (p.status === 'pending') throw new Error('Анкета уже на проверке');
+  if (p.status === 'pending') throw new Error(t('Анкета уже на проверке'));
   const issues = profileIssues(p);
   if (issues.length) throw new Error(issues[0].text);
   const now = Date.now();
@@ -175,8 +177,8 @@ export async function submitProfile(userId) {
   });
   await notifyAdminsRaw(w, {
     type: 'profile_submitted',
-    title: p.published ? 'Изменения в анкете на модерации' : 'Новая анкета на модерации',
-    body: `${user?.name ?? 'Пользователь'} · ${kindLabel(p.draft.kind).toLowerCase()}`,
+    title: p.published ? msg('Изменения в анкете на модерации') : msg('Новая анкета на модерации'),
+    body: msg('{name} · {kind}', { name: user?.name ?? { t: 'Пользователь' }, kind: { label: 'profileKind', id: p.draft.kind } }),
     link: `/admin/profiles/${userId}`,
   });
   await commit(w);
@@ -195,19 +197,19 @@ export async function withdrawProfile(userId) {
 
 function requireReason(reason) {
   const r = (reason || '').trim();
-  if (r.length < 10) throw new Error('Укажите причину — минимум 10 символов');
+  if (r.length < 10) throw new Error(t('Укажите причину — минимум 10 символов'));
   return r;
 }
 
 function getProfile(profileId) {
   const p = db.profiles.peek(profileId);
-  if (!p) throw new Error('Анкета не найдена');
+  if (!p) throw new Error(t('Анкета не найдена'));
   return p;
 }
 
 export async function approveProfile(adminId, profileId) {
   const p = getProfile(profileId);
-  if (p.status !== 'pending') throw new Error('Одобрить можно только анкету на модерации');
+  if (p.status !== 'pending') throw new Error(t('Одобрить можно только анкету на модерации'));
   const now = Date.now();
   const published = structuredClone(p.draft);
   const w = batch();
@@ -223,8 +225,8 @@ export async function approveProfile(adminId, profileId) {
   w.set(ref('catalog', profileId), catalogEntry(profileId, published, p.sessionMinutes, p.verifiedAt, now));
   notifyRaw(w, profileId, {
     type: 'profile_approved',
-    title: 'Анкета одобрена 🎉',
-    body: p.published ? 'Изменения опубликованы в каталоге.' : 'Теперь родители видят вас в каталоге и могут записаться.',
+    title: msg('Анкета одобрена 🎉'),
+    body: p.published ? msg('Изменения опубликованы в каталоге.') : msg('Теперь родители видят вас в каталоге и могут записаться.'),
     link: '/specialist/profile',
   });
   await commit(w);
@@ -233,7 +235,7 @@ export async function approveProfile(adminId, profileId) {
 export async function rejectProfile(adminId, profileId, reason) {
   const r = requireReason(reason);
   const p = getProfile(profileId);
-  if (p.status !== 'pending') throw new Error('Отклонить можно только анкету на модерации');
+  if (p.status !== 'pending') throw new Error(t('Отклонить можно только анкету на модерации'));
   const now = Date.now();
   const w = batch();
   w.update(ref('profiles', profileId), {
@@ -246,7 +248,7 @@ export async function rejectProfile(adminId, profileId, reason) {
   });
   notifyRaw(w, profileId, {
     type: 'profile_rejected',
-    title: p.published ? 'Изменения в анкете отклонены' : 'Анкета отклонена',
+    title: p.published ? msg('Изменения в анкете отклонены') : msg('Анкета отклонена'),
     body: r,
     link: '/specialist/profile',
   });
@@ -257,7 +259,7 @@ export async function rejectProfile(adminId, profileId, reason) {
 export async function revokeProfile(adminId, profileId, reason) {
   const r = requireReason(reason);
   const p = getProfile(profileId);
-  if (!p.published) throw new Error('Анкета не опубликована');
+  if (!p.published) throw new Error(t('Анкета не опубликована'));
   const now = Date.now();
   const w = batch();
   w.update(ref('profiles', profileId), {
@@ -272,7 +274,7 @@ export async function revokeProfile(adminId, profileId, reason) {
   w.delete(ref('catalog', profileId));
   notifyRaw(w, profileId, {
     type: 'profile_revoked',
-    title: 'Анкета снята с публикации',
+    title: msg('Анкета снята с публикации'),
     body: r,
     link: '/specialist/profile',
   });

@@ -15,6 +15,7 @@ import { EmptyState } from '../../components/EmptyState';
 import { BackButton } from '../../components/PageHeader';
 import { Pingo } from '../../components/Pingo';
 import { Button, ButtonLink } from '../../components/ui';
+import { t } from '../../i18n';
 
 // Сертификат Pingo: открывается из уведомления, анкеты или админ-панели; «Печать» сохраняет его в PDF.
 export default function CertificateView() {
@@ -42,7 +43,7 @@ export default function CertificateView() {
     return (
       <div className="page">
         <BackButton to={home} />
-        <EmptyState pingo title="Сертификат не найден" text="Возможно, его отозвали." action={<ButtonLink to={home}>На главную</ButtonLink>} />
+        <EmptyState pingo title={t('Сертификат не найден')} text={t('Возможно, его отозвали.')} action={<ButtonLink to={home}>{t('На главную')}</ButtonLink>} />
       </div>
     );
   }
@@ -53,7 +54,7 @@ export default function CertificateView() {
       <div className="cert-page__bar">
         <BackButton to={home} />
         <Button variant="dark" icon={PrinterIcon} onClick={() => window.print()}>
-          Распечатать или сохранить PDF
+          {t('Распечатать или сохранить PDF')}
         </Button>
       </div>
       <article className="cert" style={{ '--cert-accent': meta.color }}>
@@ -64,26 +65,26 @@ export default function CertificateView() {
               <strong>Pingo</strong> · {SLOGAN}
             </span>
           </header>
-          <p className="cert__eyebrow">Сертификат</p>
+          <p className="cert__eyebrow">{t('Сертификат')}</p>
           <h1 className="cert__title">{cert.title}</h1>
-          <p className="cert__given">вручается</p>
+          <p className="cert__given">{t('вручается')}</p>
           <p className="cert__name">{cert.recipientName}</p>
           {cert.recipientKind && <p className="cert__kind">{kindLabel(cert.recipientKind)} Pingo</p>}
           {cert.text && <p className="cert__text">{cert.text}</p>}
           <footer className="cert__foot">
             <div>
-              <span>Дата</span>
+              <span>{t('Дата')}</span>
               <strong>{fmtDateYear(cert.issuedAt)}</strong>
             </div>
             <div className="cert__seal" aria-hidden="true">
               <Pingo size={68} mood="happy" animated={false} />
             </div>
             <div>
-              <span>Номер</span>
+              <span>{t('Номер')}</span>
               <strong>{certificateNumber(cert)}</strong>
             </div>
           </footer>
-          <p className="cert__sign">Команда Pingo{cert.issuedByName ? ` · модератор ${cert.issuedByName}` : ''}</p>
+          <p className="cert__sign">{t('Команда Pingo')}{cert.issuedByName ? t(' · модератор {issuedByName}', { issuedByName: cert.issuedByName }) : ''}</p>
         </div>
       </article>
     </div>

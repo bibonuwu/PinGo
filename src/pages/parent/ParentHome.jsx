@@ -31,6 +31,7 @@ import { Pingo } from '../../components/Pingo';
 import { SpecialistCard } from '../../components/SpecialistCard';
 import { ButtonLink, IconButton, ProgressRing, SectionLabel, Stagger } from '../../components/ui';
 import { toggleFavorite } from '../../services/auth';
+import { t } from '../../i18n';
 
 const CATEGORY_ICONS = {
   speech: MicrophoneIcon,
@@ -41,52 +42,52 @@ const CATEGORY_ICONS = {
 };
 
 const TIPS = [
-  'Перед занятием расскажите ребёнку, что будет: кто придёт и чем займётесь. Предсказуемость снижает тревогу.',
-  'Короткие занятия по 10–15 минут каждый день работают лучше, чем одно длинное в неделю.',
-  'Хвалите за усилия, а не только за результат: «Ты так старался!»',
-  'Записывайте маленькие победы — через месяц будет видно, какой путь пройден.',
-  'Визуальное расписание дня помогает детям с РАС и СДВГ чувствовать себя спокойнее.',
+  t('Перед занятием расскажите ребёнку, что будет: кто придёт и чем займётесь. Предсказуемость снижает тревогу.'),
+  t('Короткие занятия по 10–15 минут каждый день работают лучше, чем одно длинное в неделю.'),
+  t('Хвалите за усилия, а не только за результат: «Ты так старался!»'),
+  t('Записывайте маленькие победы — через месяц будет видно, какой путь пройден.'),
+  t('Визуальное расписание дня помогает детям с РАС и СДВГ чувствовать себя спокойнее.'),
 ];
 
 function nextStep({ children, bookings, activeChild, now }) {
   if (!children.length) {
     return {
-      title: 'Создайте профиль ребёнка',
-      text: 'Pingo-гид поможет за пару минут — и я начну подбирать специалистов по возрасту и потребностям.',
+      title: t('Создайте профиль ребёнка'),
+      text: t('Pingo-гид поможет за пару минут — и я начну подбирать специалистов по возрасту и потребностям.'),
       to: '/parent/children/new',
-      label: 'Создать профиль',
+      label: t('Создать профиль'),
     };
   }
   const needsReview = bookings.find((b) => displayStatus(b, now) === 'completed' && !b.reviewId);
   if (needsReview) {
     return {
-      title: 'Как прошло занятие?',
-      text: `Специалист: ${needsReview.specialist?.name ?? '—'}. Ваш отзыв поможет другим семьям выбрать.`,
+      title: t('Как прошло занятие?'),
+      text: t('Специалист: {p0}. Ваш отзыв поможет другим семьям выбрать.', { p0: needsReview.specialist?.name ?? '—' }),
       to: `/parent/bookings/${needsReview.id}`,
-      label: 'Оставить отзыв',
+      label: t('Оставить отзыв'),
     };
   }
   if (bookings.some((b) => b.status === 'pending' && isUpcoming(b, now))) {
     return {
-      title: 'Ждём подтверждения',
-      text: 'Специалист скоро ответит на запрос. Я пришлю уведомление, как только статус изменится.',
+      title: t('Ждём подтверждения'),
+      text: t('Специалист скоро ответит на запрос. Я пришлю уведомление, как только статус изменится.'),
       to: '/parent/bookings',
-      label: 'Мои записи',
+      label: t('Мои записи'),
     };
   }
   if (!bookings.some((b) => isUpcoming(b, now))) {
     return {
-      title: 'Готовы к первому занятию?',
-      text: `Профиль «${activeChild?.name ?? 'ребёнка'}» готов. Выберите специалиста или волонтёра и удобное время — первое занятие можно провести уже на этой неделе.`,
+      title: t('Готовы к первому занятию?'),
+      text: t('Профиль «{p0}» готов. Выберите специалиста или волонтёра и удобное время — первое занятие можно провести уже на этой неделе.', { p0: activeChild?.name ?? t('ребёнка') }),
       to: '/parent/specialists',
-      label: 'Найти специалиста',
+      label: t('Найти специалиста'),
     };
   }
   return {
-    title: 'Всё идёт по плану',
-    text: 'Регулярность — главный секрет прогресса. Запланируйте следующее занятие заранее.',
+    title: t('Всё идёт по плану'),
+    text: t('Регулярность — главный секрет прогресса. Запланируйте следующее занятие заранее.'),
     to: '/parent/specialists',
-    label: 'Выбрать время',
+    label: t('Выбрать время'),
   };
 }
 
@@ -132,7 +133,7 @@ export default function ParentHome() {
           <Link to={`/parent/children/${activeChild.id}`} className="home__child">
             <Avatar avatar={activeChild.avatar} name={activeChild.name} size={64} />
             <span>
-              <span className="home__child-label">Профиль ребёнка</span>
+              <span className="home__child-label">{t('Профиль ребёнка')}</span>
               <strong>{activeChild.name}</strong>
             </span>
           </Link>
@@ -140,19 +141,19 @@ export default function ParentHome() {
           <Link to="/parent/children/new" className="home__child">
             <Avatar name={user.name} size={64} />
             <span>
-              <span className="home__child-label">Профиль ребёнка</span>
-              <strong>Добавить</strong>
+              <span className="home__child-label">{t('Профиль ребёнка')}</span>
+              <strong>{t('Добавить')}</strong>
             </span>
           </Link>
         )}
-        <IconButton icon={BellIcon} label="Уведомления" to="/parent/notifications" badge={counts.notifications} size="lg" />
+        <IconButton icon={BellIcon} label={t('Уведомления')} to="/parent/notifications" badge={counts.notifications} size="lg" />
       </header>
 
       <p className="home__date">
         {capitalize(fmtWeekdayLong(now))}, {fmtDateYear(now)}
       </p>
       <motion.h1 className="home__greeting" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-        Привет, {firstName(user.name)}! Какая поддержка нужна сегодня?{' '}
+        {t('Привет, {firstName}! Какая поддержка нужна сегодня?', { firstName: firstName(user.name) })}{' '}
         <span className="home__pingo" aria-hidden="true">
           <Pingo size={44} mood="happy" />
         </span>
@@ -180,7 +181,7 @@ export default function ParentHome() {
         })}
       </div>
 
-      <SectionLabel>Кто занимается сегодня?</SectionLabel>
+      <SectionLabel>{t('Кто занимается сегодня?')}</SectionLabel>
       <ChildSwitcher
         items={children}
         activeId={activeChild?.id}
@@ -191,7 +192,7 @@ export default function ParentHome() {
       <div className="home__grid">
         <motion.div className="dark-card" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <h3 className="dark-card__title">
-            <SquaresFourIcon size={24} weight="bold" className="ico-yellow" /> По направлениям
+            <SquaresFourIcon size={24} weight="bold" className="ico-yellow" />{' '}{t('По направлениям')}
           </h3>
           <div className="stack-bar" aria-hidden="true">
             {stats.byCat.map(
@@ -217,14 +218,14 @@ export default function ParentHome() {
             ))}
           </ul>
           <p className="dark-card__foot">
-            {stats.total} {plural(stats.total, ['анкета', 'анкеты', 'анкет'])} в каталоге
+            {stats.total} {plural(stats.total, [t('анкета'), t('анкеты'), t('анкет')])}{' '}{t('в каталоге')}
           </p>
         </motion.div>
 
         <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }}>
           <Link to="/parent/specialists?today=1" className="dark-card dark-card--link">
             <h3 className="dark-card__title">
-              <CalendarCheckIcon size={24} weight="bold" className="ico-green" /> Свободно сегодня
+              <CalendarCheckIcon size={24} weight="bold" className="ico-green" />{' '}{t('Свободно сегодня')}
             </h3>
             <div className="today">
               <ProgressRing value={stats.total ? stats.freeToday / stats.total : 0} size={112} stroke={11}>
@@ -233,7 +234,7 @@ export default function ParentHome() {
               <div className="today__text">
                 <strong>{stats.freeToday}</strong>
                 <span>
-                  {plural(stats.freeToday, ['свободен', 'свободны', 'свободны'])} · {stats.total} всего
+                  {plural(stats.freeToday, [t('свободен'), t('свободны'), t('свободны')])}{' '}{t('· {total} всего', { total: stats.total })}
                 </span>
               </div>
             </div>
@@ -243,7 +244,7 @@ export default function ParentHome() {
 
       {upcoming.length > 0 && (
         <>
-          <SectionLabel action={<Link to="/parent/bookings">Все записи</Link>}>Ближайшие занятия</SectionLabel>
+          <SectionLabel action={<Link to="/parent/bookings">{t('Все записи')}</Link>}>{t('Ближайшие занятия')}</SectionLabel>
           <Stagger className="list">
             {upcoming.slice(0, 2).map((b) => (
               <BookingCard
@@ -263,9 +264,9 @@ export default function ParentHome() {
       <motion.div className="next-step" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
         <div className="next-step__top">
           <span className="next-step__badge">
-            <SparkleIcon size={16} weight="fill" /> Следующий шаг
+            <SparkleIcon size={16} weight="fill" />{' '}{t('Следующий шаг')}
           </span>
-          <span className="next-step__meta">{children.length ? 'Профиль готов' : 'Начало'}</span>
+          <span className="next-step__meta">{children.length ? t('Профиль готов') : t('Начало')}</span>
         </div>
         <h2>{step.title}</h2>
         <p>{step.text}</p>
@@ -276,8 +277,8 @@ export default function ParentHome() {
 
       {recommended.length > 0 && (
         <>
-          <SectionLabel action={<Link to="/parent/specialists?match=1">Все</Link>}>
-            Рекомендации · {activeChild.name}
+          <SectionLabel action={<Link to="/parent/specialists?match=1">{t('Все')}</Link>}>
+            {t('Рекомендации · {name}', { name: activeChild.name })}
           </SectionLabel>
           <Stagger className="sp-grid">
             {recommended.map(({ e, m }) => (
@@ -300,7 +301,7 @@ export default function ParentHome() {
         <Pingo size={64} mood="wink" />
         <div>
           <strong>
-            <LightbulbIcon size={18} weight="fill" /> Совет от Pingo
+            <LightbulbIcon size={18} weight="fill" />{' '}{t('Совет от Pingo')}
           </strong>
           <p>{tip}</p>
         </div>

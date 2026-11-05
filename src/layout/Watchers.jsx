@@ -10,6 +10,8 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { notifyOnce } from '../services/notifications';
 import { roomWindow } from '../services/bookings';
+import { t } from '../i18n';
+import { msg, notificationBody, notificationTitle } from '../i18n/stored';
 
 // Новые уведомления: внутри приложения — тост, в фоне — системное уведомление устройства.
 export function NotificationWatcher({ user }) {
@@ -31,14 +33,14 @@ export function NotificationWatcher({ user }) {
       if (n.read || n.createdAt < startedAt.current || seen.current.has(n.id)) continue;
       seen.current.add(n.id);
       if (document.visibilityState === 'visible') {
-        toast.show(n.body, {
-          title: n.title,
+        toast.show(notificationBody(n), {
+          title: notificationTitle(n),
           tone: 'info',
           duration: 6000,
-          action: n.link ? { label: 'Открыть', onClick: () => navigate(n.link) } : undefined,
+          action: n.link ? { label: t('Открыть'), onClick: () => navigate(n.link) } : undefined,
         });
       } else {
-        showSystemNotification(n.title, { body: n.body, tag: n.id, url: n.link });
+        showSystemNotification(notificationTitle(n), { body: notificationBody(n), tag: n.id, url: n.link });
       }
     }
   }, [latest, toast, navigate]);
@@ -68,8 +70,8 @@ export function ReminderWatcher({ user }) {
       if (now >= opensAt && now < b.start + 5 * MINUTE) {
         notifyOnce(`room_${b.id}_${user.id}`, user.id, {
           type: 'room_open',
-          title: 'Видеокомната открыта',
-          body: `Занятие начнётся в ${fmtTime(b.start)} — можно заходить и проверить камеру.`,
+          title: msg('Видеокомната открыта'),
+          body: msg('Занятие начнётся в {time} — можно заходить и проверить камеру.', { time: fmtTime(b.start) }),
           link: `/room/${b.id}`,
         });
       }
@@ -109,16 +111,16 @@ export function PwaUpdater() {
 
   useEffect(() => {
     if (!offlineReady || !user) return;
-    toast.success('Pingo сохранён на устройстве и откроется даже без интернета.');
+    toast.success(t('Pingo сохранён на устройстве и откроется даже без интернета.'));
     setOfflineReady(false);
   }, [offlineReady, setOfflineReady, toast, user]);
 
   useEffect(() => {
     if (!needRefresh) return;
-    toast.show('Доступна новая версия Pingo.', {
-      title: 'Обновление',
+    toast.show(t('Доступна новая версия Pingo.'), {
+      title: t('Обновление'),
       duration: Infinity,
-      action: { label: 'Обновить', onClick: () => updateServiceWorker(true) },
+      action: { label: t('Обновить'), onClick: () => updateServiceWorker(true) },
     });
   }, [needRefresh, toast, updateServiceWorker]);
 

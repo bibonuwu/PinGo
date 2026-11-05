@@ -7,6 +7,7 @@ import { useThemeColor } from '../../hooks/useThemeColor';
 import { loginUser, loginWithGoogle, resetPassword } from '../../services/auth';
 import { BackButton } from '../../components/PageHeader';
 import { Button, Input } from '../../components/ui';
+import { t } from '../../i18n';
 
 // После входа на нужную страницу (кабинет или ссылку, с которой пришли) переводит PublicOnly.
 export default function Login() {
@@ -37,7 +38,7 @@ export default function Login() {
     setError('');
     try {
       await resetPassword(email);
-      toast.success(`Ссылка для нового пароля отправлена на ${email.trim()}. Проверьте почту и папку «Спам».`);
+      toast.success(t('Ссылка для нового пароля отправлена на {trim}. Проверьте почту и папку «Спам».', { trim: email.trim() }));
     } catch (err) {
       setError(err.message);
     }
@@ -71,8 +72,8 @@ export default function Login() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 200, damping: 24 }}
       >
-        <h1 className="auth__title">С возвращением!</h1>
-        <p className="auth__subtitle">Войдите, чтобы продолжить заботу о ребёнке.</p>
+        <h1 className="auth__title">{t('С возвращением!')}</h1>
+        <p className="auth__subtitle">{t('Войдите, чтобы продолжить заботу о ребёнке.')}</p>
 
         <form className="auth__form" onSubmit={submit} noValidate>
           <Input
@@ -92,8 +93,8 @@ export default function Login() {
             icon={LockIcon}
             type={show ? 'text' : 'password'}
             autoComplete="current-password"
-            placeholder="Пароль"
-            aria-label="Пароль"
+            placeholder={t('Пароль')}
+            aria-label={t('Пароль')}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -102,7 +103,7 @@ export default function Login() {
                 type="button"
                 className="input__eye"
                 onClick={() => setShow((s) => !s)}
-                aria-label={show ? 'Скрыть пароль' : 'Показать пароль'}
+                aria-label={show ? t('Скрыть пароль') : t('Показать пароль')}
               >
                 {show ? <EyeSlashIcon size={20} /> : <EyeIcon size={20} />}
               </button>
@@ -122,16 +123,16 @@ export default function Login() {
             )}
           </AnimatePresence>
           <Button type="submit" variant="light" size="lg" block loading={busy === 'form'} disabled={!email || !password || !!busy}>
-            Войти
+            {t('Войти')}
           </Button>
         </form>
 
         <button type="button" className="auth__forgot" onClick={forgot} disabled={!!busy}>
-          Забыли пароль?
+          {t('Забыли пароль?')}
         </button>
 
         <div className="auth__divider">
-          <span>или</span>
+          <span>{t('или')}</span>
         </div>
 
         <Button
@@ -143,11 +144,11 @@ export default function Login() {
           disabled={!!busy && busy !== 'google'}
           onClick={google}
         >
-          Войти через Google
+          {t('Войти через Google')}
         </Button>
 
         <p className="auth__switch">
-          Нет аккаунта? <Link to="/register">Зарегистрироваться</Link>
+          {t('Нет аккаунта?')}{' '}<Link to="/register">{t('Зарегистрироваться')}</Link>
         </p>
       </motion.div>
 

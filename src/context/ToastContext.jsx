@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CheckCircleIcon, InfoIcon, WarningCircleIcon, XIcon } from '@phosphor-icons/react';
 import { uid } from '../lib/utils';
+import { t } from '../i18n';
 
 const ToastContext = createContext(null);
 
@@ -43,14 +44,14 @@ export function ToastProvider({ children }) {
     <ToastContext.Provider value={api}>
       {children}
       {createPortal(
-        <div className="toaster" role="region" aria-label="Уведомления" aria-live="polite">
+        <div className="toaster" role="region" aria-label={t('Уведомления')} aria-live="polite">
           <AnimatePresence initial={false}>
-            {toasts.map((t) => {
-              const Icon = ICONS[t.tone] ?? InfoIcon;
+            {toasts.map((item) => {
+              const Icon = ICONS[item.tone] ?? InfoIcon;
               return (
                 <motion.div
-                  key={t.id}
-                  className={`toast toast--${t.tone}`}
+                  key={item.id}
+                  className={`toast toast--${item.tone}`}
                   initial={{ opacity: 0, y: -16, scale: 0.96 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -12, scale: 0.96, transition: { duration: 0.15 } }}
@@ -58,22 +59,22 @@ export function ToastProvider({ children }) {
                 >
                   <Icon size={22} weight="fill" className="toast__icon" />
                   <div className="toast__body">
-                    {t.title && <strong>{t.title}</strong>}
-                    <span>{t.message}</span>
+                    {item.title && <strong>{item.title}</strong>}
+                    <span>{item.message}</span>
                   </div>
-                  {t.action && (
+                  {item.action && (
                     <button
                       type="button"
                       className="toast__action"
                       onClick={() => {
-                        t.action.onClick();
-                        dismiss(t.id);
+                        item.action.onClick();
+                        dismiss(item.id);
                       }}
                     >
-                      {t.action.label}
+                      {item.action.label}
                     </button>
                   )}
-                  <button type="button" className="toast__close" aria-label="Закрыть" onClick={() => dismiss(t.id)}>
+                  <button type="button" className="toast__close" aria-label={t('Закрыть')} onClick={() => dismiss(item.id)}>
                     <XIcon size={16} weight="bold" />
                   </button>
                 </motion.div>

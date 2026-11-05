@@ -12,6 +12,7 @@ import {
 import { LEARNING_STYLES, NEEDS } from '../lib/constants';
 import { ageFromBirthDate, birthDateBounds, cx, fmtAge } from '../lib/utils';
 import { Chip, Field, Input, Textarea } from './ui';
+import { t } from '../i18n';
 
 const STYLE_ICONS = {
   visual: EyeIcon,
@@ -29,18 +30,18 @@ export function AboutFields({ data, set, errors = {} }) {
   const ageOk = age != null && age >= 1 && age <= 18;
   return (
     <div className="form-stack">
-      <Field label="Имя ребёнка" htmlFor="child-name" error={errors.name}>
+      <Field label={t('Имя ребёнка')} htmlFor="child-name" error={errors.name}>
         <Input
           id="child-name"
           icon={SmileyIcon}
-          placeholder="Например, Алия"
+          placeholder={t('Например, Алия')}
           value={data.name}
           maxLength={40}
           autoComplete="off"
           onChange={(e) => set({ name: e.target.value })}
         />
       </Field>
-      <Field label="Дата рождения" htmlFor="child-birth" hint="Pingo помогает детям от 1 до 18 лет" error={errors.birthDate}>
+      <Field label={t('Дата рождения')} htmlFor="child-birth" hint={t('Pingo помогает детям от 1 до 18 лет')} error={errors.birthDate}>
         <Input
           id="child-birth"
           icon={CakeIcon}
@@ -82,10 +83,10 @@ export function NeedsFields({ data, set, errors = {} }) {
       <AnimatePresence>
         {data.needs.includes('other') && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-            <Field label="Что ещё важно?" htmlFor="child-other" error={errors.needsOther}>
+            <Field label={t('Что ещё важно?')} htmlFor="child-other" error={errors.needsOther}>
               <Input
                 id="child-other"
-                placeholder="Например, эпилепсия или тревожность"
+                placeholder={t('Например, эпилепсия или тревожность')}
                 value={data.needsOther}
                 maxLength={120}
                 onChange={(e) => set({ needsOther: e.target.value })}
@@ -134,20 +135,20 @@ export function StyleFields({ data, set }) {
 export function GoalsFields({ data, set }) {
   return (
     <div className="form-stack">
-      <Field label="Цели занятий" optional counter={`${data.goals.length}/400`}>
+      <Field label={t('Цели занятий')} optional counter={`${data.goals.length}/400`}>
         <Textarea
           rows={3}
           maxLength={400}
-          placeholder="Например: расширить словарный запас, научиться просить о помощи"
+          placeholder={t('Например: расширить словарный запас, научиться просить о помощи')}
           value={data.goals}
           onChange={(e) => set({ goals: e.target.value })}
         />
       </Field>
-      <Field label="Что важно знать специалисту" optional counter={`${data.notes.length}/600`}>
+      <Field label={t('Что важно знать специалисту')} optional counter={`${data.notes.length}/600`}>
         <Textarea
           rows={3}
           maxLength={600}
-          placeholder="Что помогает успокоиться, чего избегать, любимые темы и игрушки, нужные адаптации"
+          placeholder={t('Что помогает успокоиться, чего избегать, любимые темы и игрушки, нужные адаптации')}
           value={data.notes}
           onChange={(e) => set({ notes: e.target.value })}
         />

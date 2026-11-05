@@ -8,6 +8,7 @@ import { BookingCard } from '../../components/BookingCard';
 import { EmptyState } from '../../components/EmptyState';
 import { PageHeader } from '../../components/PageHeader';
 import { ButtonLink, Chip, Stagger, Tabs } from '../../components/ui';
+import { t } from '../../i18n';
 
 export default function ParentBookings() {
   const { user } = useAuth();
@@ -30,15 +31,15 @@ export default function ParentBookings() {
   if (bookings.length === 0) {
     return (
       <div className="page">
-        <PageHeader title="Записи" />
+        <PageHeader title={t('Записи')} />
         <EmptyState
           icon={CalendarDotsIcon}
-          title="Ваше расписание пока свободно"
-          text="Запишитесь на занятие и следите за подтверждением здесь."
-          steps={['Найдите специалиста в каталоге', 'Выберите удобное время', 'Следите за статусом здесь']}
+          title={t('Ваше расписание пока свободно')}
+          text={t('Запишитесь на занятие и следите за подтверждением здесь.')}
+          steps={[t('Найдите специалиста в каталоге'), t('Выберите удобное время'), t('Следите за статусом здесь')]}
           action={
             <ButtonLink to="/parent/specialists" variant="primary" size="lg" icon={MagnifyingGlassIcon} block>
-              Найти специалиста
+              {t('Найти специалиста')}
             </ButtonLink>
           }
         />
@@ -50,20 +51,20 @@ export default function ParentBookings() {
 
   return (
     <div className="page">
-      <PageHeader title="Записи" />
+      <PageHeader title={t('Записи')} />
       <Tabs
         value={tab}
         onChange={setTab}
         layoutId="bookings-tabs"
         items={[
-          { value: 'upcoming', label: 'Предстоящие', count: upcoming.length },
-          { value: 'past', label: 'Прошедшие' },
+          { value: 'upcoming', label: t('Предстоящие'), count: upcoming.length },
+          { value: 'past', label: t('Прошедшие') },
         ]}
       />
       {children.length > 1 && (
         <div className="chips chips--scroll chips--sm">
           <Chip active={childFilter === 'all'} onClick={() => setChildFilter('all')}>
-            Все дети
+            {t('Все дети')}
           </Chip>
           {children.map((c) => (
             <Chip key={c.id} active={childFilter === c.id} onClick={() => setChildFilter(c.id)}>
@@ -75,12 +76,12 @@ export default function ParentBookings() {
       {list.length === 0 ? (
         <EmptyState
           icon={CalendarDotsIcon}
-          title={tab === 'upcoming' ? 'Нет предстоящих занятий' : 'Здесь появится история занятий'}
-          text={tab === 'upcoming' ? 'Выберите специалиста и время — запись появится здесь.' : 'Проведённые, отменённые и отклонённые записи.'}
+          title={tab === 'upcoming' ? t('Нет предстоящих занятий') : t('Здесь появится история занятий')}
+          text={tab === 'upcoming' ? t('Выберите специалиста и время — запись появится здесь.') : t('Проведённые, отменённые и отклонённые записи.')}
           action={
             tab === 'upcoming' && (
               <ButtonLink to="/parent/specialists" variant="primary" icon={MagnifyingGlassIcon}>
-                Найти специалиста
+                {t('Найти специалиста')}
               </ButtonLink>
             )
           }

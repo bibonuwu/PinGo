@@ -10,12 +10,13 @@ import { Avatar } from '../../components/Avatar';
 import { EmptyState } from '../../components/EmptyState';
 import { PageHeader } from '../../components/PageHeader';
 import { Input, StatusBadge, Stagger, StaggerItem, Tabs } from '../../components/ui';
+import { t } from '../../i18n';
 
 const TABS = [
-  { value: 'pending', label: 'На проверке' },
-  { value: 'approved', label: 'Одобренные' },
-  { value: 'rejected', label: 'Отклонённые' },
-  { value: 'all', label: 'Все' },
+  { value: 'pending', label: t('На проверке') },
+  { value: 'approved', label: t('Одобренные') },
+  { value: 'rejected', label: t('Отклонённые') },
+  { value: 'all', label: t('Все') },
 ];
 
 export default function AdminProfiles() {
@@ -54,12 +55,12 @@ export default function AdminProfiles() {
 
   return (
     <div className="page">
-      <PageHeader title="Анкеты" subtitle="Проверьте анкеты волонтёров и специалистов перед публикацией в каталоге." />
+      <PageHeader title={t('Анкеты')} subtitle={t('Проверьте анкеты волонтёров и специалистов перед публикацией в каталоге.')} />
       <div className="admin-stats">
         {[
-          ['На проверке', counts.pending, 'yellow'],
-          ['Одобрено', counts.approved, 'green'],
-          ['Отклонено', counts.rejected, 'red'],
+          [t('На проверке'), counts.pending, 'yellow'],
+          [t('Одобрено'), counts.approved, 'green'],
+          [t('Отклонено'), counts.rejected, 'red'],
         ].map(([label, value, tone], i) => (
           <motion.div
             key={label}
@@ -74,13 +75,13 @@ export default function AdminProfiles() {
         ))}
       </div>
       <Tabs value={tab} onChange={setTab} layoutId="admin-tabs" items={TABS.map((t) => ({ ...t, count: t.value === 'pending' ? counts.pending : 0 }))} />
-      <Input icon={MagnifyingGlassIcon} type="search" placeholder="Имя, email или заголовок" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Поиск анкет" />
+      <Input icon={MagnifyingGlassIcon} type="search" placeholder={t('Имя, email или заголовок')} value={query} onChange={(e) => setQuery(e.target.value)} aria-label={t('Поиск анкет')} />
 
       {list.length === 0 ? (
         <EmptyState
           icon={IdentificationCardIcon}
-          title={tab === 'pending' ? 'Все анкеты проверены' : 'Ничего не найдено'}
-          text={tab === 'pending' ? 'Новые анкеты появятся здесь — я пришлю уведомление.' : 'Попробуйте другой фильтр.'}
+          title={tab === 'pending' ? t('Все анкеты проверены') : t('Ничего не найдено')}
+          text={tab === 'pending' ? t('Новые анкеты появятся здесь — я пришлю уведомление.') : t('Попробуйте другой фильтр.')}
         />
       ) : (
         <Stagger key={tab} as="ul" className="admin-list">
@@ -96,15 +97,15 @@ export default function AdminProfiles() {
                       <span className="kind-tag kind-tag--sm">{kindLabel(profile.draft.kind)}</span>
                       {isUpdate && (
                         <span className="tag tag--blue">
-                          <ArrowsClockwiseIcon size={12} weight="bold" /> обновление
+                          <ArrowsClockwiseIcon size={12} weight="bold" />{' '}{t('обновление')}
                         </span>
                       )}
                     </span>
-                    <span className="admin-row__title">{profile.draft.title || 'Без заголовка'}</span>
+                    <span className="admin-row__title">{profile.draft.title || t('Без заголовка')}</span>
                     <span className="admin-row__meta">
                       {profile.status === 'pending'
-                        ? `Отправлена ${fmtAgo(profile.submittedAt)}`
-                        : `Решение ${fmtAgo(profile.reviewedAt ?? profile.updatedAt)}`}
+                        ? t('Отправлена {fmtAgo}', { fmtAgo: fmtAgo(profile.submittedAt) })
+                        : t('Решение {fmtAgo}', { fmtAgo: fmtAgo(profile.reviewedAt ?? profile.updatedAt) })}
                     </span>
                   </span>
                   <StatusBadge kind="profile" status={profile.status} />

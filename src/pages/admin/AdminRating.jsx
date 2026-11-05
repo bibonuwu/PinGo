@@ -13,20 +13,21 @@ import { IssueCertificateSheet } from '../../components/Certificate';
 import { EmptyState } from '../../components/EmptyState';
 import { PageHeader } from '../../components/PageHeader';
 import { Button, Chip, IconButton, Input, Rating, Stagger, StaggerItem, Tabs } from '../../components/ui';
+import { t } from '../../i18n';
 
 const PERIODS = [
-  { value: 'all', label: 'За всё время' },
-  { value: 'month', label: 'За 30 дней' },
+  { value: 'all', label: t('За всё время') },
+  { value: 'month', label: t('За 30 дней') },
 ];
 const KINDS = [
-  { id: 'all', label: 'Все' },
-  { id: 'volunteer', label: 'Волонтёры' },
-  { id: 'specialist', label: 'Специалисты' },
+  { id: 'all', label: t('Все') },
+  { id: 'volunteer', label: t('Волонтёры') },
+  { id: 'specialist', label: t('Специалисты') },
 ];
 const SORTS = [
-  { id: 'score', label: 'По рейтингу' },
-  { id: 'sessions', label: 'По занятиям' },
-  { id: 'minutes', label: 'По часам' },
+  { id: 'score', label: t('По рейтингу') },
+  { id: 'sessions', label: t('По занятиям') },
+  { id: 'minutes', label: t('По часам') },
 ];
 
 const statValue = (stats, row, field, fmt = (v) => v) => {
@@ -93,8 +94,8 @@ export default function AdminRating() {
   return (
     <div className="page">
       <PageHeader
-        title="Рейтинг"
-        subtitle="Лучшие волонтёры и специалисты по оценкам родителей и проведённым занятиям. Отметьте лучших сертификатом."
+        title={t('Рейтинг')}
+        subtitle={t('Лучшие волонтёры и специалисты по оценкам родителей и проведённым занятиям. Отметьте лучших сертификатом.')}
       />
       <Tabs value={period} onChange={setPeriod} layoutId="rating-period" items={PERIODS} />
       <div className="filters-row">
@@ -113,40 +114,40 @@ export default function AdminRating() {
           ))}
         </div>
       </div>
-      <Input icon={MagnifyingGlassIcon} type="search" placeholder="Имя, email или заголовок" value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Поиск в рейтинге" />
+      <Input icon={MagnifyingGlassIcon} type="search" placeholder={t('Имя, email или заголовок')} value={query} onChange={(e) => setQuery(e.target.value)} aria-label={t('Поиск в рейтинге')} />
 
       {rows.length === 0 ? (
-        <EmptyState icon={RankingIcon} title="Пока некого оценивать" text="Здесь появятся волонтёры и специалисты из каталога." />
+        <EmptyState icon={RankingIcon} title={t('Пока некого оценивать')} text={t('Здесь появятся волонтёры и специалисты из каталога.')} />
       ) : (
         <>
           <Stagger key={`${period}-${kind}-${sort}`} className="podium">
             {podium.map((r, i) => (
               <StaggerItem key={r.id} className={`podium__card podium__card--${i + 1}`}>
-                <Link to={`/admin/profiles/${r.id}`} className="card-link" aria-label={`${r.user.name} — открыть анкету`} />
+                <Link to={`/admin/profiles/${r.id}`} className="card-link" aria-label={t('{name} — открыть анкету', { name: r.user.name })} />
                 <span className={`place place--${i + 1}`}>{i + 1}</span>
                 <Avatar avatar={r.user.avatar} name={r.user.name} size={64} ring />
                 <strong className="podium__name">
                   {r.user.name}
-                  {r.profile.verifiedAt && <SealCheckIcon size={18} weight="fill" className="ico-verified" aria-label="Подтверждён" />}
+                  {r.profile.verifiedAt && <SealCheckIcon size={18} weight="fill" className="ico-verified" aria-label={t('Подтверждён')} />}
                 </strong>
                 <span className={cx('kind-tag kind-tag--sm', r.kind === 'volunteer' && 'kind-tag--volunteer')}>{kindLabel(r.kind)}</span>
                 <Rating rating={r.avg} count={r.count} />
                 <dl className="podium__stats">
                   <div>
-                    <dt>занятий</dt>
+                    <dt>{t('занятий')}</dt>
                     <dd>{statValue(stats, r, 'sessions')}</dd>
                   </div>
                   <div>
-                    <dt>часов</dt>
+                    <dt>{t('часов')}</dt>
                     <dd>{statValue(stats, r, 'minutes', fmtHours)}</dd>
                   </div>
                   <div>
-                    <dt>наград</dt>
+                    <dt>{t('наград')}</dt>
                     <dd>{r.certs}</dd>
                   </div>
                 </dl>
                 <Button size="sm" variant={i === 0 ? 'dark' : 'soft'} icon={CertificateIcon} onClick={() => setAward({ row: r, type: suggestType(r) })} className="podium__btn">
-                  Сертификат
+                  {t('Сертификат')}
                 </Button>
               </StaggerItem>
             ))}
@@ -162,19 +163,19 @@ export default function AdminRating() {
                     <span>
                       <strong>
                         {r.user.name}
-                        {r.profile.verifiedAt && <SealCheckIcon size={16} weight="fill" className="ico-verified" aria-label="Подтверждён" />}
+                        {r.profile.verifiedAt && <SealCheckIcon size={16} weight="fill" className="ico-verified" aria-label={t('Подтверждён')} />}
                       </strong>
                       <span className="muted small">{kindLabel(r.kind)}</span>
                     </span>
                   </Link>
                   <Rating rating={r.avg} count={r.count} />
                   <span className="rank-row__stat">
-                    <strong>{statValue(stats, r, 'sessions')}</strong> зан.
+                    <strong>{statValue(stats, r, 'sessions')}</strong>{' '}{t('зан.')}
                   </span>
                   <span className="rank-row__stat">
                     <strong>{statValue(stats, r, 'minutes', fmtHours)}</strong>
                   </span>
-                  <IconButton icon={CertificateIcon} label="Выдать сертификат" size="sm" onClick={() => setAward({ row: r, type: suggestType(r) })} />
+                  <IconButton icon={CertificateIcon} label={t('Выдать сертификат')} size="sm" onClick={() => setAward({ row: r, type: suggestType(r) })} />
                 </StaggerItem>
               ))}
             </Stagger>
@@ -185,8 +186,7 @@ export default function AdminRating() {
       <motion.p className="hint-line" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }}>
         <InfoIcon size={18} weight="bold" />
         <span>
-          Рейтинг — средняя оценка с поправкой на число отзывов: без отзывов — 4,0, и каждый новый отзыв приближает его к настоящей
-          средней. Так пара оценок «5» не обгоняет двадцать оценок «4,8». Занятия и часы — проведённые подтверждённые записи.
+          {t('Рейтинг — средняя оценка с поправкой на число отзывов: без отзывов — 4,0, и каждый новый отзыв приближает его к настоящей средней. Так пара оценок «5» не обгоняет двадцать оценок «4,8». Занятия и часы — проведённые подтверждённые записи.')}
         </span>
       </motion.p>
 

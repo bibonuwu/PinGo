@@ -32,6 +32,8 @@ import { ComplaintDialog } from '../../components/Chat';
 import { EmptyState } from '../../components/EmptyState';
 import { BackButton } from '../../components/PageHeader';
 import { Button, ButtonLink, IconButton, Rating, Stars } from '../../components/ui';
+import { t } from '../../i18n';
+import { reviewAuthor } from '../../i18n/stored';
 
 export default function SpecialistDetail() {
   const { id } = useParams();
@@ -54,9 +56,9 @@ export default function SpecialistDetail() {
         <BackButton to="/parent/specialists" />
         <EmptyState
           pingo
-          title="Анкета недоступна"
-          text="Возможно, она на модерации или специалист больше не принимает записи."
-          action={<ButtonLink to="/parent/specialists">К каталогу</ButtonLink>}
+          title={t('Анкета недоступна')}
+          text={t('Возможно, она на модерации или специалист больше не принимает записи.')}
+          action={<ButtonLink to="/parent/specialists">{t('К каталогу')}</ButtonLink>}
         />
       </div>
     );
@@ -81,11 +83,11 @@ export default function SpecialistDetail() {
 
   const bookAction = hasChildren ? (
     <ButtonLink to="book" variant="primary" size="lg" icon={CalendarPlusIcon} block>
-      Записаться на занятие
+      {t('Записаться на занятие')}
     </ButtonLink>
   ) : (
     <ButtonLink to="/parent/children/new" variant="primary" size="lg" block>
-      Сначала добавьте ребёнка
+      {t('Сначала добавьте ребёнка')}
     </ButtonLink>
   );
 
@@ -97,11 +99,11 @@ export default function SpecialistDetail() {
           <IconButton
             icon={HeartIcon}
             weight={favorite ? 'fill' : 'bold'}
-            label={favorite ? 'Убрать из избранного' : 'В избранное'}
+            label={favorite ? t('Убрать из избранного') : t('В избранное')}
             className={cx(favorite && 'is-fav')}
             onClick={() => toggleFavorite(user.id, id)}
           />
-          <IconButton icon={FlagIcon} label="Пожаловаться" onClick={() => setComplaintOpen(true)} />
+          <IconButton icon={FlagIcon} label={t('Пожаловаться')} onClick={() => setComplaintOpen(true)} />
         </div>
       </div>
 
@@ -115,32 +117,32 @@ export default function SpecialistDetail() {
           >
             <Avatar avatar={sp.avatar} name={sp.name} size={104} ring />
             <h1 className="profile-hero__name">
-              {sp.name} <SealCheckIcon size={24} weight="fill" className="ico-verified" aria-label="Анкета проверена" />
+              {sp.name} <SealCheckIcon size={24} weight="fill" className="ico-verified" aria-label={t('Анкета проверена')} />
             </h1>
             <p className="profile-hero__title">{data.title}</p>
             <div className="profile-hero__meta">
               <Rating rating={entry.rating} count={entry.reviewsCount} />
               <span className={cx('kind-tag', data.kind === 'volunteer' && 'kind-tag--volunteer')}>{kindLabel(data.kind)}</span>
               {entry.profile.verifiedAt && (
-                <span className="verified-tag" title="Модератор Pingo проверил документы и занятия">
-                  <SealCheckIcon size={16} weight="fill" /> {data.kind === 'volunteer' ? 'Подтверждённый волонтёр' : 'Подтверждённый специалист'}
+                <span className="verified-tag" title={t('Модератор Pingo проверил документы и занятия')}>
+                  <SealCheckIcon size={16} weight="fill" /> {data.kind === 'volunteer' ? t('Подтверждённый волонтёр') : t('Подтверждённый специалист')}
                 </span>
               )}
             </div>
             <div className="facts">
               <div>
                 <strong>{data.experienceYears}</strong>
-                <span>{plural(data.experienceYears, ['год', 'года', 'лет'])} опыта</span>
+                <span>{plural(data.experienceYears, [t('год'), t('года'), t('лет')])}{' '}{t('опыта')}</span>
               </div>
               <div>
                 <strong>
                   {data.ageMin}–{data.ageMax}
                 </strong>
-                <span>возраст детей</span>
+                <span>{t('возраст детей')}</span>
               </div>
               <div>
                 <strong>{entry.sessionMinutes}</strong>
-                <span>мин занятие</span>
+                <span>{t('мин занятие')}</span>
               </div>
             </div>
           </motion.section>
@@ -155,20 +157,20 @@ export default function SpecialistDetail() {
               <div>
                 {!match.ageOk ? (
                   <>
-                    <strong>Возраст ребёнка вне практики специалиста</strong>
+                    <strong>{t('Возраст ребёнка вне практики специалиста')}</strong>
                     <span>
-                      {activeChild.name} — {fmtAge(match.age)}, специалист работает с детьми {data.ageMin}–{data.ageMax} лет.
+                      {t('{name} — {fmtAge}, специалист работает с детьми {ageMin}–{ageMax} лет.', { name: activeChild.name, fmtAge: fmtAge(match.age), ageMin: data.ageMin, ageMax: data.ageMax })}
                     </span>
                   </>
                 ) : match.good ? (
                   <>
-                    <strong>Подходит · {activeChild.name}</strong>
-                    <span>Помогает с запросами: {match.matchedNeeds.map((n) => NEED_MAP[n]?.label.toLowerCase()).join(', ')}.</span>
+                    <strong>{t('Подходит · {name}', { name: activeChild.name })}</strong>
+                    <span>{t('Помогает с запросами:')}{' '}{match.matchedNeeds.map((n) => NEED_MAP[n]?.label.toLowerCase()).join(', ')}.</span>
                   </>
                 ) : (
                   <>
-                    <strong>Подходит по возрасту</strong>
-                    <span>Направления специалиста не пересекаются с отмеченными потребностями ребёнка.</span>
+                    <strong>{t('Подходит по возрасту')}</strong>
+                    <span>{t('Направления специалиста не пересекаются с отмеченными потребностями ребёнка.')}</span>
                   </>
                 )}
               </div>
@@ -176,17 +178,17 @@ export default function SpecialistDetail() {
           )}
 
           <section className="card-section">
-            <h2>О себе</h2>
+            <h2>{t('О себе')}</h2>
             <p className="prewrap">{data.description}</p>
           </section>
           {data.experienceText && (
             <section className="card-section">
-              <h2>Опыт и образование</h2>
+              <h2>{t('Опыт и образование')}</h2>
               <p className="prewrap">{data.experienceText}</p>
             </section>
           )}
           <section className="card-section">
-            <h2>Направления</h2>
+            <h2>{t('Направления')}</h2>
             <div className="tags">
               {info.specializations.map((s) => (
                 <span key={s} className="tag tag--lg">
@@ -197,22 +199,22 @@ export default function SpecialistDetail() {
           </section>
           <section className="card-section card-section--row">
             <div>
-              <h2>Формат</h2>
+              <h2>{t('Формат')}</h2>
               <ul className="plain-list">
                 {data.formats.includes('online') && (
                   <li>
-                    <VideoCameraIcon size={18} weight="bold" /> Онлайн — видеокомната Pingo
+                    <VideoCameraIcon size={18} weight="bold" />{' '}{t('Онлайн — видеокомната Pingo')}
                   </li>
                 )}
                 {data.formats.includes('offline') && (
                   <li>
-                    <MapPinIcon size={18} weight="bold" /> Очно — {data.city}
+                    <MapPinIcon size={18} weight="bold" />{' '}{t('Очно — {city}', { city: data.city })}
                   </li>
                 )}
               </ul>
             </div>
             <div>
-              <h2>Языки</h2>
+              <h2>{t('Языки')}</h2>
               <ul className="plain-list">
                 <li>
                   <GlobeIcon size={18} weight="bold" /> {info.languages.join(', ')}
@@ -223,28 +225,28 @@ export default function SpecialistDetail() {
 
           {certificates.length > 0 && (
             <section className="card-section">
-              <h2>Награды Pingo</h2>
+              <h2>{t('Награды Pingo')}</h2>
               <CertificateList items={certificates} />
             </section>
           )}
 
           <section className="card-section">
             <h2>
-              Отзывы {entry.reviewsCount > 0 && <span className="muted">· {entry.reviewsCount}</span>}
+              {t('Отзывы')}{' '}{entry.reviewsCount > 0 && <span className="muted">· {entry.reviewsCount}</span>}
             </h2>
             {entry.reviews.length === 0 ? (
-              <p className="muted">Пока нет отзывов — станьте первым после занятия.</p>
+              <p className="muted">{t('Пока нет отзывов — станьте первым после занятия.')}</p>
             ) : (
               <ul className="reviews">
                 {entry.reviews.map((r) => (
                   <li key={r.id} className="review">
                     <div className="review__head">
-                      <strong>{r.authorName}</strong>
+                      <strong>{reviewAuthor(r.authorName)}</strong>
                       <Stars value={r.rating} size={14} />
                     </div>
                     {r.text && <p>{r.text}</p>}
                     <span className="review__meta">
-                      {r.childAge ? `Ребёнку ${fmtAge(r.childAge)} · ` : ''}
+                      {r.childAge ? t('Ребёнку {fmtAge} · ', { fmtAge: fmtAge(r.childAge) }) : ''}
                       {fmtShortDate(r.createdAt)}
                     </span>
                   </li>
@@ -256,7 +258,7 @@ export default function SpecialistDetail() {
 
         <aside className="detail__side">
           <div className="book-box">
-            <h3>Ближайшие окна</h3>
+            <h3>{t('Ближайшие окна')}</h3>
             {slots.length ? (
               <div className="slot-list">
                 {slots.slice(0, 4).map((s) => (
@@ -266,13 +268,13 @@ export default function SpecialistDetail() {
                 ))}
               </div>
             ) : (
-              <p className="muted">На ближайшие три недели свободных окон нет. Напишите специалисту — возможно, появится время.</p>
+              <p className="muted">{t('На ближайшие три недели свободных окон нет. Напишите специалисту — возможно, появится время.')}</p>
             )}
             {slots.length > 0 && bookAction}
             <Button variant="soft" size="lg" icon={ChatCircleDotsIcon} onClick={writeMessage} block>
-              Задать вопрос
+              {t('Задать вопрос')}
             </Button>
-            <p className="book-box__note">Запись подтверждает специалист. Видеокомната откроется за 15 минут до начала.</p>
+            <p className="book-box__note">{t('Запись подтверждает специалист. Видеокомната откроется за 15 минут до начала.')}</p>
           </div>
         </aside>
       </div>

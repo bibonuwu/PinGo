@@ -27,11 +27,12 @@ import { Avatar } from '../../components/Avatar';
 import { ChatThread } from '../../components/Chat';
 import { Pingo } from '../../components/Pingo';
 import { Button, ButtonLink } from '../../components/ui';
+import { t } from '../../i18n';
 
 function Gate({ title, text, children, mood = 'open', back }) {
   return (
     <div className="room room--gate">
-      <Link to={back} className="room__back" aria-label="Назад">
+      <Link to={back} className="room__back" aria-label={t('Назад')}>
         <ArrowLeftIcon size={22} weight="bold" />
       </Link>
       <motion.div className="room__gate" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
@@ -81,7 +82,7 @@ export default function VideoRoom() {
     let acquired = null;
     (async () => {
       if (!navigator.mediaDevices?.getUserMedia) {
-        setMediaError('Браузер не даёт доступ к камере. Откройте Pingo по https или на localhost.');
+        setMediaError(t('Браузер не даёт доступ к камере. Откройте Pingo по https или на localhost.'));
         return;
       }
       setAcquiring(true);
@@ -93,9 +94,9 @@ export default function VideoRoom() {
       } catch {
         try {
           acquired = await navigator.mediaDevices.getUserMedia({ audio: true });
-          setMediaError('Камера недоступна — вы подключитесь только со звуком.');
+          setMediaError(t('Камера недоступна — вы подключитесь только со звуком.'));
         } catch {
-          setMediaError('Нет доступа к камере и микрофону. Разрешите доступ в браузере — или подключитесь без них и общайтесь в чате.');
+          setMediaError(t('Нет доступа к камере и микрофону. Разрешите доступ в браузере — или подключитесь без них и общайтесь в чате.'));
         }
       }
       if (cancelled) {
@@ -128,30 +129,30 @@ export default function VideoRoom() {
 
   if (b === undefined) return <div className="room room--gate" />;
   if (!b || !participant) {
-    return <Gate back={`/${user.role}`} title="Комната недоступна" text="Видеокомната открыта только для родителя и специалиста этой записи." mood="wink" />;
+    return <Gate back={`/${user.role}`} title={t('Комната недоступна')} text={t('Видеокомната открыта только для родителя и специалиста этой записи.')} mood="wink" />;
   }
   const other = user.id === b.parentId ? b.specialist : b.parent;
   const { opensAt } = roomWindow(b);
 
-  if (state === 'offline') return <Gate back={back} title="Это очное занятие" text="Адрес и детали встречи обсудите в чате." />;
+  if (state === 'offline') return <Gate back={back} title={t('Это очное занятие')} text={t('Адрес и детали встречи обсудите в чате.')} />;
   if (state === 'unconfirmed') {
-    return <Gate back={back} title="Ждём подтверждения" text="Видеокомната откроется только после того, как специалист подтвердит запись." />;
+    return <Gate back={back} title={t('Ждём подтверждения')} text={t('Видеокомната откроется только после того, как специалист подтвердит запись.')} />;
   }
-  if (state === 'unavailable') return <Gate back={back} title="Запись неактивна" text="Занятие отменено или отклонено." mood="wink" />;
+  if (state === 'unavailable') return <Gate back={back} title={t('Запись неактивна')} text={t('Занятие отменено или отклонено.')} mood="wink" />;
   if (state === 'ended') {
     return (
-      <Gate back={back} title="Занятие завершено" text="Спасибо! Отчёт и отзыв — в карточке записи." mood="happy">
+      <Gate back={back} title={t('Занятие завершено')} text={t('Спасибо! Отчёт и отзыв — в карточке записи.')} mood="happy">
         <ButtonLink to={back} variant="primary">
-          К записи
+          {t('К записи')}
         </ButtonLink>
       </Gate>
     );
   }
   if (state === 'waiting') {
     return (
-      <Gate back={back} title="Комната пока закрыта" text={`Она откроется за 15 минут до начала — ${fmtDayTime(opensAt, now).toLowerCase()}.`}>
+      <Gate back={back} title={t('Комната пока закрыта')} text={t('Она откроется за 15 минут до начала — {toLowerCase}.', { toLowerCase: fmtDayTime(opensAt, now).toLowerCase() })}>
         <div className="room__countdown">{fmtCountdown(opensAt - now)}</div>
-        <p className="room__muted">Можно закрыть страницу — Pingo пришлёт напоминание.</p>
+        <p className="room__muted">{t('Можно закрыть страницу — Pingo пришлёт напоминание.')}</p>
       </Gate>
     );
   }
@@ -177,7 +178,7 @@ export default function VideoRoom() {
   if (!joined) {
     return (
       <div className="room room--lobby">
-        <Link to={back} className="room__back" aria-label="Назад">
+        <Link to={back} className="room__back" aria-label={t('Назад')}>
           <ArrowLeftIcon size={22} weight="bold" />
         </Link>
         <div className="lobby">
@@ -190,29 +191,28 @@ export default function VideoRoom() {
               </div>
             )}
             <div className="room__controls room__controls--lobby">
-              <button type="button" className={cx('ctl', !mic && 'is-off')} onClick={toggleMic} disabled={!stream} aria-label={mic ? 'Выключить микрофон' : 'Включить микрофон'}>
+              <button type="button" className={cx('ctl', !mic && 'is-off')} onClick={toggleMic} disabled={!stream} aria-label={mic ? t('Выключить микрофон') : t('Включить микрофон')}>
                 {mic ? <MicrophoneIcon size={24} weight="fill" /> : <MicrophoneSlashIcon size={24} weight="fill" />}
               </button>
-              <button type="button" className={cx('ctl', !cam && 'is-off')} onClick={toggleCam} disabled={!hasVideo} aria-label={cam ? 'Выключить камеру' : 'Включить камеру'}>
+              <button type="button" className={cx('ctl', !cam && 'is-off')} onClick={toggleCam} disabled={!hasVideo} aria-label={cam ? t('Выключить камеру') : t('Включить камеру')}>
                 {cam ? <VideoCameraIcon size={24} weight="fill" /> : <VideoCameraSlashIcon size={24} weight="fill" />}
               </button>
             </div>
           </div>
           <div className="lobby__info">
             <span className="live-pill">
-              <span className="live-dot" /> Комната открыта
+              <span className="live-dot" />{' '}{t('Комната открыта')}
             </span>
-            <h1>Занятие · {user.id === b.parentId ? other?.name : child?.name}</h1>
+            <h1>{t('Занятие · {p0}', { p0: user.id === b.parentId ? other?.name : child?.name })}</h1>
             <p>
-              {started ? 'Занятие уже идёт' : `Начало в ${fmtTime(b.start)} — через ${fmtCountdown(b.start - now)}`} · {b.duration} мин
+              {started ? t('Занятие уже идёт') : t('Начало в {fmtTime} — через {fmtCountdown}', { fmtTime: fmtTime(b.start), fmtCountdown: fmtCountdown(b.start - now) })}{' '}{t('· {duration} мин', { duration: b.duration })}
             </p>
             {mediaError && <p className="lobby__error">{mediaError}</p>}
             <Button variant="primary" size="lg" onClick={() => setJoined(true)} loading={acquiring} block>
-              Присоединиться
+              {t('Присоединиться')}
             </Button>
             <p className="room__muted">
-              Видео идёт напрямую между вашими устройствами. Если связь не устанавливается, проверьте интернет или общайтесь в
-              чате комнаты.
+              {t('Видео идёт напрямую между вашими устройствами. Если связь не устанавливается, проверьте интернет или общайтесь в чате комнаты.')}
             </p>
           </div>
         </div>
@@ -225,17 +225,17 @@ export default function VideoRoom() {
   return (
     <div className={cx('room room--call', panel && 'has-panel')}>
       <header className="room__top">
-        <button type="button" className="room__back room__back--inline" aria-label="Выйти" onClick={leave}>
+        <button type="button" className="room__back room__back--inline" aria-label={t('Выйти')} onClick={leave}>
           <ArrowLeftIcon size={22} weight="bold" />
         </button>
         <div className="room__title">
           <strong>{user.id === b.parentId ? other?.name : `${child?.name}, ${fmtAge(ageFromBirthDate(child?.birthDate))}`}</strong>
           <span>
-            {started ? `${elapsed(now - b.start)} из ${b.duration}:00` : `Начало через ${fmtCountdown(b.start - now)}`}
+            {started ? t('{elapsed} из {duration}:00', { elapsed: elapsed(now - b.start), duration: b.duration }) : t('Начало через {fmtCountdown}', { fmtCountdown: fmtCountdown(b.start - now) })}
           </span>
         </div>
         <span className={cx('conn', `conn--${conn}`)}>
-          {conn === 'connected' ? 'На связи' : conn === 'connecting' ? 'Подключение…' : 'Ожидание'}
+          {conn === 'connected' ? t('На связи') : conn === 'connecting' ? t('Подключение…') : t('Ожидание')}
         </span>
       </header>
 
@@ -249,10 +249,10 @@ export default function VideoRoom() {
             </motion.div>
             <p>
               {conn === 'connected'
-                ? `${other?.name ?? 'Собеседник'} выключил(а) камеру`
+                ? t('{p0} выключил(а) камеру', { p0: other?.name ?? t('Собеседник') })
                 : conn === 'connecting'
-                  ? 'Подключаемся…'
-                  : `Ожидаем ${other?.name ?? 'собеседника'}…`}
+                  ? t('Подключаемся…')
+                  : t('Ожидаем {p0}…', { p0: other?.name ?? t('собеседника') })}
             </p>
             {remoteStream && !remoteMedia.video && <audio ref={remoteRef} autoPlay />}
           </div>
@@ -268,19 +268,19 @@ export default function VideoRoom() {
       </div>
 
       <div className="room__controls">
-        <button type="button" className={cx('ctl', !mic && 'is-off')} onClick={toggleMic} disabled={!stream} aria-label={mic ? 'Выключить микрофон' : 'Включить микрофон'}>
+        <button type="button" className={cx('ctl', !mic && 'is-off')} onClick={toggleMic} disabled={!stream} aria-label={mic ? t('Выключить микрофон') : t('Включить микрофон')}>
           {mic ? <MicrophoneIcon size={24} weight="fill" /> : <MicrophoneSlashIcon size={24} weight="fill" />}
         </button>
-        <button type="button" className={cx('ctl', !cam && 'is-off')} onClick={toggleCam} disabled={!hasVideo} aria-label={cam ? 'Выключить камеру' : 'Включить камеру'}>
+        <button type="button" className={cx('ctl', !cam && 'is-off')} onClick={toggleCam} disabled={!hasVideo} aria-label={cam ? t('Выключить камеру') : t('Включить камеру')}>
           {cam ? <VideoCameraIcon size={24} weight="fill" /> : <VideoCameraSlashIcon size={24} weight="fill" />}
         </button>
-        <button type="button" className={cx('ctl', panel === 'chat' && 'is-active')} onClick={() => setPanel(panel === 'chat' ? null : 'chat')} aria-label="Чат">
+        <button type="button" className={cx('ctl', panel === 'chat' && 'is-active')} onClick={() => setPanel(panel === 'chat' ? null : 'chat')} aria-label={t('Чат')}>
           <ChatCircleDotsIcon size={24} weight="fill" />
         </button>
-        <button type="button" className={cx('ctl', panel === 'info' && 'is-active')} onClick={() => setPanel(panel === 'info' ? null : 'info')} aria-label="О занятии">
+        <button type="button" className={cx('ctl', panel === 'info' && 'is-active')} onClick={() => setPanel(panel === 'info' ? null : 'info')} aria-label={t('О занятии')}>
           <InfoIcon size={24} weight="fill" />
         </button>
-        <button type="button" className="ctl ctl--leave" onClick={leave} aria-label="Завершить">
+        <button type="button" className="ctl ctl--leave" onClick={leave} aria-label={t('Завершить')}>
           <PhoneDisconnectIcon size={26} weight="fill" />
         </button>
       </div>
@@ -295,8 +295,8 @@ export default function VideoRoom() {
             transition={{ type: 'spring', stiffness: 340, damping: 34 }}
           >
             <div className="room__panel-head">
-              <strong>{panel === 'chat' ? 'Чат' : 'О занятии'}</strong>
-              <button type="button" className="icon-btn icon-btn--ghost icon-btn--sm" aria-label="Закрыть" onClick={() => setPanel(null)}>
+              <strong>{panel === 'chat' ? t('Чат') : t('О занятии')}</strong>
+              <button type="button" className="icon-btn icon-btn--ghost icon-btn--sm" aria-label={t('Закрыть')} onClick={() => setPanel(null)}>
                 <XIcon size={18} weight="bold" />
               </button>
             </div>
@@ -304,7 +304,7 @@ export default function VideoRoom() {
               conversation ? (
                 <ChatThread conversation={conversation} me={user.id} other={other} showHeader={false} className="chat--room" />
               ) : (
-                <p className="room__muted">Чат недоступен.</p>
+                <p className="room__muted">{t('Чат недоступен.')}</p>
               )
             ) : (
               <div className="room__info">
@@ -314,7 +314,7 @@ export default function VideoRoom() {
                     <strong>
                       {child?.name}, {fmtAge(ageFromBirthDate(child?.birthDate))}
                     </strong>
-                    <span>Родитель: {b.parent?.name}</span>
+                    <span>{t('Родитель: {name}', { name: b.parent?.name })}</span>
                   </div>
                 </div>
                 {child?.needs?.length > 0 && (
@@ -329,31 +329,31 @@ export default function VideoRoom() {
                 <dl className="info-list">
                   {child?.learningStyles?.length > 0 && (
                     <>
-                      <dt>Как учится</dt>
+                      <dt>{t('Как учится')}</dt>
                       <dd>{child.learningStyles.map((s) => LEARNING_STYLE_MAP[s]?.label).join(', ')}</dd>
                     </>
                   )}
                   {describeAccessibility(child?.accessibility).length > 0 && (
                     <>
-                      <dt>Комфортно</dt>
+                      <dt>{t('Комфортно')}</dt>
                       <dd>{describeAccessibility(child.accessibility).join(', ')}</dd>
                     </>
                   )}
                   {child?.goals && (
                     <>
-                      <dt>Цели</dt>
+                      <dt>{t('Цели')}</dt>
                       <dd>{child.goals}</dd>
                     </>
                   )}
                   {child?.notes && (
                     <>
-                      <dt>Важно знать</dt>
+                      <dt>{t('Важно знать')}</dt>
                       <dd>{child.notes}</dd>
                     </>
                   )}
                   {b.note && (
                     <>
-                      <dt>Заметка к занятию</dt>
+                      <dt>{t('Заметка к занятию')}</dt>
                       <dd>{b.note}</dd>
                     </>
                   )}

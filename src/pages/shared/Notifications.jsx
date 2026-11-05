@@ -25,6 +25,8 @@ import { markAllNotificationsRead, markNotificationRead } from '../../services/n
 import { EmptyState } from '../../components/EmptyState';
 import { PageHeader } from '../../components/PageHeader';
 import { Button } from '../../components/ui';
+import { t } from '../../i18n';
+import { notificationBody, notificationTitle } from '../../i18n/stored';
 
 const ICONS = {
   booking_request: TrayIcon,
@@ -58,9 +60,9 @@ export default function Notifications() {
   const unread = list.filter((n) => !n.read).length;
   const today = startOfDay(Date.now()).getTime();
   const groups = [
-    { title: 'Сегодня', items: list.filter((n) => n.createdAt >= today) },
-    { title: 'Вчера', items: list.filter((n) => n.createdAt < today && n.createdAt >= today - DAY) },
-    { title: 'Ранее', items: list.filter((n) => n.createdAt < today - DAY) },
+    { title: t('Сегодня'), items: list.filter((n) => n.createdAt >= today) },
+    { title: t('Вчера'), items: list.filter((n) => n.createdAt < today && n.createdAt >= today - DAY) },
+    { title: t('Ранее'), items: list.filter((n) => n.createdAt < today - DAY) },
   ].filter((g) => g.items.length);
 
   const open = async (n) => {
@@ -72,17 +74,17 @@ export default function Notifications() {
     <div className="page">
       <PageHeader
         back={`/${user.role}`}
-        title="Уведомления"
+        title={t('Уведомления')}
         actions={
           unread > 0 && (
             <Button variant="soft" size="sm" icon={ChecksIcon} onClick={() => markAllNotificationsRead(user.id)}>
-              Прочитать все
+              {t('Прочитать все')}
             </Button>
           )
         }
       />
       {list.length === 0 ? (
-        <EmptyState icon={BellIcon} title="Пока тихо" text="Здесь появятся новости о записях, сообщениях и анкете." />
+        <EmptyState icon={BellIcon} title={t('Пока тихо')} text={t('Здесь появятся новости о записях, сообщениях и анкете.')} />
       ) : (
         groups.map((g) => (
           <section key={g.title} className="notif-group">
@@ -99,11 +101,11 @@ export default function Notifications() {
                         <Icon size={22} weight="fill" />
                       </span>
                       <span className="notif__body">
-                        <strong>{n.title}</strong>
-                        {n.body && <span>{n.body}</span>}
+                        <strong>{notificationTitle(n)}</strong>
+                        {n.body && <span>{notificationBody(n)}</span>}
                         <time>{fmtAgo(n.createdAt)}</time>
                       </span>
-                      {!n.read && <span className="notif__dot" aria-label="Не прочитано" />}
+                      {!n.read && <span className="notif__dot" aria-label={t('Не прочитано')} />}
                     </button>
                   </motion.li>
                 );

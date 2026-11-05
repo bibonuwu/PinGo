@@ -21,13 +21,14 @@ import { Avatar } from '../../components/Avatar';
 import { EmptyState } from '../../components/EmptyState';
 import { PageHeader } from '../../components/PageHeader';
 import { Button, ButtonLink, IconButton, Input, StatusBadge, Tabs } from '../../components/ui';
+import { t } from '../../i18n';
 
 const TABS = [
-  { value: 'all', label: 'Все' },
-  { value: 'parents', label: 'Родители' },
-  { value: 'specialists', label: 'Специалисты' },
-  { value: 'volunteers', label: 'Волонтёры' },
-  { value: 'admins', label: 'Модераторы' },
+  { value: 'all', label: t('Все') },
+  { value: 'parents', label: t('Родители') },
+  { value: 'specialists', label: t('Специалисты') },
+  { value: 'volunteers', label: t('Волонтёры') },
+  { value: 'admins', label: t('Модераторы') },
 ];
 const PAGE = 60;
 
@@ -79,18 +80,18 @@ export default function AdminUsers() {
 
   const exportCsv = () => {
     exportUsersCsv(list.map((r) => r.user));
-    toast.success(`Сохранено: ${pluralize(list.length, ['пользователь', 'пользователя', 'пользователей'])}`);
+    toast.success(t('Сохранено: {pluralize}', { pluralize: pluralize(list.length, [t('пользователь'), t('пользователя'), t('пользователей')]) }));
   };
 
   return (
     <div className="page">
       <PageHeader
-        title="Пользователи"
-        subtitle={`Всего в Pingo: ${pluralize(counts.all, ['аккаунт', 'аккаунта', 'аккаунтов'])}.`}
+        title={t('Пользователи')}
+        subtitle={t('Всего в Pingo: {pluralize}.', { pluralize: pluralize(counts.all, [t('аккаунт'), t('аккаунта'), t('аккаунтов')]) })}
         actions={
           <div className="btn-row">
             <ButtonLink to="/admin/broadcast" variant="soft" icon={MegaphoneIcon}>
-              Рассылка
+              {t('Рассылка')}
             </ButtonLink>
             <Button variant="dark" icon={FileCsvIcon} onClick={exportCsv} disabled={!list.length}>
               Excel
@@ -110,17 +111,17 @@ export default function AdminUsers() {
       <Input
         icon={MagnifyingGlassIcon}
         type="search"
-        placeholder="Имя или email"
+        placeholder={t('Имя или email')}
         value={query}
         onChange={(e) => {
           setQuery(e.target.value);
           setLimit(PAGE);
         }}
-        aria-label="Поиск пользователей"
+        aria-label={t('Поиск пользователей')}
       />
 
       {list.length === 0 ? (
-        <EmptyState icon={UsersThreeIcon} title="Никого не нашли" text="Попробуйте другой фильтр или запрос." />
+        <EmptyState icon={UsersThreeIcon} title={t('Никого не нашли')} text={t('Попробуйте другой фильтр или запрос.')} />
       ) : (
         <ul className="admin-list">
           {list.slice(0, limit).map(({ user: u, profile: p, group, complaints, unread }) => {
@@ -128,14 +129,14 @@ export default function AdminUsers() {
               <span className="admin-row__body">
                 <span className="admin-row__top">
                   <strong>{u.name}</strong>
-                  {group === 'admins' && <span className="tag tag--yellow">модератор</span>}
+                  {group === 'admins' && <span className="tag tag--yellow">{t('модератор')}</span>}
                   {p && <span className="kind-tag kind-tag--sm">{kindLabel(profileKind(p))}</span>}
-                  {p?.verifiedAt && <SealCheckIcon size={16} weight="fill" className="ico-verified" aria-label="Подтверждён" />}
-                  {complaints > 0 && <span className="tag tag--red">{pluralize(complaints, ['жалоба', 'жалобы', 'жалоб'])}</span>}
+                  {p?.verifiedAt && <SealCheckIcon size={16} weight="fill" className="ico-verified" aria-label={t('Подтверждён')} />}
+                  {complaints > 0 && <span className="tag tag--red">{pluralize(complaints, [t('жалоба'), t('жалобы'), t('жалоб')])}</span>}
                 </span>
                 <span className="admin-row__title">{u.email}</span>
                 <span className="admin-row__meta">
-                  {group === 'parents' ? 'Родитель' : group === 'admins' ? 'Модератор' : 'Анкета'} · с {fmtDateYear(u.createdAt)}
+                  {group === 'parents' ? t('Родитель') : group === 'admins' ? t('Модератор') : t('Анкета')}{' '}{t('· с {fmtDateYear}', { fmtDateYear: fmtDateYear(u.createdAt) })}
                 </span>
               </span>
             );
@@ -158,7 +159,7 @@ export default function AdminUsers() {
                       <IconButton
                         icon={ChatCircleDotsIcon}
                         to={supportChatPath(me.id, u)}
-                        label={`Написать в чат: ${u.name}`}
+                        label={t('Написать в чат: {name}', { name: u.name })}
                         size="sm"
                         badge={unread}
                       />
@@ -172,7 +173,7 @@ export default function AdminUsers() {
       )}
       {list.length > limit && (
         <Button variant="soft" block onClick={() => setLimit((l) => l + PAGE)}>
-          Показать ещё · {list.length - limit}
+          {t('Показать ещё · {p0}', { p0: list.length - limit })}
         </Button>
       )}
     </div>

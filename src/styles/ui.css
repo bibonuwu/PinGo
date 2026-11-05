@@ -1559,3 +1559,30 @@ a.checklist__item:hover {
     box-shadow: 0 0 0 0 rgb(239 68 68 / 0);
   }
 }
+
+/* ---------- Переключатель языка (страницы до входа) ---------- */
+.lang-switch {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--surface);
+}
+.lang-switch__item {
+  min-width: 3.25rem;
+  min-height: 2.25rem;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text-2);
+}
+.lang-switch__item.is-active {
+  background: var(--ink);
+  color: #fff;
+}
+.lang-switch__item:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 2px;
+}

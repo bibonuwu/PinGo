@@ -9,6 +9,7 @@ import { hoursText, issueCertificate } from '../services/admin';
 import { Avatar } from './Avatar';
 import { Sheet } from './Sheet';
 import { Button, Chip, Field, IconButton, Input, Textarea } from './ui';
+import { t } from '../i18n';
 
 export const certificateNumber = (c) => `PG-${new Date(c.issuedAt).getFullYear()}-${c.id.slice(0, 6).toUpperCase()}`;
 
@@ -27,7 +28,7 @@ export function CertificateList({ items, onRemove, className }) {
               <span>{fmtDateYear(c.issuedAt)}</span>
             </span>
           </Link>
-          {onRemove && <IconButton icon={TrashIcon} label="Отозвать сертификат" size="sm" variant="ghost" onClick={() => onRemove(c)} />}
+          {onRemove && <IconButton icon={TrashIcon} label={t('Отозвать сертификат')} size="sm" variant="ghost" onClick={() => onRemove(c)} />}
         </li>
       ))}
     </ul>
@@ -43,11 +44,11 @@ export function IssueCertificateSheet({ open, onClose, recipient, stats, type: i
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const pick = (t) => {
-    const meta = CERTIFICATE_MAP[t];
-    setType(t);
-    setTitle(t === 'custom' ? '' : meta.label);
-    setText(t === 'hours' && stats?.minutes ? `за ${hoursText(stats.minutes)} помощи детям на платформе Pingo` : meta.text);
+  const pick = (id) => {
+    const meta = CERTIFICATE_MAP[id];
+    setType(id);
+    setTitle(id === 'custom' ? '' : meta.label);
+    setText(id === 'hours' && stats?.minutes ? t('за {hoursText} помощи детям на платформе Pingo', { hoursText: hoursText(stats.minutes) }) : meta.text);
   };
 
   useEffect(() => {
@@ -59,7 +60,7 @@ export function IssueCertificateSheet({ open, onClose, recipient, stats, type: i
     setBusy(true);
     try {
       await issueCertificate(admin, { userId: recipient.id, type, title, text });
-      toast.success(`Сертификат выдан: ${recipient.name}`);
+      toast.success(t('Сертификат выдан: {name}', { name: recipient.name }));
       onClose();
     } catch (e) {
       toast.error(e.message);
@@ -72,14 +73,14 @@ export function IssueCertificateSheet({ open, onClose, recipient, stats, type: i
     <Sheet
       open={open && !!recipient}
       onClose={onClose}
-      title="Выдать сертификат"
+      title={t('Выдать сертификат')}
       footer={
         <>
           <Button variant="soft" onClick={onClose}>
-            Назад
+            {t('Назад')}
           </Button>
           <Button variant="primary" icon={CertificateIcon} loading={busy} onClick={submit}>
-            Выдать
+            {t('Выдать')}
           </Button>
         </>
       }
@@ -89,7 +90,7 @@ export function IssueCertificateSheet({ open, onClose, recipient, stats, type: i
           <Avatar avatar={recipient.avatar} name={recipient.name} size={48} />
           <div>
             <strong>{recipient.name}</strong>
-            <span>Получит уведомление и сможет распечатать сертификат</span>
+            <span>{t('Получит уведомление и сможет распечатать сертификат')}</span>
           </div>
         </div>
       )}
@@ -100,11 +101,11 @@ export function IssueCertificateSheet({ open, onClose, recipient, stats, type: i
           </Chip>
         ))}
       </div>
-      <Field label="Название" htmlFor="cert-title" counter={`${title.length}/80`}>
-        <Input id="cert-title" value={title} maxLength={80} placeholder="Например, «Лучший наставник осени»" onChange={(e) => setTitle(e.target.value)} />
+      <Field label={t('Название')} htmlFor="cert-title" counter={`${title.length}/80`}>
+        <Input id="cert-title" value={title} maxLength={80} placeholder={t('Например, «Лучший наставник осени»')} onChange={(e) => setTitle(e.target.value)} />
       </Field>
-      <Field label="За что" optional counter={`${text.length}/300`}>
-        <Textarea value={text} maxLength={300} rows={3} placeholder="за помощь детям…" onChange={(e) => setText(e.target.value)} />
+      <Field label={t('За что')} optional counter={`${text.length}/300`}>
+        <Textarea value={text} maxLength={300} rows={3} placeholder={t('за помощь детям…')} onChange={(e) => setText(e.target.value)} />
       </Field>
     </Sheet>
   );

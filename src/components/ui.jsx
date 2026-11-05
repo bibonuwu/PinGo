@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { CircleNotchIcon, StarIcon } from '@phosphor-icons/react';
 import { BOOKING_STATUS, PROFILE_STATUS } from '../lib/constants';
 import { cx } from '../lib/utils';
+import { t } from '../i18n';
 
 // ---------- Кнопки ----------
 
@@ -68,7 +69,7 @@ export const IconButton = forwardRef(function IconButton(
 });
 
 export function Spinner({ size = 28, className }) {
-  return <CircleNotchIcon size={size} weight="bold" className={cx('spin', className)} aria-label="Загрузка" />;
+  return <CircleNotchIcon size={size} weight="bold" className={cx('spin', className)} aria-label={t('Загрузка')} />;
 }
 
 // ---------- Поля ----------
@@ -79,7 +80,7 @@ export function Field({ label, hint, error, optional, children, htmlFor, classNa
       {label && (
         <label className="field__label" htmlFor={htmlFor}>
           {label}
-          {optional && <span className="field__optional">необязательно</span>}
+          {optional && <span className="field__optional">{t('необязательно')}</span>}
           {counter && <span className="field__counter">{counter}</span>}
         </label>
       )}
@@ -249,7 +250,7 @@ export function StatusBadge({ status, kind = 'booking', size, className }) {
 
 export function Stars({ value = 0, size = 16, className }) {
   return (
-    <span className={cx('stars', className)} aria-label={`Оценка ${value.toFixed(1)} из 5`}>
+    <span className={cx('stars', className)} aria-label={t('Оценка {toFixed} из 5', { toFixed: value.toFixed(1) })}>
       {[1, 2, 3, 4, 5].map((i) => (
         <StarIcon key={i} size={size} weight={value >= i - 0.25 ? 'fill' : 'regular'} />
       ))}
@@ -259,14 +260,14 @@ export function Stars({ value = 0, size = 16, className }) {
 
 export function StarInput({ value, onChange }) {
   return (
-    <div className="star-input" role="radiogroup" aria-label="Оценка">
+    <div className="star-input" role="radiogroup" aria-label={t('Оценка')}>
       {[1, 2, 3, 4, 5].map((i) => (
         <motion.button
           key={i}
           type="button"
           role="radio"
           aria-checked={value === i}
-          aria-label={`${i} из 5`}
+          aria-label={t('{i} из 5', { i })}
           className={cx('star-input__star', value >= i && 'is-on')}
           onClick={() => onChange(i)}
           whileTap={{ scale: 0.8 }}
@@ -280,7 +281,7 @@ export function StarInput({ value, onChange }) {
 }
 
 export function Rating({ rating, count, compact }) {
-  if (!rating) return <span className="rating rating--empty">Новый</span>;
+  if (!rating) return <span className="rating rating--empty">{t('Новый')}</span>;
   return (
     <span className="rating">
       <StarIcon size={15} weight="fill" />

@@ -13,6 +13,8 @@ import { Avatar } from './Avatar';
 import { BackButton } from './PageHeader';
 import { Sheet } from './Sheet';
 import { Button, Chip, Field, IconButton, Textarea } from './ui';
+import { t } from '../i18n';
+import { storedText } from '../i18n/stored';
 
 export function ConversationList({ items, me, basePath, activeId }) {
   return (
@@ -33,15 +35,15 @@ export function ConversationList({ items, me, basePath, activeId }) {
                 <span className="conv__body">
                   <span className="conv__top">
                     <span className="conv__name">
-                      <strong>{c.other?.name ?? 'Пользователь'}</strong>
-                      {admin && admin !== me && <span className="tag tag--yellow tag--xs">модератор</span>}
+                      <strong>{c.other?.name ?? t('Пользователь')}</strong>
+                      {admin && admin !== me && <span className="tag tag--yellow tag--xs">{t('модератор')}</span>}
                     </span>
                     <time>{fmtAgo(c.updatedAt)}</time>
                   </span>
                   <span className="conv__bottom">
                     <span className="conv__last">
-                      {mine && 'Вы: '}
-                      {c.lastText || 'Нет сообщений'}
+                      {mine && t('Вы: ')}
+                      {(c.lastKind === 'system' ? storedText(c.lastText, c.lastI18n) : c.lastText) || t('Нет сообщений')}
                     </span>
                     {unread > 0 && <span className="conv__badge">{unread}</span>}
                   </span>
@@ -82,7 +84,7 @@ export function ComplaintDialog({ open, onClose, reporterId, target, context }) 
     setBusy(true);
     try {
       await createComplaint({ reporterId, targetId: target.id, reason, details, context });
-      toast.success('Жалоба отправлена. Модератор проверит её в ближайшее время.');
+      toast.success(t('Жалоба отправлена. Модератор проверит её в ближайшее время.'));
       onClose();
     } catch (e) {
       toast.error(e.message);
@@ -95,21 +97,21 @@ export function ComplaintDialog({ open, onClose, reporterId, target, context }) 
     <Sheet
       open={open}
       onClose={onClose}
-      title="Пожаловаться"
+      title={t('Пожаловаться')}
       size="sm"
       footer={
         <>
           <Button variant="soft" onClick={onClose}>
-            Отмена
+            {t('Отмена')}
           </Button>
           <Button variant="danger" onClick={submit} loading={busy} disabled={!reason}>
-            Отправить жалобу
+            {t('Отправить жалобу')}
           </Button>
         </>
       }
     >
       <p className="muted">
-        Жалобу получит модератор Pingo. Пользователь: <strong>{target?.name}</strong>. Если ребёнку угрожает опасность — звоните 112.
+        {t('Жалобу получит модератор Pingo. Пользователь:')}{' '}<strong>{target?.name}</strong>{t('. Если ребёнку угрожает опасность — звоните 112.')}
       </p>
       <div className="chips chips--wrap">
         {COMPLAINT_REASONS.map((r) => (
@@ -118,14 +120,14 @@ export function ComplaintDialog({ open, onClose, reporterId, target, context }) 
           </Chip>
         ))}
       </div>
-      <Field label="Подробности" optional={reason !== 'other'}>
-        <Textarea value={details} maxLength={1000} onChange={(e) => setDetails(e.target.value)} placeholder="Что произошло?" rows={3} />
+      <Field label={t('Подробности')} optional={reason !== 'other'}>
+        <Textarea value={details} maxLength={1000} onChange={(e) => setDetails(e.target.value)} placeholder={t('Что произошло?')} rows={3} />
       </Field>
     </Sheet>
   );
 }
 
-const ROLE_LABEL = { specialist: 'Специалист Pingo', admin: 'Модератор Pingo', parent: 'Родитель' };
+const ROLE_LABEL = { specialist: t('Специалист Pingo'), admin: t('Модератор Pingo'), parent: t('Родитель') };
 
 // Лента сообщений + поле ввода. Используется в «Сообщениях» и в видеокомнате.
 // conversation.draft — диалога ещё нет в базе, он создастся с первым сообщением.
@@ -189,13 +191,13 @@ export function ChatThread({ conversation, me, other, profileLink, bookingsLink,
           {backTo && <BackButton to={backTo} className="chat__back" />}
           <Avatar avatar={other?.avatar} name={other?.name} size={44} />
           <div className="chat__who">
-            <strong>{other?.name ?? 'Пользователь'}</strong>
+            <strong>{other?.name ?? t('Пользователь')}</strong>
             <span>{ROLE_LABEL[otherRole]}</span>
           </div>
           <div className="chat__actions">
-            {bookingsLink && <IconButton icon={CalendarDotsIcon} label="Записи" to={bookingsLink} size="sm" />}
-            {profileLink && <IconButton icon={UserIcon} label="Анкета" to={profileLink} size="sm" />}
-            {!support && <IconButton icon={FlagIcon} label="Пожаловаться" size="sm" onClick={() => setComplaintOpen(true)} />}
+            {bookingsLink && <IconButton icon={CalendarDotsIcon} label={t('Записи')} to={bookingsLink} size="sm" />}
+            {profileLink && <IconButton icon={UserIcon} label={t('Анкета')} to={profileLink} size="sm" />}
+            {!support && <IconButton icon={FlagIcon} label={t('Пожаловаться')} size="sm" onClick={() => setComplaintOpen(true)} />}
           </div>
         </header>
       )}
@@ -204,8 +206,8 @@ export function ChatThread({ conversation, me, other, profileLink, bookingsLink,
           <div className="chat__empty">
             <p>
               {support
-                ? 'Напишите первое сообщение — собеседник увидит его в разделе «Сообщения» и получит уведомление.'
-                : 'Напишите первое сообщение — например, расскажите о целях занятий.'}
+                ? t('Напишите первое сообщение — собеседник увидит его в разделе «Сообщения» и получит уведомление.')
+                : t('Напишите первое сообщение — например, расскажите о целях занятий.')}
             </p>
           </div>
         )}
@@ -218,7 +220,7 @@ export function ChatThread({ conversation, me, other, profileLink, bookingsLink,
               {g.items.map((m) =>
                 m.kind === 'system' ? (
                   <motion.div key={m.id} className="msg-system" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-                    <span>{m.text}</span>
+                    <span>{storedText(m.text, m.i18n)}</span>
                     <time>{fmtTime(m.createdAt)}</time>
                   </motion.div>
                 ) : (
@@ -250,8 +252,8 @@ export function ChatThread({ conversation, me, other, profileLink, bookingsLink,
           rows={1}
           value={text}
           maxLength={MAX_MESSAGE_LENGTH}
-          placeholder="Сообщение…"
-          aria-label="Сообщение"
+          placeholder={t('Сообщение…')}
+          aria-label={t('Сообщение')}
           onChange={(e) => {
             setText(e.target.value);
             autoGrow(e.target);
@@ -266,7 +268,7 @@ export function ChatThread({ conversation, me, other, profileLink, bookingsLink,
         <motion.button
           type="submit"
           className="chat__send"
-          aria-label="Отправить"
+          aria-label={t('Отправить')}
           disabled={!text.trim() || sending}
           whileTap={{ scale: 0.88 }}
         >

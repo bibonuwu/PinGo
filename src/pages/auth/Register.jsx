@@ -8,21 +8,22 @@ import { MIN_PASSWORD, completeRegistration, registerUser, registerWithGoogle } 
 import { BackButton } from '../../components/PageHeader';
 import { PingoGuide } from '../../components/Pingo';
 import { Button, Checkbox, Field, Input } from '../../components/ui';
+import { t } from '../../i18n';
 
 const COPY = {
   parent: {
-    chip: 'Родитель',
-    bubble: 'Давайте познакомимся! После регистрации я помогу заполнить профиль ребёнка — это займёт пару минут.',
+    chip: t('Родитель'),
+    bubble: t('Давайте познакомимся! После регистрации я помогу заполнить профиль ребёнка — это займёт пару минут.'),
     outfit: 'glasses',
   },
   specialist: {
-    chip: 'Специалист / волонтёр',
-    bubble: 'Отлично, что вы с нами! После регистрации заполните анкету — модератор проверит её, и родители увидят вас в каталоге.',
+    chip: t('Специалист / волонтёр'),
+    bubble: t('Отлично, что вы с нами! После регистрации заполните анкету — модератор проверит её, и родители увидят вас в каталоге.'),
     outfit: 'scarf',
   },
 };
 
-const NEED_AGREEMENT = 'Нужно согласие с правилами платформы и обработкой данных';
+const NEED_AGREEMENT = t('Нужно согласие с правилами платформы и обработкой данных');
 
 // После регистрации к первому шагу (профиль ребёнка или анкета) переводит PublicOnly.
 export default function Register() {
@@ -92,7 +93,7 @@ export default function Register() {
       <div className="register__top">
         <BackButton to="/register" />
         <Link to="/register" className="role-chip">
-          {copy.chip} · сменить
+          {t('{chip} · сменить', { chip: copy.chip })}
         </Link>
       </div>
       <div className="register__body">
@@ -100,15 +101,15 @@ export default function Register() {
           {copy.bubble}
         </PingoGuide>
         <motion.h1 className="page-title" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          {completing ? 'Почти готово' : 'Создать аккаунт'}
+          {completing ? t('Почти готово') : t('Создать аккаунт')}
         </motion.h1>
         <form className="register__form" onSubmit={submit} noValidate>
-          <Field label="Как вас зовут?" htmlFor="reg-name">
+          <Field label={t('Как вас зовут?')} htmlFor="reg-name">
             <Input
               id="reg-name"
               icon={UserIcon}
               autoComplete="name"
-              placeholder={role === 'parent' ? 'Например, Дана Ахметова' : 'Имя и фамилия'}
+              placeholder={role === 'parent' ? t('Например, Дана Ахметова') : t('Имя и фамилия')}
               value={form.name}
               onChange={set('name')}
             />
@@ -127,13 +128,13 @@ export default function Register() {
                   onChange={set('email')}
                 />
               </Field>
-              <Field label="Пароль" htmlFor="reg-pass" hint={`Минимум ${MIN_PASSWORD} символов`}>
+              <Field label={t('Пароль')} htmlFor="reg-pass" hint={t('Минимум {MIN_PASSWORD} символов', { MIN_PASSWORD })}>
                 <Input
                   id="reg-pass"
                   icon={LockIcon}
                   type={show ? 'text' : 'password'}
                   autoComplete="new-password"
-                  placeholder="Придумайте пароль"
+                  placeholder={t('Придумайте пароль')}
                   value={form.password}
                   onChange={set('password')}
                   trailing={
@@ -141,7 +142,7 @@ export default function Register() {
                       type="button"
                       className="input__eye"
                       onClick={() => setShow((s) => !s)}
-                      aria-label={show ? 'Скрыть пароль' : 'Показать пароль'}
+                      aria-label={show ? t('Скрыть пароль') : t('Показать пароль')}
                     >
                       {show ? <EyeSlashIcon size={20} /> : <EyeIcon size={20} />}
                     </button>
@@ -151,7 +152,7 @@ export default function Register() {
             </>
           )}
           <Checkbox checked={agree} onChange={setAgree}>
-            Принимаю правила платформы и согласен(на) на обработку персональных данных
+            {t('Принимаю правила платформы и согласен(на) на обработку персональных данных')}
           </Checkbox>
           {error && (
             <motion.p className="form-error" role="alert" initial={{ opacity: 0 }} animate={{ opacity: 1, x: [0, -6, 6, 0] }}>
@@ -159,7 +160,7 @@ export default function Register() {
             </motion.p>
           )}
           <Button type="submit" variant="dark" size="lg" block loading={busy === 'form'} disabled={!!busy && busy !== 'form'}>
-            {completing ? 'Продолжить' : 'Зарегистрироваться'}
+            {completing ? t('Продолжить') : t('Зарегистрироваться')}
           </Button>
           {!completing && (
             <Button
@@ -171,20 +172,20 @@ export default function Register() {
               disabled={!!busy && busy !== 'google'}
               onClick={google}
             >
-              Продолжить с Google
+              {t('Продолжить с Google')}
             </Button>
           )}
         </form>
         {completing ? (
           <p className="register__note">
-            Вы вошли как {account?.email}.{' '}
+            {t('Вы вошли как {email}.', { email: account?.email })}{' '}
             <button type="button" className="link-btn" onClick={signOut}>
-              Войти другим аккаунтом
+              {t('Войти другим аккаунтом')}
             </button>
           </p>
         ) : (
           <p className="register__footer">
-            Уже есть аккаунт? <Link to="/login">Войти</Link>
+            {t('Уже есть аккаунт?')}{' '}<Link to="/login">{t('Войти')}</Link>
           </p>
         )}
       </div>

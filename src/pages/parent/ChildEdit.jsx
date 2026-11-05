@@ -10,6 +10,7 @@ import { AvatarPicker } from '../../components/Avatar';
 import { AboutFields, GoalsFields, NeedsFields, StyleFields } from '../../components/ChildForm';
 import { PageHeader } from '../../components/PageHeader';
 import { Button } from '../../components/ui';
+import { t } from '../../i18n';
 
 export default function ChildEdit() {
   const { id } = useParams();
@@ -43,7 +44,7 @@ export default function ChildEdit() {
     setBusy(true);
     try {
       await updateChild(id, data);
-      toast.success('Профиль сохранён');
+      toast.success(t('Профиль сохранён'));
       navigate(`/parent/children/${id}`, { replace: true });
     } catch (e) {
       toast.error(e.message);
@@ -53,33 +54,33 @@ export default function ChildEdit() {
 
   return (
     <div className="page form-page">
-      <PageHeader back={`/parent/children/${id}`} title={`Профиль: ${child.name}`} />
+      <PageHeader back={`/parent/children/${id}`} title={t('Профиль: {name}', { name: child.name })} />
       <section className="card-section">
-        <h2>Аватар</h2>
+        <h2>{t('Аватар')}</h2>
         <AvatarPicker value={data.avatar} onChange={(avatar) => set({ avatar })} size={64} />
       </section>
       <section className="card-section">
-        <h2>Имя и возраст</h2>
+        <h2>{t('Имя и возраст')}</h2>
         <AboutFields data={data} set={set} errors={errors} />
       </section>
       <section className="card-section">
-        <h2>Потребности</h2>
+        <h2>{t('Потребности')}</h2>
         <NeedsFields data={data} set={set} errors={errors} />
       </section>
       <section className="card-section">
-        <h2>Стиль обучения</h2>
+        <h2>{t('Стиль обучения')}</h2>
         <StyleFields data={data} set={set} />
       </section>
       <section className="card-section">
-        <h2>Цели и важное</h2>
+        <h2>{t('Цели и важное')}</h2>
         <GoalsFields data={data} set={set} />
       </section>
       <div className="form-actions">
         <Button variant="soft" size="lg" onClick={() => navigate(`/parent/children/${id}`)}>
-          Отмена
+          {t('Отмена')}
         </Button>
         <Button variant="dark" size="lg" icon={FloppyDiskIcon} onClick={save} loading={busy}>
-          Сохранить
+          {t('Сохранить')}
         </Button>
       </div>
     </div>

@@ -17,7 +17,7 @@ import {
 } from '@phosphor-icons/react';
 import { db } from '../../lib/db';
 import { REJECT_TEMPLATES, TRAINING_MODULES } from '../../lib/constants';
-import { fmtAge, fmtBytes, fmtDateYear, fmtHours, fmtShortDate, fmtStamp } from '../../lib/utils';
+import { fmtAge, fmtBytes, fmtDateYear, fmtHours, fmtShortDate, fmtStamp, pluralize } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { useBookingsCount } from '../../hooks/useBookings';
@@ -32,15 +32,17 @@ import { EmptyState } from '../../components/EmptyState';
 import { PageHeader } from '../../components/PageHeader';
 import { ConfirmDialog, ReasonDialog } from '../../components/Sheet';
 import { Button, ButtonLink, IconButton, StatusBadge, Stars } from '../../components/ui';
+import { t } from '../../i18n';
+import { reviewAuthor } from '../../i18n/stored';
 
 const ACTIONS = {
-  submitted: 'Отправлена на модерацию',
-  approved: 'Одобрена',
-  rejected: 'Отклонена',
-  revoked: 'Снята с публикации',
-  withdrawn: 'Отозвана автором',
-  verified: 'Подтверждён Pingo',
-  unverified: 'Подтверждение снято',
+  submitted: t('Отправлена на модерацию'),
+  approved: t('Одобрена'),
+  rejected: t('Отклонена'),
+  revoked: t('Снята с публикации'),
+  withdrawn: t('Отозвана автором'),
+  verified: t('Подтверждён Pingo'),
+  unverified: t('Подтверждение снято'),
 };
 const GOOD = ['approved', 'verified'];
 const BAD = ['rejected', 'revoked', 'unverified'];
@@ -75,8 +77,8 @@ export default function AdminProfileReview() {
   if (!data?.user) {
     return (
       <div className="page">
-        <PageHeader back="/admin/profiles" title="Анкета" />
-        <EmptyState pingo title="Анкета не найдена" action={<ButtonLink to="/admin/profiles">К списку</ButtonLink>} />
+        <PageHeader back="/admin/profiles" title={t('Анкета')} />
+        <EmptyState pingo title={t('Анкета не найдена')} action={<ButtonLink to="/admin/profiles">{t('К списку')}</ButtonLink>} />
       </div>
     );
   }
@@ -98,7 +100,7 @@ export default function AdminProfileReview() {
         actions={
           <>
             {user.role === 'specialist' && (
-              <IconButton icon={ChatCircleDotsIcon} to={supportChatPath(admin.id, user)} label={`Написать в чат: ${user.name}`} />
+              <IconButton icon={ChatCircleDotsIcon} to={supportChatPath(admin.id, user)} label={t('Написать в чат: {name}', { name: user.name })} />
             )}
             <StatusBadge kind="profile" status={profile.status} size="lg" />
           </>
@@ -109,8 +111,8 @@ export default function AdminProfileReview() {
         <motion.div className="notice" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
           <ArrowsClockwiseIcon size={22} weight="bold" />
           <div>
-            <strong>Обновление опубликованной анкеты</strong>
-            <span>Изменены поля: {changes.join(', ') || 'нет изменений'}. Пока решение не принято, в каталоге прежняя версия.</span>
+            <strong>{t('Обновление опубликованной анкеты')}</strong>
+            <span>{t('Изменены поля:')}{' '}{changes.join(', ') || t('нет изменений')}{t('. Пока решение не принято, в каталоге прежняя версия.')}</span>
           </div>
         </motion.div>
       )}
@@ -118,8 +120,8 @@ export default function AdminProfileReview() {
         <div className="notice notice--danger">
           <ProhibitIcon size={22} weight="bold" />
           <div>
-            <strong>Открытые жалобы: {openComplaints}</strong>
-            <span>Проверьте раздел «Жалобы» перед решением.</span>
+            <strong>{t('Открытые жалобы: {openComplaints}', { openComplaints })}</strong>
+            <span>{t('Проверьте раздел «Жалобы» перед решением.')}</span>
           </div>
         </div>
       )}
@@ -130,17 +132,17 @@ export default function AdminProfileReview() {
             <div className="person-card">
               <Avatar avatar={user.avatar} name={user.name} size={64} />
               <div>
-                <strong>{d.title || 'Без заголовка'}</strong>
+                <strong>{d.title || t('Без заголовка')}</strong>
                 <span>
-                  Зарегистрирован(а) {fmtDateYear(user.createdAt)} · стаж {fmtAge(d.experienceYears)}
+                  {t('Зарегистрирован(а) {date} · стаж {years}', { date: fmtDateYear(user.createdAt), years: pluralize(d.experienceYears, [t('год'), t('года'), t('лет')]) })}
                 </span>
               </div>
             </div>
-            <h3 className="sub-h">Описание</h3>
+            <h3 className="sub-h">{t('Описание')}</h3>
             <p className="prewrap">{d.description || '—'}</p>
-            <h3 className="sub-h">Образование и опыт</h3>
+            <h3 className="sub-h">{t('Образование и опыт')}</h3>
             <p className="prewrap">{d.experienceText || '—'}</p>
-            <h3 className="sub-h">Специализации</h3>
+            <h3 className="sub-h">{t('Специализации')}</h3>
             <div className="tags">
               {info.specializations.map((s) => (
                 <span key={s} className="tag">
@@ -149,26 +151,26 @@ export default function AdminProfileReview() {
               ))}
             </div>
             <dl className="info-list">
-              <dt>Возраст детей</dt>
+              <dt>{t('Возраст детей')}</dt>
               <dd>
-                {d.ageMin}–{d.ageMax} лет
+                {t('{ageMin}–{ageMax} лет', { ageMin: d.ageMin, ageMax: d.ageMax })}
               </dd>
-              <dt>Формат</dt>
+              <dt>{t('Формат')}</dt>
               <dd>
                 {info.formats.join(', ')}
                 {d.formats.includes('offline') && d.city ? ` · ${d.city}` : ''}
               </dd>
-              <dt>Языки</dt>
+              <dt>{t('Языки')}</dt>
               <dd>{info.languages.join(', ')}</dd>
-              <dt>Подтверждения</dt>
-              <dd>{d.agreements.truth && d.agreements.safety ? 'Данные достоверны, правила безопасности приняты' : 'Не подтверждены'}</dd>
+              <dt>{t('Подтверждения')}</dt>
+              <dd>{d.agreements.truth && d.agreements.safety ? t('Данные достоверны, правила безопасности приняты') : t('Не подтверждены')}</dd>
             </dl>
           </section>
 
           <section className="card-section">
-            <h2>Документы</h2>
+            <h2>{t('Документы')}</h2>
             {d.documents.length === 0 ? (
-              <p className="muted">Документы не прикреплены{d.kind === 'specialist' ? ' — для специалиста их стоит запросить.' : '.'}</p>
+              <p className="muted">{t('Документы не прикреплены')}{d.kind === 'specialist' ? t(' — для специалиста их стоит запросить.') : '.'}</p>
             ) : (
               <ul className="docs">
                 {d.documents.map((doc) => (
@@ -188,23 +190,23 @@ export default function AdminProfileReview() {
 
           <section className="card-section">
             <h2>
-              Отзывы {reviews.length > 0 && <span className="muted">· {reviews.length}</span>}
+              {t('Отзывы')}{' '}{reviews.length > 0 && <span className="muted">· {reviews.length}</span>}
             </h2>
             {reviews.length === 0 ? (
-              <p className="muted">Отзывов пока нет.</p>
+              <p className="muted">{t('Отзывов пока нет.')}</p>
             ) : (
               <ul className="reviews">
                 {reviews.map((r) => (
                   <li key={r.id} className="review">
                     <div className="review__head">
-                      <strong>{r.authorName}</strong>
+                      <strong>{reviewAuthor(r.authorName)}</strong>
                       <Stars value={r.rating} size={14} />
                     </div>
                     {r.text && <p>{r.text}</p>}
                     <div className="review__foot">
                       <span className="review__meta">{fmtShortDate(r.createdAt)}</span>
                       <button type="button" className="link-danger" onClick={() => setTarget({ kind: 'review', item: r })}>
-                        Удалить
+                        {t('Удалить')}
                       </button>
                     </div>
                   </li>
@@ -216,42 +218,42 @@ export default function AdminProfileReview() {
 
         <div>
           <section className="card-section">
-            <h2>Подтверждение и награды</h2>
+            <h2>{t('Подтверждение и награды')}</h2>
             {profile.verifiedAt ? (
               <div className="verified-line">
                 <SealCheckIcon size={24} weight="fill" />
                 <span>
-                  <strong>{volunteer ? 'Подтверждённый волонтёр' : 'Подтверждённый специалист'}</strong>
-                  <span>с {fmtDateYear(profile.verifiedAt)} · родители видят отметку в каталоге</span>
+                  <strong>{volunteer ? t('Подтверждённый волонтёр') : t('Подтверждённый специалист')}</strong>
+                  <span>{t('с {fmtDateYear} · родители видят отметку в каталоге', { fmtDateYear: fmtDateYear(profile.verifiedAt) })}</span>
                 </span>
               </div>
             ) : (
               <p className="muted small">
                 {profile.published
-                  ? 'Отметки «Подтверждён» пока нет. Поставьте её, когда проверите документы и первые занятия.'
-                  : 'Подтвердить можно после публикации анкеты в каталоге.'}
+                  ? t('Отметки «Подтверждён» пока нет. Поставьте её, когда проверите документы и первые занятия.')
+                  : t('Подтвердить можно после публикации анкеты в каталоге.')}
               </p>
             )}
             {certificates.length > 0 && <CertificateList items={certificates} onRemove={(c) => setTarget({ kind: 'cert', item: c })} />}
             <div className="btn-row">
               {profile.published && !profile.verifiedAt && (
                 <Button size="sm" variant="primary" icon={SealCheckIcon} onClick={() => setDialog('verify')}>
-                  Подтвердить
+                  {t('Подтвердить')}
                 </Button>
               )}
               <Button size="sm" variant="soft" icon={CertificateIcon} onClick={() => setDialog('cert')}>
-                Выдать сертификат
+                {t('Выдать сертификат')}
               </Button>
               {profile.verifiedAt && (
                 <Button size="sm" variant="danger-ghost" icon={ProhibitIcon} onClick={() => setDialog('unverify')}>
-                  Снять подтверждение
+                  {t('Снять подтверждение')}
                 </Button>
               )}
             </div>
           </section>
 
           <section className="card-section">
-            <h2>Обучение</h2>
+            <h2>{t('Обучение')}</h2>
             <ul className="checklist">
               {TRAINING_MODULES.map((m) => {
                 const done = profile.trainingDone.includes(m.id);
@@ -265,16 +267,15 @@ export default function AdminProfileReview() {
           </section>
 
           <section className="card-section">
-            <h2>Активность</h2>
+            <h2>{t('Активность')}</h2>
             <p>
-              Записей: <strong>{bookings}</strong> · Проведено занятий: <strong>{sessions === undefined ? '…' : sessions?.sessions ?? '—'}</strong>
+              {t('Записей:')}{' '}<strong>{bookings}</strong>{' '}{t('· Проведено занятий:')}{' '}<strong>{sessions === undefined ? '…' : sessions?.sessions ?? '—'}</strong>
               {sessions && (
                 <>
                   {' '}
                   · <strong>{fmtHours(sessions.minutes)}</strong>
                 </>
-              )}{' '}
-              · Отзывов: <strong>{reviews.length}</strong>
+              )}{' '}{t('· Отзывов:')}{' '}<strong>{reviews.length}</strong>
               {rating && (
                 <>
                   {' '}
@@ -285,7 +286,7 @@ export default function AdminProfileReview() {
           </section>
 
           <section className="card-section">
-            <h2>История модерации</h2>
+            <h2>{t('История модерации')}</h2>
             <ol className="timeline">
               {[...profile.history].reverse().map((h, i) => (
                 <li key={`${h.at}-${i}`} className={`timeline__item timeline__item--${GOOD.includes(h.action) ? 'done' : BAD.includes(h.action) ? 'bad' : 'wait'}`}>
@@ -306,69 +307,69 @@ export default function AdminProfileReview() {
         {profile.status === 'pending' ? (
           <>
             <Button variant="soft" size="lg" icon={XIcon} onClick={() => setDialog('reject')}>
-              Отклонить
+              {t('Отклонить')}
             </Button>
             <Button variant="primary" size="lg" icon={CheckIcon} onClick={() => setDialog('approve')}>
-              Одобрить
+              {t('Одобрить')}
             </Button>
           </>
         ) : profile.published ? (
           <Button variant="danger-ghost" size="lg" icon={ProhibitIcon} onClick={() => setDialog('revoke')}>
-            Снять с публикации
+            {t('Снять с публикации')}
           </Button>
         ) : (
-          <p className="muted small">Ждём, когда автор исправит анкету и отправит её снова.</p>
+          <p className="muted small">{t('Ждём, когда автор исправит анкету и отправит её снова.')}</p>
         )}
       </div>
 
       <ConfirmDialog
         open={dialog === 'approve'}
         onClose={() => setDialog(null)}
-        title={profile.published ? 'Опубликовать изменения?' : 'Одобрить анкету?'}
-        text={`${user.name} появится в каталоге, родители смогут записываться.`}
-        confirmLabel="Одобрить"
+        title={profile.published ? t('Опубликовать изменения?') : t('Одобрить анкету?')}
+        text={t('{name} появится в каталоге, родители смогут записываться.', { name: user.name })}
+        confirmLabel={t('Одобрить')}
         tone="primary"
-        onConfirm={() => approveProfile(admin.id, id).then(() => toast.success('Анкета одобрена'))}
+        onConfirm={() => approveProfile(admin.id, id).then(() => toast.success(t('Анкета одобрена')))}
       />
       <ReasonDialog
         open={dialog === 'reject'}
         onClose={() => setDialog(null)}
-        title="Отклонить анкету"
-        text="Причина обязательна — автор увидит её и сможет исправить анкету."
+        title={t('Отклонить анкету')}
+        text={t('Причина обязательна — автор увидит её и сможет исправить анкету.')}
         required
         templates={REJECT_TEMPLATES}
-        placeholder="Что нужно исправить?"
-        confirmLabel="Отклонить"
-        onConfirm={(reason) => rejectProfile(admin.id, id, reason).then(() => toast.info('Анкета отклонена'))}
+        placeholder={t('Что нужно исправить?')}
+        confirmLabel={t('Отклонить')}
+        onConfirm={(reason) => rejectProfile(admin.id, id, reason).then(() => toast.info(t('Анкета отклонена')))}
       />
       <ReasonDialog
         open={dialog === 'revoke'}
         onClose={() => setDialog(null)}
-        title="Снять с публикации"
-        text="Анкета пропадёт из каталога. Уже созданные записи сохранятся — при необходимости отмените их вручную."
+        title={t('Снять с публикации')}
+        text={t('Анкета пропадёт из каталога. Уже созданные записи сохранятся — при необходимости отмените их вручную.')}
         required
-        templates={['Поступили жалобы от родителей.', 'Нарушены правила безопасности.']}
-        confirmLabel="Снять"
-        onConfirm={(reason) => revokeProfile(admin.id, id, reason).then(() => toast.info('Анкета снята с публикации'))}
+        templates={[t('Поступили жалобы от родителей.'), t('Нарушены правила безопасности.')]}
+        confirmLabel={t('Снять')}
+        onConfirm={(reason) => revokeProfile(admin.id, id, reason).then(() => toast.info(t('Анкета снята с публикации')))}
       />
       <ConfirmDialog
         open={dialog === 'verify'}
         onClose={() => setDialog(null)}
-        title={volunteer ? 'Подтвердить волонтёра?' : 'Подтвердить специалиста?'}
-        text={`${user.name} получит отметку «Подтверждён» в каталоге и уведомление.`}
-        confirmLabel="Подтвердить"
+        title={volunteer ? t('Подтвердить волонтёра?') : t('Подтвердить специалиста?')}
+        text={t('{name} получит отметку «Подтверждён» в каталоге и уведомление.', { name: user.name })}
+        confirmLabel={t('Подтвердить')}
         tone="primary"
-        onConfirm={() => verifyProfile(admin.id, id).then(() => toast.success('Отметка «Подтверждён» поставлена'))}
+        onConfirm={() => verifyProfile(admin.id, id).then(() => toast.success(t('Отметка «Подтверждён» поставлена')))}
       />
       <ReasonDialog
         open={dialog === 'unverify'}
         onClose={() => setDialog(null)}
-        title="Снять подтверждение"
-        text="Анкета останется в каталоге, но без отметки «Подтверждён». Автор увидит причину."
+        title={t('Снять подтверждение')}
+        text={t('Анкета останется в каталоге, но без отметки «Подтверждён». Автор увидит причину.')}
         required
-        templates={['Поступили жалобы от родителей.', 'Документы не подтвердились.']}
-        confirmLabel="Снять"
-        onConfirm={(reason) => unverifyProfile(admin.id, id, reason).then(() => toast.info('Подтверждение снято'))}
+        templates={[t('Поступили жалобы от родителей.'), t('Документы не подтвердились.')]}
+        confirmLabel={t('Снять')}
+        onConfirm={(reason) => unverifyProfile(admin.id, id, reason).then(() => toast.info(t('Подтверждение снято')))}
       />
       <IssueCertificateSheet
         open={dialog === 'cert'}
@@ -380,20 +381,20 @@ export default function AdminProfileReview() {
       <ConfirmDialog
         open={target?.kind === 'review'}
         onClose={() => setTarget(null)}
-        title="Удалить отзыв?"
-        text="Удаляйте только отзывы, которые нарушают правила: оскорбления, личные данные, спам. Рейтинг пересчитается."
-        confirmLabel="Удалить"
+        title={t('Удалить отзыв?')}
+        text={t('Удаляйте только отзывы, которые нарушают правила: оскорбления, личные данные, спам. Рейтинг пересчитается.')}
+        confirmLabel={t('Удалить')}
         tone="danger"
-        onConfirm={() => deleteReview(target.item.id).then(() => toast.info('Отзыв удалён'))}
+        onConfirm={() => deleteReview(target.item.id).then(() => toast.info(t('Отзыв удалён')))}
       />
       <ConfirmDialog
         open={target?.kind === 'cert'}
         onClose={() => setTarget(null)}
-        title="Отозвать сертификат?"
-        text={target?.kind === 'cert' ? `«${target.item.title}» пропадёт из анкеты, ссылка на него перестанет работать.` : ''}
-        confirmLabel="Отозвать"
+        title={t('Отозвать сертификат?')}
+        text={target?.kind === 'cert' ? t('«{title}» пропадёт из анкеты, ссылка на него перестанет работать.', { title: target.item.title }) : ''}
+        confirmLabel={t('Отозвать')}
         tone="danger"
-        onConfirm={() => revokeCertificate(target.item.id).then(() => toast.info('Сертификат отозван'))}
+        onConfirm={() => revokeCertificate(target.item.id).then(() => toast.info(t('Сертификат отозван')))}
       />
     </div>
   );

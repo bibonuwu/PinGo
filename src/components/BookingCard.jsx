@@ -6,6 +6,7 @@ import { ageFromBirthDate, cx, fmtAge, fmtCountdown, fmtDay, fmtRange } from '..
 import { displayStatus, roomState, roomWindow } from '../services/bookings';
 import { Avatar } from './Avatar';
 import { ButtonLink, StatusBadge, itemVariants } from './ui';
+import { t } from '../i18n';
 
 // viewer: 'parent' — показываем специалиста; 'specialist' — показываем ребёнка и родителя.
 export function BookingCard({ booking, viewer, counterpart, child, now, to, actions }) {
@@ -14,16 +15,16 @@ export function BookingCard({ booking, viewer, counterpart, child, now, to, acti
   const { opensAt } = roomWindow(booking);
   const person =
     viewer === 'parent'
-      ? { avatar: counterpart?.avatar, name: counterpart?.name ?? 'Специалист', sub: child ? `ребёнок: ${child.name}` : '' }
+      ? { avatar: counterpart?.avatar, name: counterpart?.name ?? t('Специалист'), sub: child ? t('ребёнок: {name}', { name: child.name }) : '' }
       : {
           avatar: child?.avatar,
-          name: child ? `${child.name}, ${fmtAge(ageFromBirthDate(child.birthDate))}` : 'Ребёнок',
-          sub: counterpart ? `родитель: ${counterpart.name}` : '',
+          name: child ? `${child.name}, ${fmtAge(ageFromBirthDate(child.birthDate))}` : t('Ребёнок'),
+          sub: counterpart ? t('родитель: {name}', { name: counterpart.name }) : '',
         };
 
   return (
     <motion.article className={cx('bk-card', `bk-card--${status}`)} variants={itemVariants} layout="position">
-      <Link to={to} className="card-link" aria-label="Открыть запись" />
+      <Link to={to} className="card-link" aria-label={t('Открыть запись')} />
       <div className="bk-card__when">
         <span className="bk-card__day">{fmtDay(booking.start, now)}</span>
         <span className="bk-card__time">{fmtRange(booking.start, booking.end)}</span>
@@ -37,7 +38,7 @@ export function BookingCard({ booking, viewer, counterpart, child, now, to, acti
             {booking.format === 'offline' && (
               <>
                 {' · '}
-                <MapPinIcon size={13} weight="bold" /> очно
+                <MapPinIcon size={13} weight="bold" />{' '}{t('очно')}
               </>
             )}
           </span>
@@ -55,12 +56,12 @@ export function BookingCard({ booking, viewer, counterpart, child, now, to, acti
       )}
       {room === 'open' && (
         <ButtonLink to={`/room/${booking.id}`} variant="primary" size="sm" icon={VideoCameraIcon} className="bk-card__cta">
-          Войти в видеокомнату
+          {t('Войти в видеокомнату')}
         </ButtonLink>
       )}
       {room === 'waiting' && (
         <p className="bk-card__hint">
-          <HourglassMediumIcon size={15} weight="bold" /> Видеокомната откроется через {fmtCountdown(opensAt - now)}
+          <HourglassMediumIcon size={15} weight="bold" />{' '}{t('Видеокомната откроется через {fmtCountdown}', { fmtCountdown: fmtCountdown(opensAt - now) })}
         </p>
       )}
       {actions && <div className="bk-card__actions">{actions}</div>}

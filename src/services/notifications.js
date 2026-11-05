@@ -3,10 +3,13 @@ import { firestore } from '../lib/firebase';
 import { db } from '../lib/db';
 import { batch, commit, commitEach, ref, update } from '../lib/remote';
 import { uid } from '../lib/utils';
+import { isMsg, plainText } from '../i18n/stored';
 
 // «Raw»-функции не сохраняют сами — они добавляют запись в пакет (writeBatch) вызывающего сервиса.
+// title и body — строка или шаблон msg(): шаблон адресат увидит на своём языке (см. i18n/stored.js).
 export function notifyRaw(w, userId, { type, title, body = '', link = null, id = uid(), createdAt = Date.now() }) {
-  const n = { id, userId, type, title, body, link, read: false, createdAt };
+  const n = { id, userId, type, title: plainText(title), body: plainText(body), link, read: false, createdAt };
+  if (isMsg(title) || isMsg(body)) n.i18n = { title: isMsg(title) ? title : null, body: isMsg(body) ? body : null };
   w.set(ref('notifications', id), n);
   return n;
 }

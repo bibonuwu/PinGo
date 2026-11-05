@@ -4,11 +4,12 @@ import { PlusIcon } from '@phosphor-icons/react';
 import { NEED_MAP } from '../lib/constants';
 import { ageFromBirthDate, cx, fmtAge } from '../lib/utils';
 import { Avatar } from './Avatar';
+import { t } from '../i18n';
 
 // «Кто занимается сегодня?» — выбранный ребёнок определяет подбор специалистов и настройки доступности.
 export function ChildSwitcher({ items, activeId, onSelect, addTo }) {
   return (
-    <div className="child-switch" role="radiogroup" aria-label="Выбор ребёнка">
+    <div className="child-switch" role="radiogroup" aria-label={t('Выбор ребёнка')}>
       {items.map((c) => {
         const active = c.id === activeId;
         const needs = c.needs.map((n) => NEED_MAP[n]?.label).filter(Boolean);
@@ -36,13 +37,13 @@ export function ChildSwitcher({ items, activeId, onSelect, addTo }) {
         );
       })}
       {addTo && (
-        <Link to={addTo} className="child-chip child-chip--add" aria-label="Добавить ребёнка">
+        <Link to={addTo} className="child-chip child-chip--add" aria-label={t('Добавить ребёнка')}>
           <span className="child-chip__plus">
             <PlusIcon size={22} weight="bold" />
           </span>
           <span className="child-chip__text">
-            <strong>Добавить</strong>
-            <span>профиль ребёнка</span>
+            <strong>{t('Добавить')}</strong>
+            <span>{t('профиль ребёнка')}</span>
           </span>
         </Link>
       )}

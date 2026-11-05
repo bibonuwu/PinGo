@@ -31,6 +31,7 @@ import { EmptyState } from '../../components/EmptyState';
 import { PageHeader } from '../../components/PageHeader';
 import { Pingo } from '../../components/Pingo';
 import { Button, ButtonLink, Field, Segmented, Textarea } from '../../components/ui';
+import { t } from '../../i18n';
 
 export default function BookSession() {
   const { id } = useParams();
@@ -61,16 +62,16 @@ export default function BookSession() {
   }, [byDay, now]);
 
   if (entry === undefined || !children) return <div className="page page--loading" />;
-  if (!entry?.data) return <EmptyState pingo title="Анкета недоступна" action={<ButtonLink to="/parent/specialists">К каталогу</ButtonLink>} />;
+  if (!entry?.data) return <EmptyState pingo title={t('Анкета недоступна')} action={<ButtonLink to="/parent/specialists">{t('К каталогу')}</ButtonLink>} />;
   if (!children.length) {
     return (
       <div className="page">
-        <PageHeader back={`/parent/specialists/${id}`} title="Запись на занятие" />
+        <PageHeader back={`/parent/specialists/${id}`} title={t('Запись на занятие')} />
         <EmptyState
           pingo
-          title="Сначала профиль ребёнка"
-          text="Специалисту важно знать, с кем он будет заниматься: возраст, особенности и цели."
-          action={<ButtonLink to="/parent/children/new">Создать профиль</ButtonLink>}
+          title={t('Сначала профиль ребёнка')}
+          text={t('Специалисту важно знать, с кем он будет заниматься: возраст, особенности и цели.')}
+          action={<ButtonLink to="/parent/children/new">{t('Создать профиль')}</ButtonLink>}
         />
       </div>
     );
@@ -97,9 +98,9 @@ export default function BookSession() {
           <motion.div initial={{ y: 30, rotate: -10 }} animate={{ y: 0, rotate: 0 }} transition={{ type: 'spring', stiffness: 200, damping: 10 }}>
             <Pingo size={130} mood="happy" wave />
           </motion.div>
-          <h1 className="page-title">Запрос отправлен!</h1>
+          <h1 className="page-title">{t('Запрос отправлен!')}</h1>
           <p className="muted">
-            {sp.name} получит уведомление и подтвердит запись. Статус — «Ожидает подтверждения», я сообщу, когда он изменится.
+            {t('{name} получит уведомление и подтвердит запись. Статус — «Ожидает подтверждения», я сообщу, когда он изменится.', { name: sp.name })}
           </p>
           <div className="summary-card">
             <Avatar avatar={selectedChild.avatar} name={selectedChild.name} size={52} />
@@ -108,16 +109,16 @@ export default function BookSession() {
                 {fmtDay(created.start)}, {fmtRange(created.start, created.end)}
               </strong>
               <span>
-                {selectedChild.name} · {sp.name} · {selectedFormat === 'online' ? 'онлайн' : 'очно'}
+                {selectedChild.name} · {sp.name} · {selectedFormat === 'online' ? t('онлайн') : t('очно')}
               </span>
             </div>
           </div>
           <div className="booking-done__actions">
             <ButtonLink to={`/parent/bookings/${created.id}`} variant="dark" size="lg" iconRight={ArrowRightIcon} block>
-              Открыть запись
+              {t('Открыть запись')}
             </ButtonLink>
             <ButtonLink to={`/parent/messages/${conversationIdFor(user.id, id)}`} variant="soft" size="lg" icon={ChatCircleDotsIcon} block>
-              Написать специалисту
+              {t('Написать специалисту')}
             </ButtonLink>
           </div>
         </motion.div>
@@ -127,7 +128,7 @@ export default function BookSession() {
 
   const submit = async () => {
     if (!chosen) {
-      toast.error('Выберите время занятия');
+      toast.error(t('Выберите время занятия'));
       return;
     }
     setBusy(true);
@@ -152,10 +153,10 @@ export default function BookSession() {
 
   return (
     <div className="page book">
-      <PageHeader back={`/parent/specialists/${id}`} title="Запись на занятие" subtitle={`${sp.name} · ${entry.sessionMinutes} минут`} />
+      <PageHeader back={`/parent/specialists/${id}`} title={t('Запись на занятие')} subtitle={t('{name} · {sessionMinutes} минут', { name: sp.name, sessionMinutes: entry.sessionMinutes })} />
 
       <section className="book__section">
-        <h2 className="book__label">Для кого</h2>
+        <h2 className="book__label">{t('Для кого')}</h2>
         <div className="choice-row">
           {children.map((c) => (
             <button
@@ -176,8 +177,7 @@ export default function BookSession() {
         <AnimatePresence initial={false}>
           {!match.ageOk && (
             <motion.p className="inline-warn" initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-              <WarningIcon size={18} weight="fill" /> {sp.name} работает с детьми {data.ageMin}–{data.ageMax} лет. Запрос можно
-              отправить, но специалист может отказаться.
+              <WarningIcon size={18} weight="fill" />{' '}{t('{name} работает с детьми {ageMin}–{ageMax} лет. Запрос можно отправить, но специалист может отказаться.', { name: sp.name, ageMin: data.ageMin, ageMax: data.ageMax })}
             </motion.p>
           )}
         </AnimatePresence>
@@ -186,15 +186,15 @@ export default function BookSession() {
       {slots.length === 0 ? (
         <EmptyState
           pingo
-          title="Свободных окон нет"
-          text="На ближайшие три недели всё занято. Напишите специалисту — возможно, появится время."
-          action={<ButtonLink to={`/parent/specialists/${id}`}>К анкете</ButtonLink>}
+          title={t('Свободных окон нет')}
+          text={t('На ближайшие три недели всё занято. Напишите специалисту — возможно, появится время.')}
+          action={<ButtonLink to={`/parent/specialists/${id}`}>{t('К анкете')}</ButtonLink>}
         />
       ) : (
         <>
           <section className="book__section">
-            <h2 className="book__label">Дата</h2>
-            <div className="day-strip" role="listbox" aria-label="Дата">
+            <h2 className="book__label">{t('Дата')}</h2>
+            <div className="day-strip" role="listbox" aria-label={t('Дата')}>
               {days.map((d) => (
                 <button
                   key={d.key}
@@ -213,14 +213,14 @@ export default function BookSession() {
                   )}
                   <span className="day__wd">{fmtWeekday(d.date)}</span>
                   <span className="day__num">{new Date(d.date).getDate()}</span>
-                  <span className="day__count">{d.count ? `${d.count} ${plural(d.count, ['окно', 'окна', 'окон'])}` : '—'}</span>
+                  <span className="day__count">{d.count ? `${d.count} ${plural(d.count, [t('окно'), t('окна'), t('окон')])}` : '—'}</span>
                 </button>
               ))}
             </div>
           </section>
 
           <section className="book__section">
-            <h2 className="book__label">Время{selectedDay ? ` · ${fmtShortDate(parseDateKey(selectedDay))}` : ''}</h2>
+            <h2 className="book__label">{t('Время{p0}', { p0: selectedDay ? ` · ${fmtShortDate(parseDateKey(selectedDay))}` : '' })}</h2>
             <motion.div key={selectedDay} className="time-grid" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
               {daySlots.map((s) => (
                 <button
@@ -238,7 +238,7 @@ export default function BookSession() {
 
           {data.formats.length > 1 && (
             <section className="book__section">
-              <h2 className="book__label">Формат</h2>
+              <h2 className="book__label">{t('Формат')}</h2>
               <Segmented
                 value={selectedFormat}
                 onChange={setFormat}
@@ -249,13 +249,13 @@ export default function BookSession() {
           )}
 
           <section className="book__section">
-            <Field label="Заметка для специалиста" optional counter={`${note.length}/500`}>
+            <Field label={t('Заметка для специалиста')} optional counter={`${note.length}/500`}>
               <Textarea
                 rows={3}
                 maxLength={500}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
-                placeholder="Что важно учесть на первом занятии? Например: боится громких звуков, любит машинки."
+                placeholder={t('Что важно учесть на первом занятии? Например: боится громких звуков, любит машинки.')}
               />
             </Field>
           </section>
@@ -268,15 +268,15 @@ export default function BookSession() {
                     {fmtDay(chosen.start, now)}, {fmtRange(chosen.start, chosen.end)}
                   </strong>
                   <span>
-                    {selectedChild.name} · {selectedFormat === 'online' ? 'онлайн' : `очно, ${data.city}`}
+                    {selectedChild.name} · {selectedFormat === 'online' ? t('онлайн') : t('очно, {city}', { city: data.city })}
                   </span>
                 </>
               ) : (
-                <span className="muted">Выберите время занятия</span>
+                <span className="muted">{t('Выберите время занятия')}</span>
               )}
             </div>
             <Button variant="dark" size="lg" icon={PaperPlaneTiltIcon} onClick={submit} loading={busy} disabled={!chosen}>
-              Отправить запрос
+              {t('Отправить запрос')}
             </Button>
           </div>
         </>

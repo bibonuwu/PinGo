@@ -10,6 +10,7 @@ import { ChatThread, ConversationList } from '../../components/Chat';
 import { EmptyState } from '../../components/EmptyState';
 import { PageHeader } from '../../components/PageHeader';
 import { ButtonLink } from '../../components/ui';
+import { t } from '../../i18n';
 
 // Модератор в диалоге поддержки стоит на месте специалиста (с родителем) или родителя (со специалистом),
 // см. services/chat.js, поэтому его диалоги ищутся по обоим полям.
@@ -55,40 +56,40 @@ export default function Messages() {
   if (!conversations.length && !active) {
     return (
       <div className="page">
-        <PageHeader title="Сообщения" />
+        <PageHeader title={t('Сообщения')} />
         {isAdmin ? (
           <EmptyState
             icon={ChatsCircleIcon}
-            title="Пока нет диалогов"
-            text="Чтобы написать родителю, специалисту или волонтёру, откройте «Пользователи» и нажмите на значок чата рядом с ним."
+            title={t('Пока нет диалогов')}
+            text={t('Чтобы написать родителю, специалисту или волонтёру, откройте «Пользователи» и нажмите на значок чата рядом с ним.')}
             action={
               <ButtonLink to="/admin/users" variant="primary" size="lg" icon={UsersThreeIcon} block>
-                Пользователи
+                {t('Пользователи')}
               </ButtonLink>
             }
           />
         ) : (
           <EmptyState
             icon={ChatsCircleIcon}
-            title="Пока нет сообщений"
+            title={t('Пока нет сообщений')}
             text={
               isParent
-                ? 'Диалог появится, когда вы запишетесь на занятие или зададите вопрос специалисту.'
-                : 'Диалог появится, когда родитель запишется к вам или задаст вопрос.'
+                ? t('Диалог появится, когда вы запишетесь на занятие или зададите вопрос специалисту.')
+                : t('Диалог появится, когда родитель запишется к вам или задаст вопрос.')
             }
             bullets={
               isParent
-                ? ['Запишитесь на занятие, чтобы начать диалог', 'Специалист ответит о времени и деталях', 'Вся переписка — в одном месте']
-                : ['Заполните анкету и расписание', 'Отвечайте родителям о целях и деталях', 'Вся переписка — в одном месте']
+                ? [t('Запишитесь на занятие, чтобы начать диалог'), t('Специалист ответит о времени и деталях'), t('Вся переписка — в одном месте')]
+                : [t('Заполните анкету и расписание'), t('Отвечайте родителям о целях и деталях'), t('Вся переписка — в одном месте')]
             }
             action={
               isParent ? (
                 <ButtonLink to="/parent/specialists" variant="primary" size="lg" icon={MagnifyingGlassIcon} block>
-                  Найти специалиста
+                  {t('Найти специалиста')}
                 </ButtonLink>
               ) : (
                 <ButtonLink to="/specialist/profile" variant="primary" size="lg" block>
-                  Моя анкета
+                  {t('Моя анкета')}
                 </ButtonLink>
               )
             }
@@ -122,7 +123,7 @@ export default function Messages() {
     return (
       <div className="chat-screen">
         {thread ?? (
-          <EmptyState icon={ChatCircleDotsIcon} title="Диалог не найден" action={<ButtonLink to={base}>Все сообщения</ButtonLink>} />
+          <EmptyState icon={ChatCircleDotsIcon} title={t('Диалог не найден')} action={<ButtonLink to={base}>{t('Все сообщения')}</ButtonLink>} />
         )}
       </div>
     );
@@ -131,7 +132,7 @@ export default function Messages() {
   return (
     <div className={cx('page messages', desktop && 'messages--split')}>
       <div className="messages__list">
-        <PageHeader title="Сообщения" />
+        <PageHeader title={t('Сообщения')} />
         <ConversationList items={items} me={user.id} basePath={base} activeId={id} />
       </div>
       {desktop && (
@@ -139,7 +140,7 @@ export default function Messages() {
           {thread ?? (
             <div className="messages__placeholder">
               <ChatsCircleIcon size={56} weight="fill" />
-              <p>{id ? 'Диалог не найден' : 'Выберите диалог слева'}</p>
+              <p>{id ? t('Диалог не найден') : t('Выберите диалог слева')}</p>
             </div>
           )}
         </div>

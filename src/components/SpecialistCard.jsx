@@ -6,6 +6,7 @@ import { kindLabel } from '../services/profiles';
 import { cx, fmtDayTime } from '../lib/utils';
 import { Avatar } from './Avatar';
 import { Rating, itemVariants } from './ui';
+import { t } from '../i18n';
 
 export function SpecialistCard({ entry, match, childName, favorite, onToggleFavorite, to, now }) {
   const { user, data } = entry;
@@ -17,13 +18,13 @@ export function SpecialistCard({ entry, match, childName, favorite, onToggleFavo
       whileHover={{ y: -4 }}
       layout="position"
     >
-      <Link to={to} className="card-link" aria-label={`${user.name} — открыть анкету`} />
+      <Link to={to} className="card-link" aria-label={t('{name} — открыть анкету', { name: user.name })} />
       <div className="sp-card__head">
         <Avatar avatar={user.avatar} name={user.name} size={52} />
         <div className="sp-card__who">
           <h3 className="sp-card__name">
             {user.name}
-            {entry.profile.verifiedAt && <SealCheckIcon size={16} weight="fill" className="ico-verified" aria-label="Подтверждён Pingo" />}
+            {entry.profile.verifiedAt && <SealCheckIcon size={16} weight="fill" className="ico-verified" aria-label={t('Подтверждён Pingo')} />}
           </h3>
           <p className="sp-card__title">{data.title}</p>
         </div>
@@ -34,15 +35,15 @@ export function SpecialistCard({ entry, match, childName, favorite, onToggleFavo
       </div>
       {match?.good && (
         <p className="match-tag">
-          <SparkleIcon size={14} weight="fill" /> Подходит · {childName}
+          <SparkleIcon size={14} weight="fill" />{' '}{t('Подходит · {childName}', { childName })}
         </p>
       )}
       <p className="sp-card__next">
         <ClockIcon size={15} weight="bold" />
-        {next ? fmtDayTime(next.start, now) : 'Нет свободных окон'}
+        {next ? fmtDayTime(next.start, now) : t('Нет свободных окон')}
       </p>
       <div className="sp-card__foot">
-        <span className="pill-white">{`Опыт: ${data.experienceYears} г.`}</span>
+        <span className="pill-white">{t('Опыт: {experienceYears} г.', { experienceYears: data.experienceYears })}</span>
         <span className="arrow-btn" aria-hidden="true">
           <ArrowUpRightIcon size={20} weight="bold" />
         </span>
@@ -52,7 +53,7 @@ export function SpecialistCard({ entry, match, childName, favorite, onToggleFavo
           type="button"
           className={cx('fav-btn', favorite && 'is-active')}
           aria-pressed={favorite}
-          aria-label={favorite ? 'Убрать из избранного' : 'В избранное'}
+          aria-label={favorite ? t('Убрать из избранного') : t('В избранное')}
           onClick={onToggleFavorite}
           whileTap={{ scale: 0.8 }}
         >

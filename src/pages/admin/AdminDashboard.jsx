@@ -33,6 +33,7 @@ import { Avatar } from '../../components/Avatar';
 import { MenuLink } from '../../components/MenuLink';
 import { PageHeader } from '../../components/PageHeader';
 import { ButtonLink, IconButton, Rating, SectionLabel, Stagger } from '../../components/ui';
+import { t } from '../../i18n';
 
 const WEEKS = 8;
 
@@ -58,7 +59,7 @@ function WeeklyBars({ bins }) {
             key={b.start}
             type="button"
             className={cx('bars__col', active === i && 'is-active')}
-            aria-label={`${range(b)}: ${pluralize(b.count, ['новый пользователь', 'новых пользователя', 'новых пользователей'])}`}
+            aria-label={`${range(b)}: ${pluralize(b.count, [t('новый пользователь'), t('новых пользователя'), t('новых пользователей')])}`}
             onMouseEnter={() => setActive(i)}
             onFocus={() => setActive(i)}
             onBlur={() => setActive(null)}
@@ -89,7 +90,7 @@ function WeeklyBars({ bins }) {
         ))}
       </div>
       <table className="sr-only">
-        <caption>Новые пользователи по неделям</caption>
+        <caption>{t('Новые пользователи по неделям')}</caption>
         <tbody>
           {bins.map((b) => (
             <tr key={b.start}>
@@ -158,29 +159,29 @@ export default function AdminDashboard() {
   const recent = [...people].sort((a, b) => b.createdAt - a.createdAt).slice(0, 5);
 
   const tasks = [
-    pending > 0 && { icon: IdentificationCardIcon, title: `${pluralize(pending, ['анкета ждёт', 'анкеты ждут', 'анкет ждут'])} проверки`, text: 'Проверьте и опубликуйте в каталоге.', to: '/admin/profiles', label: 'Проверить' },
-    waitingVerify > 0 && { icon: HandHeartIcon, title: `${pluralize(waitingVerify, ['волонтёр ждёт', 'волонтёра ждут', 'волонтёров ждут'])} подтверждения`, text: 'Подтверждённые волонтёры получают отметку в каталоге.', to: '/admin/volunteers', label: 'Открыть' },
-    openComplaints > 0 && { icon: FlagIcon, title: `${pluralize(openComplaints, ['открытая жалоба', 'открытые жалобы', 'открытых жалоб'])}`, text: 'Безопасность детей — в приоритете.', to: '/admin/reports', label: 'Разобрать', danger: true },
+    pending > 0 && { icon: IdentificationCardIcon, title: t('{pluralize} проверки', { pluralize: pluralize(pending, [t('анкета ждёт'), t('анкеты ждут'), t('анкет ждут')]) }), text: t('Проверьте и опубликуйте в каталоге.'), to: '/admin/profiles', label: t('Проверить') },
+    waitingVerify > 0 && { icon: HandHeartIcon, title: t('{pluralize} подтверждения', { pluralize: pluralize(waitingVerify, [t('волонтёр ждёт'), t('волонтёра ждут'), t('волонтёров ждут')]) }), text: t('Подтверждённые волонтёры получают отметку в каталоге.'), to: '/admin/volunteers', label: t('Открыть') },
+    openComplaints > 0 && { icon: FlagIcon, title: `${pluralize(openComplaints, [t('открытая жалоба'), t('открытые жалобы'), t('открытых жалоб')])}`, text: t('Безопасность детей — в приоритете.'), to: '/admin/reports', label: t('Разобрать'), danger: true },
   ].filter(Boolean);
 
   const STATS = [
-    { icon: UserIcon, value: people.filter((u) => u.role === 'parent').length, label: 'родителей', to: '/admin/users?tab=parents' },
-    { icon: UsersThreeIcon, value: specialists.length - volunteers.length, label: 'специалистов', to: '/admin/users?tab=specialists' },
-    { icon: HandHeartIcon, value: volunteers.length, label: 'волонтёров', to: '/admin/volunteers' },
-    { icon: StorefrontIcon, value: published.length, label: 'анкет в каталоге', to: '/admin/profiles?tab=approved' },
+    { icon: UserIcon, value: people.filter((u) => u.role === 'parent').length, label: t('родителей'), to: '/admin/users?tab=parents' },
+    { icon: UsersThreeIcon, value: specialists.length - volunteers.length, label: t('специалистов'), to: '/admin/users?tab=specialists' },
+    { icon: HandHeartIcon, value: volunteers.length, label: t('волонтёров'), to: '/admin/volunteers' },
+    { icon: StorefrontIcon, value: published.length, label: t('анкет в каталоге'), to: '/admin/profiles?tab=approved' },
     {
       icon: VideoCameraIcon,
       value: totals ? fmtNum(totals.done?.sessions) : '…',
-      label: totals?.month ? `занятий проведено · ${totals.month.sessions} за 30 дней` : 'занятий проведено',
+      label: totals?.month ? t('занятий проведено · {sessions} за 30 дней', { sessions: totals.month.sessions }) : t('занятий проведено'),
     },
-    { icon: ClockIcon, value: totals ? (totals.done ? fmtHours(totals.done.minutes) : '—') : '…', label: 'занятий с детьми' },
+    { icon: ClockIcon, value: totals ? (totals.done ? fmtHours(totals.done.minutes) : '—') : '…', label: t('занятий с детьми') },
     {
       icon: StarIcon,
       value: avg ? avg.toFixed(1).replace('.', ',') : '—',
-      label: data.reviews.length ? `средняя оценка · ${pluralize(data.reviews.length, ['отзыв', 'отзыва', 'отзывов'])}` : 'пока нет отзывов',
+      label: data.reviews.length ? t('средняя оценка · {pluralize}', { pluralize: pluralize(data.reviews.length, [t('отзыв'), t('отзыва'), t('отзывов')]) }) : t('пока нет отзывов'),
       to: '/admin/rating',
     },
-    { icon: CertificateIcon, value: data.certificates.length, label: plural(data.certificates.length, ['сертификат выдан', 'сертификата выдано', 'сертификатов выдано']), to: '/admin/rating' },
+    { icon: CertificateIcon, value: data.certificates.length, label: plural(data.certificates.length, [t('сертификат выдан'), t('сертификата выдано'), t('сертификатов выдано')]), to: '/admin/rating' },
   ];
 
   const logout = () => {
@@ -191,10 +192,10 @@ export default function AdminDashboard() {
   return (
     <div className="page admin-home">
       <PageHeader
-        eyebrow="Админ-панель"
-        title="Обзор"
-        subtitle={`Здравствуйте, ${firstName(user.name)}! Вот что происходит в Pingo.`}
-        actions={!desktop && <IconButton icon={BellIcon} label="Уведомления" to="/admin/notifications" badge={counts.notifications} size="lg" />}
+        eyebrow={t('Админ-панель')}
+        title={t('Обзор')}
+        subtitle={t('Здравствуйте, {firstName}! Вот что происходит в Pingo.', { firstName: firstName(user.name) })}
+        actions={!desktop && <IconButton icon={BellIcon} label={t('Уведомления')} to="/admin/notifications" badge={counts.notifications} size="lg" />}
       />
 
       {tasks.length ? (
@@ -219,8 +220,8 @@ export default function AdminDashboard() {
         <div className="callout callout--green">
           <CheckCircleIcon size={26} weight="fill" />
           <div>
-            <strong>Всё проверено</strong>
-            <span>Новых анкет, жалоб и волонтёров без подтверждения нет.</span>
+            <strong>{t('Всё проверено')}</strong>
+            <span>{t('Новых анкет, жалоб и волонтёров без подтверждения нет.')}</span>
           </div>
         </div>
       )}
@@ -251,22 +252,22 @@ export default function AdminDashboard() {
 
       <div className="admin-home__grid">
         <section className="dark-card">
-          <h2 className="dark-card__title">Новые пользователи</h2>
+          <h2 className="dark-card__title">{t('Новые пользователи')}</h2>
           <p className="dark-card__foot">
-            {pluralize(newInPeriod, ['регистрация', 'регистрации', 'регистраций'])} за {WEEKS} недель, по неделям
+            {pluralize(newInPeriod, [t('регистрация'), t('регистрации'), t('регистраций')])}{' '}{t('за {WEEKS} недель, по неделям', { WEEKS })}
           </p>
           <WeeklyBars bins={bins} />
         </section>
 
         <section className="card-section">
           <div className="card-section__head">
-            <h2>Лучшие по рейтингу</h2>
+            <h2>{t('Лучшие по рейтингу')}</h2>
             <Link to="/admin/rating" className="link-more">
-              Весь рейтинг
+              {t('Весь рейтинг')}
             </Link>
           </div>
           {top.length === 0 ? (
-            <p className="muted">В каталоге пока нет анкет.</p>
+            <p className="muted">{t('В каталоге пока нет анкет.')}</p>
           ) : (
             <ol className="mini-rank">
               {top.map((r, i) => (
@@ -277,7 +278,7 @@ export default function AdminDashboard() {
                     <span className="mini-rank__who">
                       <strong>
                         {r.user.name}
-                        {r.profile.verifiedAt && <SealCheckIcon size={16} weight="fill" className="ico-verified" aria-label="Подтверждён" />}
+                        {r.profile.verifiedAt && <SealCheckIcon size={16} weight="fill" className="ico-verified" aria-label={t('Подтверждён')} />}
                       </strong>
                       <span>{kindLabel(profileKind(r.profile))}</span>
                     </span>
@@ -290,9 +291,9 @@ export default function AdminDashboard() {
         </section>
       </div>
 
-      <SectionLabel action={<Link to="/admin/users">Все пользователи</Link>}>Недавно зарегистрировались</SectionLabel>
+      <SectionLabel action={<Link to="/admin/users">{t('Все пользователи')}</Link>}>{t('Недавно зарегистрировались')}</SectionLabel>
       {recent.length === 0 ? (
-        <p className="muted">Пока никого нет.</p>
+        <p className="muted">{t('Пока никого нет.')}</p>
       ) : (
         <ul className="admin-list">
           {recent.map((u) => {
@@ -303,7 +304,7 @@ export default function AdminDashboard() {
                 <span className="admin-row__body">
                   <strong>{u.name}</strong>
                   <span className="admin-row__meta">
-                    {u.role === 'parent' ? 'Родитель' : kindLabel(profileKind(p))} · {fmtAgo(u.createdAt, now)}
+                    {u.role === 'parent' ? t('Родитель') : kindLabel(profileKind(p))} · {fmtAgo(u.createdAt, now)}
                   </span>
                 </span>
               </>
@@ -325,23 +326,23 @@ export default function AdminDashboard() {
 
       {!desktop && (
         <nav className="white-card menu menu--bordered">
-          <MenuLink icon={UsersThreeIcon} to="/admin/users" hint="Поиск, экспорт в Excel">
-            Пользователи
+          <MenuLink icon={UsersThreeIcon} to="/admin/users" hint={t('Поиск, экспорт в Excel')}>
+            {t('Пользователи')}
           </MenuLink>
-          <MenuLink icon={MegaphoneIcon} to="/admin/broadcast" hint="Сообщение родителям или волонтёрам">
-            Рассылки
+          <MenuLink icon={MegaphoneIcon} to="/admin/broadcast" hint={t('Сообщение родителям или волонтёрам')}>
+            {t('Рассылки')}
           </MenuLink>
           <MenuLink icon={BellIcon} to="/admin/notifications" badge={counts.notifications}>
-            Уведомления
+            {t('Уведомления')}
           </MenuLink>
           <MenuLink icon={GearIcon} to="/admin/settings">
-            Настройки
+            {t('Настройки')}
           </MenuLink>
           <MenuLink icon={LifebuoyIcon} to="/admin/help">
-            Помощь
+            {t('Помощь')}
           </MenuLink>
           <MenuLink icon={SignOutIcon} onClick={logout} danger>
-            Выйти
+            {t('Выйти')}
           </MenuLink>
         </nav>
       )}

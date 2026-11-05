@@ -3,13 +3,15 @@ import { batch, commit, ref, update } from '../lib/remote';
 import { COMPLAINT_REASON_MAP } from '../lib/constants';
 import { uid } from '../lib/utils';
 import { notifyAdminsRaw } from './notifications';
+import { msg } from '../i18n/stored';
+import { t } from '../i18n';
 
 // Жалобы на пользователей (концепция, раздел «Безопасность»). Их разбирает администратор.
 export async function createComplaint({ reporterId, targetId, reason, details = '', context = null }) {
-  if (!COMPLAINT_REASON_MAP[reason]) throw new Error('Выберите причину жалобы');
-  if (reason === 'other' && details.trim().length < 10) throw new Error('Опишите проблему — минимум 10 символов');
+  if (!COMPLAINT_REASON_MAP[reason]) throw new Error(t('Выберите причину жалобы'));
+  if (reason === 'other' && details.trim().length < 10) throw new Error(t('Опишите проблему — минимум 10 символов'));
   const [reporter, target] = await Promise.all([db.users.get(reporterId), db.users.get(targetId)]);
-  if (!target) throw new Error('Пользователь не найден');
+  if (!target) throw new Error(t('Пользователь не найден'));
   const complaint = {
     id: uid(),
     reporterId,
@@ -26,8 +28,12 @@ export async function createComplaint({ reporterId, targetId, reason, details = 
   w.set(ref('complaints', complaint.id), complaint);
   await notifyAdminsRaw(w, {
     type: 'complaint',
-    title: 'Новая жалоба',
-    body: `${reporter?.name ?? 'Пользователь'} → ${target.name}: ${COMPLAINT_REASON_MAP[reason].label}`,
+    title: msg('Новая жалоба'),
+    body: msg('{reporter} → {target}: {reason}', {
+      reporter: reporter?.name ?? { t: 'Пользователь' },
+      target: target.name,
+      reason: { label: 'complaintReason', id: reason },
+    }),
     link: '/admin/reports',
   });
   await commit(w);
@@ -37,7 +43,7 @@ export async function createComplaint({ reporterId, targetId, reason, details = 
 export async function resolveComplaint(id, adminId, resolution = '') {
   await update('complaints', id, {
     status: 'resolved',
-    resolution: resolution.trim() || 'Проверено',
+    resolution: resolution.trim() || t('Проверено'),
     resolvedBy: adminId,
     resolvedAt: Date.now(),
   });

@@ -14,30 +14,31 @@ import { AboutFields, GoalsFields, NeedsFields, StyleFields } from '../../compon
 import { Confetti } from '../../components/Decor';
 import { Pingo, PingoGuide } from '../../components/Pingo';
 import { Button, ButtonLink, Checkbox, IconButton, ProgressBar } from '../../components/ui';
+import { t } from '../../i18n';
 
 const STEPS = [
-  { id: 'avatar', title: 'Аватар' },
-  { id: 'about', title: 'Имя и возраст' },
-  { id: 'needs', title: 'Потребности' },
-  { id: 'style', title: 'Стиль обучения' },
-  { id: 'a11y', title: 'Доступность' },
-  { id: 'goals', title: 'Цели' },
+  { id: 'avatar', title: t('Аватар') },
+  { id: 'about', title: t('Имя и возраст') },
+  { id: 'needs', title: t('Потребности') },
+  { id: 'style', title: t('Стиль обучения') },
+  { id: 'a11y', title: t('Доступность') },
+  { id: 'goals', title: t('Цели') },
 ];
 
 function guideText(step) {
   switch (step) {
     case 'avatar':
-      return 'Привет! Я Pingo — ваш гид. Давайте создадим профиль ребёнка. Для начала выберите аватар — его увидит ребёнок 🐧';
+      return t('Привет! Я Pingo — ваш гид. Давайте создадим профиль ребёнка. Для начала выберите аватар — его увидит ребёнок 🐧');
     case 'about':
-      return 'Как зовут ребёнка и когда у него день рождения?';
+      return t('Как зовут ребёнка и когда у него день рождения?');
     case 'needs':
-      return 'С чем нужна поддержка? Можно выбрать несколько вариантов. Диагноз указывать необязательно.';
+      return t('С чем нужна поддержка? Можно выбрать несколько вариантов. Диагноз указывать необязательно.');
     case 'style':
-      return 'Как ребёнку легче учиться? Специалист подготовит занятия под этот стиль.';
+      return t('Как ребёнку легче учиться? Специалист подготовит занятия под этот стиль.');
     case 'a11y':
-      return 'Настроим Pingo под ребёнка: я уже подобрал настройки по выбранным особенностям — их можно изменить.';
+      return t('Настроим Pingo под ребёнка: я уже подобрал настройки по выбранным особенностям — их можно изменить.');
     default:
-      return 'Почти готово! Расскажите о целях и о том, что важно знать специалисту, — так первое занятие пройдёт спокойнее.';
+      return t('Почти готово! Расскажите о целях и о том, что важно знать специалисту, — так первое занятие пройдёт спокойнее.');
   }
 }
 
@@ -93,7 +94,7 @@ export default function ChildWizard({ onboarding = false }) {
   const submit = async () => {
     if (!consent) {
       setErrors({ consent: true });
-      toast.error('Подтвердите согласие законного представителя');
+      toast.error(t('Подтвердите согласие законного представителя'));
       return;
     }
     setSaving(true);
@@ -120,29 +121,29 @@ export default function ChildWizard({ onboarding = false }) {
           <motion.div animate={{ y: [0, -18, 0] }} transition={{ duration: 0.7, repeat: 2 }}>
             <Pingo size={140} mood="happy" wave />
           </motion.div>
-          <h1 className="page-title">Профиль готов!</h1>
-          <p className="muted">Теперь я буду подбирать специалистов по этому профилю и подстрою приложение под ребёнка.</p>
+          <h1 className="page-title">{t('Профиль готов!')}</h1>
+          <p className="muted">{t('Теперь я буду подбирать специалистов по этому профилю и подстрою приложение под ребёнка.')}</p>
           <div className="summary-card">
             <Avatar avatar={created.avatar} name={created.name} size={64} />
             <div>
               <strong>
                 {created.name}, {fmtAge(age)}
               </strong>
-              <span>{created.needs.map((n) => NEED_MAP[n]?.label).join(', ') || 'Без указания особенностей'}</span>
+              <span>{created.needs.map((n) => NEED_MAP[n]?.label).join(', ') || t('Без указания особенностей')}</span>
               {created.learningStyles.length > 0 && (
-                <span>Учится: {created.learningStyles.map((s) => LEARNING_STYLE_MAP[s]?.label.toLowerCase()).join(', ')}</span>
+                <span>{t('Учится:')}{' '}{created.learningStyles.map((s) => LEARNING_STYLE_MAP[s]?.label.toLowerCase()).join(', ')}</span>
               )}
               {describeAccessibility(created.accessibility).length > 0 && (
-                <span>Интерфейс: {describeAccessibility(created.accessibility).join(', ')}</span>
+                <span>{t('Интерфейс: {join}', { join: describeAccessibility(created.accessibility).join(', ') })}</span>
               )}
             </div>
           </div>
           <div className="wizard__done-actions">
             <ButtonLink to="/parent/specialists" variant="primary" size="lg" icon={MagnifyingGlassIcon} block>
-              Найти специалиста
+              {t('Найти специалиста')}
             </ButtonLink>
             <ButtonLink to="/parent" variant="soft" size="lg" block>
-              На главную
+              {t('На главную')}
             </ButtonLink>
           </div>
         </motion.div>
@@ -153,19 +154,19 @@ export default function ChildWizard({ onboarding = false }) {
   return (
     <div className="wizard">
       <header className="wizard__top">
-        <IconButton icon={ArrowLeftIcon} label="Назад" onClick={back} />
+        <IconButton icon={ArrowLeftIcon} label={t('Назад')} onClick={back} />
         <div className="wizard__progress">
           <span className="wizard__step">
-            Шаг {step + 1} из {STEPS.length} · {current.title}
+            {t('Шаг {p0} из {length} · {title}', { p0: step + 1, length: STEPS.length, title: current.title })}
           </span>
           <ProgressBar value={(step + 1) / STEPS.length} />
         </div>
         {onboarding ? (
           <Button variant="ghost" size="sm" onClick={() => navigate('/parent', { replace: true })}>
-            Позже
+            {t('Позже')}
           </Button>
         ) : (
-          <IconButton icon={XIcon} label="Закрыть" onClick={() => navigate('/parent/profile')} />
+          <IconButton icon={XIcon} label={t('Закрыть')} onClick={() => navigate('/parent/profile')} />
         )}
       </header>
 
@@ -177,8 +178,8 @@ export default function ChildWizard({ onboarding = false }) {
           <div className="wizard__preview">
             <Avatar avatar={data.avatar} name={data.name} size={56} />
             <div>
-              <strong>{data.name.trim() || 'Имя ребёнка'}</strong>
-              <span>{data.birthDate ? fmtAge(ageFromBirthDate(data.birthDate)) : 'Возраст'}</span>
+              <strong>{data.name.trim() || t('Имя ребёнка')}</strong>
+              <span>{data.birthDate ? fmtAge(ageFromBirthDate(data.birthDate)) : t('Возраст')}</span>
             </div>
           </div>
         </aside>
@@ -215,7 +216,7 @@ export default function ChildWizard({ onboarding = false }) {
                 <>
                   <GoalsFields data={data} set={set} />
                   <Checkbox checked={consent} onChange={setConsent} error={errors.consent}>
-                    Я родитель или законный представитель ребёнка и даю согласие на обработку его данных в Pingo
+                    {t('Я родитель или законный представитель ребёнка и даю согласие на обработку его данных в Pingo')}
                   </Checkbox>
                 </>
               )}
@@ -226,15 +227,15 @@ export default function ChildWizard({ onboarding = false }) {
 
       <footer className="wizard__footer">
         <Button variant="soft" size="lg" onClick={back}>
-          {step === 0 ? (onboarding ? 'Позже' : 'Отмена') : 'Назад'}
+          {step === 0 ? (onboarding ? t('Позже') : t('Отмена')) : t('Назад')}
         </Button>
         {current.id === 'goals' ? (
           <Button variant="dark" size="lg" icon={CheckIcon} onClick={submit} loading={saving}>
-            Создать профиль
+            {t('Создать профиль')}
           </Button>
         ) : (
           <Button variant="dark" size="lg" iconRight={ArrowRightIcon} onClick={next}>
-            {current.id === 'needs' && data.needs.length === 0 ? 'Пропустить' : 'Далее'}
+            {current.id === 'needs' && data.needs.length === 0 ? t('Пропустить') : t('Далее')}
           </Button>
         )}
       </footer>

@@ -12,7 +12,7 @@ import {
 } from '@phosphor-icons/react';
 import { db } from '../../lib/db';
 import { LEARNING_STYLE_MAP, NEED_MAP, suggestAccessibility } from '../../lib/constants';
-import { ageFromBirthDate, fmtAge, fmtDay, fmtRange } from '../../lib/utils';
+import { ageFromBirthDate, fmtAge, fmtDateYear, fmtDay, fmtRange } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { useBookingsFor } from '../../hooks/useBookings';
@@ -25,6 +25,7 @@ import { EmptyState } from '../../components/EmptyState';
 import { PageHeader } from '../../components/PageHeader';
 import { ConfirmDialog } from '../../components/Sheet';
 import { Button, ButtonLink } from '../../components/ui';
+import { t } from '../../i18n';
 
 export default function ChildDetail() {
   const { id } = useParams();
@@ -40,8 +41,8 @@ export default function ChildDetail() {
   if (!child || child.parentId !== user.id) {
     return (
       <div className="page">
-        <PageHeader back="/parent/profile" title="Профиль ребёнка" />
-        <EmptyState icon={SmileyMeltingIcon} title="Профиль не найден" action={<ButtonLink to="/parent/profile">В профиль</ButtonLink>} />
+        <PageHeader back="/parent/profile" title={t('Профиль ребёнка')} />
+        <EmptyState icon={SmileyMeltingIcon} title={t('Профиль не найден')} action={<ButtonLink to="/parent/profile">{t('В профиль')}</ButtonLink>} />
       </div>
     );
   }
@@ -56,8 +57,8 @@ export default function ChildDetail() {
       <PageHeader
         back="/parent/profile"
         title={child.name}
-        subtitle={`${fmtAge(ageFromBirthDate(child.birthDate))} · с нами с ${new Date(child.createdAt).toLocaleDateString('ru-RU')}`}
-        actions={<ButtonLink to="edit" variant="soft" icon={PencilSimpleIcon} size="sm">Изменить</ButtonLink>}
+        subtitle={t('{fmtAge} · с нами с {date}', { fmtAge: fmtAge(ageFromBirthDate(child.birthDate)), date: fmtDateYear(child.createdAt) })}
+        actions={<ButtonLink to="edit" variant="soft" icon={PencilSimpleIcon} size="sm">{t('Изменить')}</ButtonLink>}
       />
 
       <div className="child-page__grid">
@@ -67,35 +68,35 @@ export default function ChildDetail() {
             <div>
               {active ? (
                 <span className="tag tag--yellow">
-                  <CheckCircleIcon size={14} weight="fill" /> Активный профиль
+                  <CheckCircleIcon size={14} weight="fill" />{' '}{t('Активный профиль')}
                 </span>
               ) : (
                 <Button size="sm" variant="dark" onClick={() => setActiveChild(user.id, child.id)}>
-                  Выбрать для занятий
+                  {t('Выбрать для занятий')}
                 </Button>
               )}
               <p className="muted small">
-                Активный профиль определяет подбор специалистов и настройки интерфейса.
+                {t('Активный профиль определяет подбор специалистов и настройки интерфейса.')}
               </p>
             </div>
           </motion.section>
 
           <section className="card-section">
-            <h2>Особенности</h2>
+            <h2>{t('Особенности')}</h2>
             {child.needs.length ? (
               <div className="tags">
                 {child.needs.map((n) => (
                   <span key={n} className="tag tag--lg">
-                    {n === 'other' ? child.needsOther || 'Другое' : NEED_MAP[n]?.label}
+                    {n === 'other' ? child.needsOther || t('Другое') : NEED_MAP[n]?.label}
                   </span>
                 ))}
               </div>
             ) : (
-              <p className="muted">Не указаны</p>
+              <p className="muted">{t('Не указаны')}</p>
             )}
             {child.learningStyles.length > 0 && (
               <>
-                <h3 className="sub-h">Как учится</h3>
+                <h3 className="sub-h">{t('Как учится')}</h3>
                 <div className="tags">
                   {child.learningStyles.map((s) => (
                     <span key={s} className="tag">
@@ -107,13 +108,13 @@ export default function ChildDetail() {
             )}
             {child.goals && (
               <>
-                <h3 className="sub-h">Цели</h3>
+                <h3 className="sub-h">{t('Цели')}</h3>
                 <p className="prewrap">{child.goals}</p>
               </>
             )}
             {child.notes && (
               <>
-                <h3 className="sub-h">Важно знать специалисту</h3>
+                <h3 className="sub-h">{t('Важно знать специалисту')}</h3>
                 <p className="prewrap">{child.notes}</p>
               </>
             )}
@@ -121,10 +122,10 @@ export default function ChildDetail() {
 
           <section className="card-section">
             <h2>
-              <TrendUpIcon size={22} weight="bold" /> Прогресс и история занятий
+              <TrendUpIcon size={22} weight="bold" />{' '}{t('Прогресс и история занятий')}
             </h2>
             {history.length === 0 ? (
-              <p className="muted">После первых занятий здесь появятся отчёты специалистов — так будет видно, как растёт {child.name}.</p>
+              <p className="muted">{t('После первых занятий здесь появятся отчёты специалистов — так будет видно, как растёт {name}.', { name: child.name })}</p>
             ) : (
               <ol className="progress-list">
                 {history.map((b) => (
@@ -137,7 +138,7 @@ export default function ChildDetail() {
                           <ClipboardTextIcon size={15} weight="fill" /> {b.report.progress || b.report.summary}
                         </span>
                       ) : (
-                        <span className="progress-item__text muted">Отчёт ещё не добавлен</span>
+                        <span className="progress-item__text muted">{t('Отчёт ещё не добавлен')}</span>
                       )}
                     </Link>
                   </li>
@@ -146,8 +147,7 @@ export default function ChildDetail() {
             )}
             {upcoming.length > 0 && (
               <p className="small">
-                Следующее занятие: <strong>{fmtDay(upcoming[0].start, now)}, {fmtRange(upcoming[0].start, upcoming[0].end)}</strong> с{' '}
-                {upcoming[0].specialist?.name}
+                {t('Следующее занятие:')}{' '}<strong>{fmtDay(upcoming[0].start, now)}, {fmtRange(upcoming[0].start, upcoming[0].end)}</strong>{' '}{t('с {name}', { name: upcoming[0].specialist?.name })}
               </p>
             )}
           </section>
@@ -155,8 +155,8 @@ export default function ChildDetail() {
 
         <aside className="child-page__side">
           <section className="card-section">
-            <h2>Доступность</h2>
-            <p className="muted small">Изменения сохраняются сразу{active ? ' и применяются ко всему приложению' : ''}.</p>
+            <h2>{t('Доступность')}</h2>
+            <p className="muted small">{active ? t('Изменения сохраняются сразу и применяются ко всему приложению.') : t('Изменения сохраняются сразу.')}</p>
             <AccessibilityForm
               idPrefix={`child-${child.id}`}
               value={child.accessibility}
@@ -166,7 +166,7 @@ export default function ChildDetail() {
             />
           </section>
           <Button variant="danger-ghost" icon={TrashIcon} block onClick={() => setConfirmDelete(true)}>
-            Удалить профиль
+            {t('Удалить профиль')}
           </Button>
         </aside>
       </div>
@@ -174,13 +174,13 @@ export default function ChildDetail() {
       <ConfirmDialog
         open={confirmDelete}
         onClose={() => setConfirmDelete(false)}
-        title={`Удалить профиль ${child.name}?`}
-        text="История занятий останется в записях. Активные записи нужно отменить заранее."
-        confirmLabel="Удалить"
+        title={t('Удалить профиль {name}?', { name: child.name })}
+        text={t('История занятий останется в записях. Активные записи нужно отменить заранее.')}
+        confirmLabel={t('Удалить')}
         tone="danger"
         onConfirm={async () => {
           await deleteChild(user.id, child.id);
-          toast.info('Профиль удалён');
+          toast.info(t('Профиль удалён'));
           navigate('/parent/profile', { replace: true });
         }}
       />

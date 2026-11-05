@@ -15,6 +15,8 @@ import { useThemeColor } from '../../hooks/useThemeColor';
 import { Blob, Heart, Smiley } from '../../components/Decor';
 import { Pingo } from '../../components/Pingo';
 import { ButtonLink } from '../../components/ui';
+import { LangSwitch } from '../../components/LangSwitch';
+import { t } from '../../i18n';
 
 const float = (duration, delay = 0, y = 12, rotate = 6) => ({
   animate: { y: [0, -y, 0], rotate: [0, rotate, 0] },
@@ -31,26 +33,26 @@ const reveal = {
 const STEPS = [
   {
     icon: IdentificationCardIcon,
-    title: 'Профиль ребёнка',
-    text: 'Пингвин-гид поможет рассказать о ребёнке: возраст, особенности и как ему легче учиться.',
+    title: t('Профиль ребёнка'),
+    text: t('Пингвин-гид поможет рассказать о ребёнке: возраст, особенности и как ему легче учиться.'),
   },
   {
     icon: UsersThreeIcon,
-    title: 'Подбор специалиста',
-    text: 'Логопеды, психологи, репетиторы, эрготерапевты и волонтёры с проверенными анкетами.',
+    title: t('Подбор специалиста'),
+    text: t('Логопеды, психологи, репетиторы, эрготерапевты и волонтёры с проверенными анкетами.'),
   },
   {
     icon: VideoCameraIcon,
-    title: 'Занятия онлайн',
-    text: 'Запись, чат и видеоурок в одном месте. Комната открывается за 15 минут до начала.',
+    title: t('Занятия онлайн'),
+    text: t('Запись, чат и видеоурок в одном месте. Комната открывается за 15 минут до начала.'),
   },
 ];
 
 const SAFETY = [
-  'Каждую анкету специалиста проверяет модератор',
-  'Все специалисты проходят обучение по безопасности детей',
-  'Общение и видеозанятия — только внутри платформы',
-  'Пожаловаться на пользователя можно в один клик',
+  t('Каждую анкету специалиста проверяет модератор'),
+  t('Все специалисты проходят обучение по безопасности детей'),
+  t('Общение и видеозанятия — только внутри платформы'),
+  t('Пожаловаться на пользователя можно в один клик'),
 ];
 
 export default function Welcome() {
@@ -59,6 +61,7 @@ export default function Welcome() {
   return (
     <div className="welcome">
       <section className="welcome__hero">
+        <LangSwitch className="welcome__lang" />
         <div className="welcome__decor" aria-hidden="true">
           <motion.div className="deco deco--smiley" {...float(7)}>
             <Smiley size={230} />
@@ -82,7 +85,7 @@ export default function Welcome() {
         >
           <motion.img
             src="/images/hero-boat.png"
-            alt="Пингвин Pingo плывёт на жёлтом кораблике"
+            alt={t('Пингвин Pingo плывёт на жёлтом кораблике')}
             className="welcome__boat"
             animate={{ rotate: [-2.5, 2.5, -2.5], y: [0, -8, 0] }}
             transition={{ duration: 4.2, repeat: Infinity, ease: 'easeInOut' }}
@@ -105,8 +108,7 @@ export default function Welcome() {
             Support for every child
           </motion.p>
           <motion.p className="welcome__sub" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}>
-            Помогаем детям расти с заботой. Родители находят волонтёров и специалистов для занятий с детьми с особыми
-            потребностями.
+            {t('Помогаем детям расти с заботой. Родители находят волонтёров и специалистов для занятий с детьми с особыми потребностями.')}
           </motion.p>
           <motion.div
             className="welcome__actions"
@@ -115,10 +117,10 @@ export default function Welcome() {
             transition={{ delay: 0.6, type: 'spring', stiffness: 200, damping: 22 }}
           >
             <ButtonLink to="/register" variant="dark" size="lg" block>
-              Начать
+              {t('Начать')}
             </ButtonLink>
             <Link to="/login" className="welcome__link">
-              У меня уже есть аккаунт <ArrowRightIcon size={20} />
+              {t('У меня уже есть аккаунт')}{' '}<ArrowRightIcon size={20} />
             </Link>
           </motion.div>
         </div>
@@ -126,8 +128,8 @@ export default function Welcome() {
 
       <section className="landing">
         <motion.div className="landing__head" {...reveal}>
-          <span className="eyebrow">Как это работает</span>
-          <h2>Три шага до первого занятия</h2>
+          <span className="eyebrow">{t('Как это работает')}</span>
+          <h2>{t('Три шага до первого занятия')}</h2>
         </motion.div>
         <div className="landing__steps">
           {STEPS.map((s, i) => (
@@ -144,28 +146,28 @@ export default function Welcome() {
           <motion.article className="role-promo role-promo--parent" {...reveal}>
             <img src="/images/role-parent.png" alt="" className="role-promo__img" />
             <div>
-              <span className="label-font">Родителям</span>
+              <span className="label-font">{t('Родителям')}</span>
               <ul>
-                <li>Профиль ребёнка с особенностями и целями</li>
-                <li>Подбор специалистов под потребности</li>
-                <li>Запись, чат, видеоуроки и отчёты</li>
+                <li>{t('Профиль ребёнка с особенностями и целями')}</li>
+                <li>{t('Подбор специалистов под потребности')}</li>
+                <li>{t('Запись, чат, видеоуроки и отчёты')}</li>
               </ul>
               <ButtonLink to="/register/parent" variant="dark" iconRight={ArrowRightIcon}>
-                Я родитель
+                {t('Я родитель')}
               </ButtonLink>
             </div>
           </motion.article>
           <motion.article className="role-promo role-promo--specialist" {...reveal}>
             <img src="/images/role-specialist.png" alt="" className="role-promo__img" />
             <div>
-              <span className="label-font">Специалистам и волонтёрам</span>
+              <span className="label-font">{t('Специалистам и волонтёрам')}</span>
               <ul>
-                <li>Анкета и короткое обучение по безопасности</li>
-                <li>Гибкое расписание: каждую неделю или разовые даты</li>
-                <li>Запросы, чат и видеозанятия в одном месте</li>
+                <li>{t('Анкета и короткое обучение по безопасности')}</li>
+                <li>{t('Гибкое расписание: каждую неделю или разовые даты')}</li>
+                <li>{t('Запросы, чат и видеозанятия в одном месте')}</li>
               </ul>
               <ButtonLink to="/register/specialist" variant="dark" iconRight={ArrowRightIcon}>
-                Хочу помогать
+                {t('Хочу помогать')}
               </ButtonLink>
             </div>
           </motion.article>
@@ -173,8 +175,8 @@ export default function Welcome() {
 
         <motion.div className="safety" {...reveal}>
           <div className="safety__text">
-            <span className="eyebrow eyebrow--light">Безопасность</span>
-            <h2>Дети — прежде всего</h2>
+            <span className="eyebrow eyebrow--light">{t('Безопасность')}</span>
+            <h2>{t('Дети — прежде всего')}</h2>
             <ul>
               {SAFETY.map((s) => (
                 <li key={s}>
@@ -188,9 +190,9 @@ export default function Welcome() {
 
         <div className="landing__features">
           {[
-            { icon: TextAaIcon, title: 'Интерфейс под ребёнка', text: 'Крупный текст, межстрочный интервал и меньше анимаций — для каждого ребёнка свои.' },
-            { icon: ChatsCircleIcon, title: 'Чат со специалистом', text: 'Обсуждайте цели и детали занятий, не переходя в мессенджеры.' },
-            { icon: HandHeartIcon, title: 'Волонтёры', text: 'Студенты и педагоги, которые помогают бесплатно и проходят проверку.' },
+            { icon: TextAaIcon, title: t('Интерфейс под ребёнка'), text: t('Крупный текст, межстрочный интервал и меньше анимаций — для каждого ребёнка свои.') },
+            { icon: ChatsCircleIcon, title: t('Чат со специалистом'), text: t('Обсуждайте цели и детали занятий, не переходя в мессенджеры.') },
+            { icon: HandHeartIcon, title: t('Волонтёры'), text: t('Студенты и педагоги, которые помогают бесплатно и проходят проверку.') },
           ].map((f, i) => (
             <motion.article key={f.title} className="feature" {...reveal} transition={{ ...reveal.transition, delay: i * 0.08 }}>
               <f.icon size={28} weight="fill" />
@@ -202,14 +204,14 @@ export default function Welcome() {
 
         <motion.div className="landing__cta" {...reveal}>
           <Pingo size={110} mood="open" wave />
-          <h2>Готовы начать?</h2>
-          <p>Регистрация займёт пару минут. Pingo проведёт по всем шагам.</p>
+          <h2>{t('Готовы начать?')}</h2>
+          <p>{t('Регистрация займёт пару минут. Pingo проведёт по всем шагам.')}</p>
           <div className="landing__cta-actions">
             <ButtonLink to="/register" variant="dark" size="lg">
-              Создать аккаунт
+              {t('Создать аккаунт')}
             </ButtonLink>
             <ButtonLink to="/login" variant="light" size="lg">
-              Войти
+              {t('Войти')}
             </ButtonLink>
           </div>
         </motion.div>
@@ -220,7 +222,7 @@ export default function Welcome() {
           <img src="/favicon.png" alt="" width="24" height="24" /> Pingo · Support for every child
         </span>
         <span>
-          Сделано с <HeartIcon size={14} weight="fill" /> для детей и их семей · 2026
+          {t('Сделано с')}{' '}<HeartIcon size={14} weight="fill" />{' '}{t('для детей и их семей · 2026')}
         </span>
       </footer>
     </div>

@@ -2,6 +2,7 @@ import { Bytes, doc, getDoc } from 'firebase/firestore';
 import { firestore } from '../lib/firebase';
 import { batch, commit, friendlyError } from '../lib/remote';
 import { fmtBytes, uid } from '../lib/utils';
+import { t } from '../i18n';
 
 export const MAX_FILE_SIZE = 5 * 1024 * 1024;
 export const MAX_FILES = 5;
@@ -42,16 +43,16 @@ async function shrinkImage(file) {
 
 export async function saveFiles(ownerId, fileList, alreadyAttached = 0) {
   const files = [...fileList];
-  if (alreadyAttached + files.length > MAX_FILES) throw new Error(`Можно прикрепить не больше ${MAX_FILES} файлов`);
+  if (alreadyAttached + files.length > MAX_FILES) throw new Error(t('Можно прикрепить не больше {MAX_FILES} файлов', { MAX_FILES }));
   for (const f of files) {
-    if (!ACCEPTED_FILES.split(',').includes(f.type)) throw new Error(`«${f.name}»: нужен PDF, JPG, PNG или WebP`);
+    if (!ACCEPTED_FILES.split(',').includes(f.type)) throw new Error(t('«{name}»: нужен PDF, JPG, PNG или WebP', { name: f.name }));
     const limit = f.type.startsWith('image/') ? MAX_IMAGE_SIZE : MAX_FILE_SIZE;
-    if (f.size > limit) throw new Error(`«${f.name}» больше ${fmtBytes(limit)}`);
+    if (f.size > limit) throw new Error(t('«{name}» больше {fmtBytes}', { name: f.name, fmtBytes: fmtBytes(limit) }));
   }
   const metas = [];
   for (const f of files) {
     const blob = await shrinkImage(f);
-    if (blob.size > MAX_FILE_SIZE) throw new Error(`«${f.name}» больше ${fmtBytes(MAX_FILE_SIZE)}`);
+    if (blob.size > MAX_FILE_SIZE) throw new Error(t('«{name}» больше {fmtBytes}', { name: f.name, fmtBytes: fmtBytes(MAX_FILE_SIZE) }));
     const data = new Uint8Array(await blob.arrayBuffer());
     const id = uid();
     const parts = Math.max(1, Math.ceil(data.length / PART_SIZE));
@@ -83,14 +84,14 @@ export async function openFile(meta) {
   const tab = window.open('', '_blank');
   try {
     if (!meta?.parts) {
-      throw new Error(meta?.path ? 'Файл загружен в старое хранилище — удалите его и прикрепите заново.' : 'Файл не найден');
+      throw new Error(meta?.path ? t('Файл загружен в старое хранилище — удалите его и прикрепите заново.') : t('Файл не найден'));
     }
     const snaps = await Promise.all(
       Array.from({ length: meta.parts }, (_, n) => getDoc(partRef(meta.ownerId, meta.id, n))),
     ).catch((e) => {
       throw friendlyError(e);
     });
-    if (snaps.some((s) => !s.exists())) throw new Error('Файл не найден — возможно, его удалили.');
+    if (snaps.some((s) => !s.exists())) throw new Error(t('Файл не найден — возможно, его удалили.'));
     const blob = new Blob(
       snaps.map((s) => s.data().chunk.toUint8Array()),
       { type: meta.type },

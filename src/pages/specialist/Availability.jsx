@@ -14,11 +14,12 @@ import { setSessionMinutes } from '../../services/profiles';
 import { PageHeader } from '../../components/PageHeader';
 import { Sheet } from '../../components/Sheet';
 import { Button, Chip, Field, Input, Segmented } from '../../components/ui';
+import { t } from '../../i18n';
 
 const PRESETS = [
-  { label: 'Утро', start: '09:00', end: '12:00' },
-  { label: 'День', start: '13:00', end: '17:00' },
-  { label: 'Вечер', start: '17:00', end: '20:00' },
+  { label: t('Утро'), start: '09:00', end: '12:00' },
+  { label: t('День'), start: '13:00', end: '17:00' },
+  { label: t('Вечер'), start: '17:00', end: '20:00' },
 ];
 
 function AddWindowSheet({ open, onClose, specialistId, initial }) {
@@ -34,7 +35,7 @@ function AddWindowSheet({ open, onClose, specialistId, initial }) {
     setBusy(true);
     try {
       if (mode === 'weekly') {
-        if (!days.length) throw new Error('Выберите хотя бы один день недели');
+        if (!days.length) throw new Error(t('Выберите хотя бы один день недели'));
         const errors = [];
         for (const weekday of days) {
           try {
@@ -44,11 +45,11 @@ function AddWindowSheet({ open, onClose, specialistId, initial }) {
           }
         }
         if (errors.length === days.length) throw new Error(errors[0]);
-        if (errors.length) toast.info(`Часть окон не добавлена — ${errors.join('; ')}`);
-        else toast.success('Окна добавлены');
+        if (errors.length) toast.info(t('Часть окон не добавлена — {join}', { join: errors.join('; ') }));
+        else toast.success(t('Окна добавлены'));
       } else {
         await addAvailability(specialistId, { type: 'date', date, start, end });
-        toast.success('Разовое окно добавлено');
+        toast.success(t('Разовое окно добавлено'));
       }
       onClose();
     } catch (e) {
@@ -62,14 +63,14 @@ function AddWindowSheet({ open, onClose, specialistId, initial }) {
     <Sheet
       open={open}
       onClose={onClose}
-      title="Новое окно"
+      title={t('Новое окно')}
       footer={
         <>
           <Button variant="soft" onClick={onClose}>
-            Отмена
+            {t('Отмена')}
           </Button>
           <Button variant="dark" onClick={save} loading={busy}>
-            Добавить
+            {t('Добавить')}
           </Button>
         </>
       }
@@ -79,12 +80,12 @@ function AddWindowSheet({ open, onClose, specialistId, initial }) {
         onChange={setMode}
         layoutId="avail-mode"
         options={[
-          { id: 'weekly', label: 'Каждую неделю' },
-          { id: 'date', label: 'Разовая дата' },
+          { id: 'weekly', label: t('Каждую неделю') },
+          { id: 'date', label: t('Разовая дата') },
         ]}
       />
       {mode === 'weekly' ? (
-        <Field label="Дни недели" hint="Можно выбрать несколько">
+        <Field label={t('Дни недели')} hint={t('Можно выбрать несколько')}>
           <div className="chips chips--wrap">
             {WEEKDAYS.map((w) => (
               <Chip
@@ -98,11 +99,11 @@ function AddWindowSheet({ open, onClose, specialistId, initial }) {
           </div>
         </Field>
       ) : (
-        <Field label="Дата" htmlFor="avail-date">
+        <Field label={t('Дата')} htmlFor="avail-date">
           <Input id="avail-date" type="date" min={toDateKey(Date.now())} value={date} onChange={(e) => setDate(e.target.value)} />
         </Field>
       )}
-      <Field label="Время">
+      <Field label={t('Время')}>
         <div className="chips chips--wrap chips--sm">
           {PRESETS.map((p) => (
             <Chip
@@ -118,9 +119,9 @@ function AddWindowSheet({ open, onClose, specialistId, initial }) {
           ))}
         </div>
         <div className="time-range">
-          <Input type="time" step={900} value={start} onChange={(e) => setStart(e.target.value)} aria-label="Начало" />
+          <Input type="time" step={900} value={start} onChange={(e) => setStart(e.target.value)} aria-label={t('Начало')} />
           <span>—</span>
-          <Input type="time" step={900} value={end} onChange={(e) => setEnd(e.target.value)} aria-label="Конец" />
+          <Input type="time" step={900} value={end} onChange={(e) => setEnd(e.target.value)} aria-label={t('Конец')} />
         </div>
       </Field>
     </Sheet>
@@ -131,7 +132,7 @@ function WindowChip({ r, onRemove }) {
   return (
     <motion.span className="window-chip" initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.8 }}>
       {r.start}–{r.end}
-      <button type="button" aria-label={`Удалить окно ${r.start}–${r.end}`} onClick={() => onRemove(r.id)}>
+      <button type="button" aria-label={t('Удалить окно {start}–{end}', { start: r.start, end: r.end })} onClick={() => onRemove(r.id)}>
         <XIcon size={14} weight="bold" />
       </button>
     </motion.span>
@@ -177,34 +178,34 @@ export default function Availability() {
 
   const remove = async (id) => {
     await removeAvailability(id);
-    toast.info('Окно удалено. Уже созданные записи сохраняются.');
+    toast.info(t('Окно удалено. Уже созданные записи сохраняются.'));
   };
 
   return (
     <div className="page availability">
       <PageHeader
-        title="Расписание"
-        subtitle="Родители видят свободное время на 3 недели вперёд и записываются в эти окна."
+        title={t('Расписание')}
+        subtitle={t('Родители видят свободное время на 3 недели вперёд и записываются в эти окна.')}
         actions={
           <Button variant="dark" icon={PlusIcon} onClick={() => openSheet('weekly')}>
-            Окно
+            {t('Окно')}
           </Button>
         }
       />
 
       <section className="card-section">
-        <h2>Длительность занятия</h2>
+        <h2>{t('Длительность занятия')}</h2>
         <Segmented
           value={profile.sessionMinutes}
-          onChange={(m) => setSessionMinutes(user.id, m).then(() => toast.success(`Теперь занятие длится ${m} минут`))}
-          options={SESSION_DURATIONS.map((m) => ({ id: m, label: `${m} мин` }))}
+          onChange={(m) => setSessionMinutes(user.id, m).then(() => toast.success(t('Теперь занятие длится {m} минут', { m })))}
+          options={SESSION_DURATIONS.map((m) => ({ id: m, label: t('{m} мин', { m }) }))}
           layoutId="session-len"
         />
       </section>
 
       <section className="card-section">
         <h2>
-          <RepeatIcon size={22} weight="bold" /> Каждую неделю
+          <RepeatIcon size={22} weight="bold" />{' '}{t('Каждую неделю')}
         </h2>
         <ul className="week-list">
           {weekly.map((w) => (
@@ -216,9 +217,9 @@ export default function Availability() {
                     <WindowChip key={r.id} r={r} onRemove={remove} />
                   ))}
                 </AnimatePresence>
-                {!w.windows.length && <span className="muted small">выходной</span>}
+                {!w.windows.length && <span className="muted small">{t('выходной')}</span>}
               </div>
-              <button type="button" className="week-row__add" aria-label={`Добавить окно: ${w.label}`} onClick={() => openSheet('weekly', w.id)}>
+              <button type="button" className="week-row__add" aria-label={t('Добавить окно: {label}', { label: w.label })} onClick={() => openSheet('weekly', w.id)}>
                 <PlusIcon size={18} weight="bold" />
               </button>
             </li>
@@ -229,14 +230,14 @@ export default function Availability() {
       <section className="card-section">
         <div className="card-section__head">
           <h2>
-            <CalendarPlusIcon size={22} weight="bold" /> Разовые даты
+            <CalendarPlusIcon size={22} weight="bold" />{' '}{t('Разовые даты')}
           </h2>
           <Button size="sm" variant="soft" icon={PlusIcon} onClick={() => openSheet('date')}>
-            Дата
+            {t('Дата')}
           </Button>
         </div>
         {dated.length === 0 ? (
-          <p className="muted">Добавьте отдельный день, если хотите поработать вне обычного графика.</p>
+          <p className="muted">{t('Добавьте отдельный день, если хотите поработать вне обычного графика.')}</p>
         ) : (
           <ul className="dated-list">
             <AnimatePresence initial={false}>
@@ -252,10 +253,10 @@ export default function Availability() {
       </section>
 
       <section className="card-section">
-        <h2>Так вас увидят родители</h2>
+        <h2>{t('Так вас увидят родители')}</h2>
         <p className="muted small">
-          На ближайшей неделе: {total} {plural(total, ['свободное окно', 'свободных окна', 'свободных окон'])} по {profile.sessionMinutes} минут
-          {profile.published ? '' : ' (появятся в каталоге после одобрения анкеты)'}.
+          {t('На ближайшей неделе: {total}', { total })}{' '}{plural(total, [t('свободное окно'), t('свободных окна'), t('свободных окон')])}{' '}{t('по {sessionMinutes} минут', { sessionMinutes: profile.sessionMinutes })}
+          {profile.published ? '' : t(' (появятся в каталоге после одобрения анкеты)')}.
         </p>
         <div className="week-preview">
           {preview.map((d, i) => (
@@ -268,7 +269,7 @@ export default function Availability() {
                 />
               </div>
               <strong>{d.count}</strong>
-              <span>{i === 0 ? 'сег' : fmtWeekday(d.date)}</span>
+              <span>{i === 0 ? t('сег') : fmtWeekday(d.date)}</span>
             </div>
           ))}
         </div>

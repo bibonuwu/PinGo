@@ -9,6 +9,7 @@ import {
 import { fmtAgo } from '../lib/utils';
 import { trainingProgress } from '../services/profiles';
 import { ButtonLink, ProgressBar } from './ui';
+import { t } from '../i18n';
 
 // Состояние анкеты специалиста: черновик → на модерации → одобрена / отклонена с причиной.
 export function ModerationCard({ profile, issues }) {
@@ -18,28 +19,28 @@ export function ModerationCard({ profile, issues }) {
     draft: {
       icon: NotePencilIcon,
       tone: 'draft',
-      title: 'Заполните анкету',
-      text: 'После проверки модератором родители увидят вас в каталоге.',
+      title: t('Заполните анкету'),
+      text: t('После проверки модератором родители увидят вас в каталоге.'),
     },
     pending: {
       icon: HourglassMediumIcon,
       tone: 'pending',
-      title: published ? 'Изменения на проверке' : 'Анкета на проверке',
+      title: published ? t('Изменения на проверке') : t('Анкета на проверке'),
       text: published
-        ? 'Пока модератор смотрит изменения, в каталоге показывается прежняя версия.'
-        : `Отправлена ${fmtAgo(profile.submittedAt)}. Обычно проверка занимает до 24 часов — пока настройте расписание.`,
+        ? t('Пока модератор смотрит изменения, в каталоге показывается прежняя версия.')
+        : t('Отправлена {fmtAgo}. Обычно проверка занимает до 24 часов — пока настройте расписание.', { fmtAgo: fmtAgo(profile.submittedAt) }),
     },
     approved: {
       icon: SealCheckIcon,
       tone: 'approved',
-      title: 'Вы в каталоге',
-      text: 'Анкета одобрена — родители видят вас и могут записаться.',
+      title: t('Вы в каталоге'),
+      text: t('Анкета одобрена — родители видят вас и могут записаться.'),
     },
     rejected: {
       icon: WarningCircleIcon,
       tone: 'rejected',
-      title: published ? 'Изменения отклонены' : 'Анкета отклонена',
-      text: published ? 'В каталоге осталась прежняя версия анкеты.' : 'Исправьте анкету и отправьте её снова.',
+      title: published ? t('Изменения отклонены') : t('Анкета отклонена'),
+      text: published ? t('В каталоге осталась прежняя версия анкеты.') : t('Исправьте анкету и отправьте её снова.'),
     },
   }[status];
   const Icon = conf.icon;
@@ -63,18 +64,18 @@ export function ModerationCard({ profile, issues }) {
       </div>
       {status === 'rejected' && profile.rejectionReason && (
         <blockquote className="mod-card__reason">
-          <strong>Причина:</strong> {profile.rejectionReason}
+          <strong>{t('Причина:')}</strong> {profile.rejectionReason}
         </blockquote>
       )}
       {status === 'draft' && (
         <div className="mod-card__progress">
           <div className="mod-card__row">
-            <span>Анкета</span>
+            <span>{t('Анкета')}</span>
             <span>{Math.round(filled * 100)}%</span>
           </div>
           <ProgressBar value={filled} />
           <div className="mod-card__row">
-            <span>Обучение</span>
+            <span>{t('Обучение')}</span>
             <span>
               {training.done}/{training.total}
             </span>
@@ -84,7 +85,7 @@ export function ModerationCard({ profile, issues }) {
       )}
       {status !== 'pending' && status !== 'approved' && (
         <ButtonLink to="/specialist/profile/edit" variant="dark" iconRight={ArrowRightIcon}>
-          {status === 'draft' ? 'Продолжить заполнение' : 'Исправить анкету'}
+          {status === 'draft' ? t('Продолжить заполнение') : t('Исправить анкету')}
         </ButtonLink>
       )}
     </motion.section>

@@ -6,6 +6,7 @@ import { useIsDesktop } from '../hooks/useMediaQuery';
 import { useToast } from '../context/ToastContext';
 import { cx } from '../lib/utils';
 import { Button, Chip, Field, Textarea } from './ui';
+import { t } from '../i18n';
 
 let openSheets = 0;
 
@@ -70,7 +71,7 @@ export function Sheet({ open, onClose, title, children, footer, size = 'md', cla
             {title && (
               <div className="sheet__header">
                 <h2 className="sheet__title">{title}</h2>
-                <button type="button" className="icon-btn icon-btn--soft icon-btn--sm sheet__close" aria-label="Закрыть" onClick={onClose}>
+                <button type="button" className="icon-btn icon-btn--soft icon-btn--sm sheet__close" aria-label={t('Закрыть')} onClick={onClose}>
                   <XIcon size={18} weight="bold" />
                 </button>
               </div>
@@ -94,7 +95,7 @@ function useAsyncAction(onDone) {
       await fn();
       onDone?.();
     } catch (e) {
-      toast.error(e.message || 'Что-то пошло не так');
+      toast.error(e.message || t('Что-то пошло не так'));
     } finally {
       setBusy(false);
     }
@@ -102,7 +103,7 @@ function useAsyncAction(onDone) {
   return [busy, run];
 }
 
-export function ConfirmDialog({ open, onClose, title, text, confirmLabel = 'Подтвердить', tone = 'dark', onConfirm }) {
+export function ConfirmDialog({ open, onClose, title, text, confirmLabel = t('Подтвердить'), tone = 'dark', onConfirm }) {
   const [busy, run] = useAsyncAction(onClose);
   return (
     <Sheet
@@ -113,7 +114,7 @@ export function ConfirmDialog({ open, onClose, title, text, confirmLabel = 'По
       footer={
         <>
           <Button variant="soft" onClick={onClose}>
-            Назад
+            {t('Назад')}
           </Button>
           <Button variant={tone} loading={busy} onClick={() => run(onConfirm)} data-autofocus>
             {confirmLabel}
@@ -135,8 +136,8 @@ export function ReasonDialog({
   required = false,
   minLength = 10,
   templates = [],
-  placeholder = 'Причина',
-  confirmLabel = 'Отправить',
+  placeholder = t('Причина'),
+  confirmLabel = t('Отправить'),
   tone = 'danger',
   onConfirm,
 }) {
@@ -157,7 +158,7 @@ export function ReasonDialog({
   const submit = () => {
     const r = reason.trim();
     if (required && r.length < minLength) {
-      setError(`Укажите причину — минимум ${minLength} символов`);
+      setError(t('Укажите причину — минимум {minLength} символов', { minLength }));
       return;
     }
     run(() => onConfirm(r));
@@ -172,7 +173,7 @@ export function ReasonDialog({
       footer={
         <>
           <Button variant="soft" onClick={onClose}>
-            Назад
+            {t('Назад')}
           </Button>
           <Button variant={tone} loading={busy} onClick={submit}>
             {confirmLabel}
@@ -191,7 +192,7 @@ export function ReasonDialog({
         </div>
       )}
       <Field
-        label={required ? 'Причина (обязательно)' : 'Причина'}
+        label={required ? t('Причина (обязательно)') : t('Причина')}
         optional={!required}
         error={error}
         counter={`${reason.length}/500`}

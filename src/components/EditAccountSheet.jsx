@@ -6,6 +6,7 @@ import { cx } from '../lib/utils';
 import { Avatar, AvatarPicker } from './Avatar';
 import { Sheet } from './Sheet';
 import { Button, Field, Input } from './ui';
+import { t } from '../i18n';
 
 export function EditAccountSheet({ user, open, onClose }) {
   const toast = useToast();
@@ -24,7 +25,7 @@ export function EditAccountSheet({ user, open, onClose }) {
     setBusy(true);
     try {
       await updateAccount(user.id, { name, avatar });
-      toast.success('Профиль обновлён');
+      toast.success(t('Профиль обновлён'));
       onClose();
     } catch (e) {
       toast.error(e.message);
@@ -37,26 +38,26 @@ export function EditAccountSheet({ user, open, onClose }) {
     <Sheet
       open={open}
       onClose={onClose}
-      title="Редактировать профиль"
+      title={t('Редактировать профиль')}
       footer={
         <>
           <Button variant="soft" onClick={onClose}>
-            Отмена
+            {t('Отмена')}
           </Button>
           <Button variant="dark" onClick={save} loading={busy}>
-            Сохранить
+            {t('Сохранить')}
           </Button>
         </>
       }
     >
-      <Field label="Имя" htmlFor="acc-name">
+      <Field label={t('Имя')} htmlFor="acc-name">
         <Input id="acc-name" icon={UserIcon} value={name} maxLength={60} onChange={(e) => setName(e.target.value)} />
       </Field>
-      <Field label="Аватар">
+      <Field label={t('Аватар')}>
         <div className="avatar-none">
           <button type="button" className={cx('avatar-none__btn', !avatar && 'is-active')} onClick={() => setAvatar(null)}>
             <Avatar name={name} size={56} />
-            <span>Инициалы</span>
+            <span>{t('Инициалы')}</span>
           </button>
         </div>
         <AvatarPicker value={avatar} onChange={setAvatar} size={60} />
