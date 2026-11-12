@@ -1,13 +1,13 @@
 import { db } from '../lib/db';
 import { batch, commit, commitEach, ref } from '../lib/remote';
-import { BROADCAST_AUDIENCE_MAP, CERTIFICATE_MAP } from '../lib/constants';
-import { downloadFile, fmtDateYear, plural, toDateKey, uid } from '../lib/utils';
+import { BROADCAST_AUDIENCE_MAP, CERTIFICATE_MAP, isAdminEmail, normEmail } from '../lib/constants';
+import { downloadFile, fmtDateYear, isEmail, plural, toDateKey, uid } from '../lib/utils';
 import { kindLabel } from './profiles';
 import { notifyRaw } from './notifications';
 import { msg } from '../i18n/stored';
 import { t } from '../i18n';
 
-// Действия модератора: подтверждение волонтёров и специалистов, сертификаты, отзывы, рассылки.
+// Действия модератора: подтверждение волонтёров и специалистов, сертификаты, отзывы, рассылки, команда модераторов.
 
 export const profileKind = (p) => (p?.published ?? p?.draft)?.kind ?? 'specialist';
 
@@ -171,6 +171,49 @@ export async function sendBroadcast(admin, { audience, title, body }) {
     }),
   );
   return list.length;
+}
+
+// ---------- Модераторы ----------
+
+// Основатели (ADMIN_EMAILS) — модераторы всегда; остальных модераторы добавляют по почте: moderators/{email}.
+const accountByEmail = (email) => db.users.values().find((u) => u.email === email);
+
+// Доступ откроется, когда человек войдёт в Pingo с этой почтой (подтверждённой). Если аккаунт уже есть,
+// он станет аккаунтом модератора (см. claimAdmin в services/auth.js) — прямо в открытом приложении.
+export async function addModerator(admin, email) {
+  const e = normEmail(email);
+  if (!isEmail(e)) throw new Error(t('Проверьте адрес электронной почты'));
+  if (isAdminEmail(e) || db.moderators.peek(e)) throw new Error(t('{email} уже в команде модераторов', { email: e }));
+  const w = batch();
+  w.set(ref('moderators', e), { email: e, addedBy: admin.id, addedByName: admin.name, createdAt: Date.now() });
+  const account = accountByEmail(e);
+  if (account) {
+    notifyRaw(w, account.id, {
+      type: 'moderator_added',
+      title: msg('Вы — модератор Pingo'),
+      body: msg('{name} добавил(а) вас в команду модераторов.', { name: admin.name }),
+      link: '/admin',
+    });
+  }
+  await commit(w);
+}
+
+// Убрать модератора. Основателей и себя убрать нельзя (себя — чтобы случайно не потерять доступ).
+// Если аккаунт уже стал аккаунтом модератора, возвращаем ему обычную роль: специалист, если у него
+// есть анкета, иначе родитель. Иначе он остался бы с ролью admin — без доступа, но с уведомлениями модераторов.
+export async function removeModerator(admin, email) {
+  const e = normEmail(email);
+  if (isAdminEmail(e)) throw new Error(t('Основателя Pingo убрать нельзя'));
+  if (e === normEmail(admin.email)) throw new Error(t('Себя убрать нельзя — попросите другого модератора'));
+  const w = batch();
+  w.delete(ref('moderators', e));
+  const account = accountByEmail(e);
+  if (account?.role === 'admin') {
+    const role = db.profiles.peek(account.id) ? 'specialist' : 'parent';
+    w.update(ref('users', account.id), { role });
+    w.update(ref('people', account.id), { role });
+  }
+  await commit(w);
 }
 
 // ---------- Экспорт ----------

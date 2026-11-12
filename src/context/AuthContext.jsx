@@ -53,6 +53,8 @@ export function AuthProvider({ children }) {
       account: sync.account,
       // Подтверждена ли почта аккаунта (account меняется на месте, поэтому отдельное поле).
       accountVerified: sync.verified,
+      // Почта аккаунта — почта модератора (основатель или добавлен другим модератором).
+      moderator: sync.moderator,
       loading,
       // Первая загрузка приложения: ещё неизвестно, вошёл ли пользователь.
       initializing: !booted && loading,
@@ -62,7 +64,7 @@ export function AuthProvider({ children }) {
       setLeaving,
       signOut,
     }),
-    [ready, leaving, me, sync.account, sync.verified, sync.status, loading, booted, signOut],
+    [ready, leaving, me, sync.account, sync.verified, sync.moderator, sync.status, loading, booted, signOut],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

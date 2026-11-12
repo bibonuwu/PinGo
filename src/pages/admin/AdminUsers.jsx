@@ -7,6 +7,7 @@ import {
   MagnifyingGlassIcon,
   MegaphoneIcon,
   SealCheckIcon,
+  ShieldCheckIcon,
   UsersThreeIcon,
 } from '@phosphor-icons/react';
 import { useLiveQuery } from '../../hooks/useLiveQuery';
@@ -90,6 +91,9 @@ export default function AdminUsers() {
         subtitle={t('Всего в Pingo: {pluralize}.', { pluralize: pluralize(counts.all, [t('аккаунт'), t('аккаунта'), t('аккаунтов')]) })}
         actions={
           <div className="btn-row">
+            <ButtonLink to="/admin/moderators" variant="soft" icon={ShieldCheckIcon}>
+              {t('Модераторы')}
+            </ButtonLink>
             <ButtonLink to="/admin/broadcast" variant="soft" icon={MegaphoneIcon}>
               {t('Рассылка')}
             </ButtonLink>

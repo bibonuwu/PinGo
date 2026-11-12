@@ -2,14 +2,17 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, doc, onSnapshot, query, where } from 'firebase/firestore';
 import { auth, firestore } from '../lib/firebase';
 import { db, mirrorClear, mirrorDropSource, mirrorPut, mirrorRemove, subscribe } from '../lib/db';
-import { claimAdmin, isAdminAccount } from './auth';
+import { isAdminEmail, normEmail } from '../lib/constants';
+import { claimAdmin } from './auth';
 
 // Синхронизация Firestore → локальное зеркало (src/lib/db.js).
 // После входа слушаем свой документ users/{uid}; когда известна роль — коллекции, которые ей нужны.
 // status: loading → signedOut | needsProfile (вошли, но регистрация не завершена) | ready.
 // verified — подтверждена ли почта (account — объект Firebase, после reload он меняется на месте).
+// moderator — почта аккаунта модератора (основатель из ADMIN_EMAILS или есть документ moderators/{email}).
+// Права модератора даёт только подтверждённая почта.
 
-let state = { status: 'loading', uid: null, account: null, verified: false };
+let state = { status: 'loading', uid: null, account: null, verified: false, moderator: false };
 const stateWatchers = new Set();
 
 function setState(patch) {
@@ -26,12 +29,14 @@ export function onSyncState(fn) {
 
 const subs = new Map(); // ключ источника → { stop, ready }
 let stopMe = null;
+let stopMod = null;
 let stopPeopleWatch = null;
 let role = null;
 let session = 0;
 let roleRun = 0;
 let claimTried = false;
 let lastMe; // users/{uid}: данные, null — аккаунта в Pingo нет, undefined — ещё неизвестно
+let moderator = null; // почта модератора: null — ещё неизвестно
 
 const col = (name, ...constraints) => query(collection(firestore, name), ...constraints);
 const eq = (field, value) => where(field, '==', value);
@@ -108,6 +113,7 @@ async function startRole(nextRole, uid, run, admin) {
         listen('reviews', col('reviews'), 'reviews'),
         listen('certificates', col('certificates'), 'certificates'),
         listen('broadcasts', col('broadcasts'), 'broadcasts'),
+        listen('moderators', col('moderators'), 'moderators'),
         // Диалоги поддержки: с родителем модератор на месте специалиста, со специалистом — на месте
         // родителя (см. services/chat.js). Слушаем только свои диалоги — чтений немного.
         listen('conversations', col('conversations', eq('specialistId', uid)), 'conversations'),
@@ -169,8 +175,11 @@ function stopAll() {
   session += 1;
   claimTried = false;
   lastMe = undefined;
+  moderator = null;
   stopMe?.();
   stopMe = null;
+  stopMod?.();
+  stopMod = null;
   stopRole();
   mirrorClear();
 }
@@ -179,17 +188,20 @@ export function startSync() {
   onAuthStateChanged(auth, (account) => {
     stopAll();
     if (!account) {
-      setState({ status: 'signedOut', uid: null, account: null });
+      setState({ status: 'signedOut', uid: null, account: null, moderator: false });
       return;
     }
     const uid = account.uid;
     const current = session;
-    setState({ status: 'loading', uid, account, verified: account.emailVerified });
+    const email = normEmail(account.email);
+    let meSnap = null; // последний снимок users/{uid}
+    setState({ status: 'loading', uid, account, verified: account.emailVerified, moderator: false });
+    const adminAccount = () => moderator === true && account.emailVerified;
 
     // Почта модератора без роли admin: выдаём роль (один раз за сессию) и ждём следующий снимок —
     // локальная запись приходит сразу. Если запись не прошла, разбираем снимок заново с прежней ролью.
     const claim = (data, snap) => {
-      if (claimTried || !isAdminAccount(account)) return false;
+      if (claimTried || !adminAccount()) return false;
       claimTried = true;
       claimAdmin(account, data).catch((e) => {
         console.error('[sync] admin:', e);
@@ -200,6 +212,8 @@ export function startSync() {
 
     async function onMe(snap) {
       if (current !== session) return;
+      // Пока неизвестно, модератор ли это, роль не разбираем — снимок разберёт setModerator.
+      if (moderator === null) return;
       if (!snap.exists()) {
         // Без сети документа может не быть только в кэше — ждём ответа сервера.
         if (snap.metadata.fromCache) return;
@@ -219,13 +233,41 @@ export function startSync() {
       role = data.role;
       const run = roleRun;
       setState({ status: 'loading' });
-      await startRole(role, uid, run, isAdminAccount(account));
+      await startRole(role, uid, run, adminAccount());
       if (run === roleRun && current === session) setState({ status: 'ready' });
+    }
+
+    // Модератор ли это. Документ слушаем, а не читаем один раз: модератора могут добавить или убрать,
+    // пока он в приложении, — тогда роль и коллекции разбираем заново. Первый ответ может прийти из кэша
+    // (без сети приложение не ждёт сервер), ответ сервера его поправит.
+    const setModerator = (next) => {
+      if (current !== session || next === moderator) return;
+      const known = moderator !== null;
+      moderator = next;
+      setState({ moderator: next });
+      if (!meSnap) return;
+      if (known) stopRole();
+      onMe(meSnap);
+    };
+    if (!email || isAdminEmail(email)) {
+      setModerator(Boolean(email));
+    } else {
+      stopMod = onSnapshot(
+        doc(firestore, 'moderators', email),
+        (snap) => setModerator(snap.exists()),
+        (error) => {
+          console.error('[sync] moderators/me:', error);
+          setModerator(moderator ?? false);
+        },
+      );
     }
 
     stopMe = onSnapshot(
       doc(firestore, 'users', uid),
-      onMe,
+      (snap) => {
+        meSnap = snap;
+        onMe(snap);
+      },
       (error) => {
         console.error('[sync] users/me:', error);
         signOut(auth);
@@ -242,7 +284,7 @@ export async function recheckAccount() {
   await account.reload();
   await account.getIdToken(true);
   setState({ verified: account.emailVerified });
-  if (!isAdminAccount(account) || lastMe === undefined) return account.emailVerified;
+  if (!account.emailVerified || moderator !== true || lastMe === undefined) return account.emailVerified;
   if (lastMe?.role !== 'admin') {
     claimTried = true;
     await claimAdmin(account, lastMe);

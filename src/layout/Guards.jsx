@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { ArrowsClockwiseIcon, EnvelopeSimpleIcon, SignOutIcon } from '@phosphor-icons/react';
-import { isAdminEmail } from '../lib/constants';
 import { homePath, onboardingPath, useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { sendVerificationEmail } from '../services/auth';
@@ -63,7 +62,7 @@ function VerifyAdminEmail({ email, onSignOut }) {
   );
 }
 
-// Роль admin без почты модератора (например, выданная раньше вручную в консоли).
+// Роль admin без почты модератора (например, модератора убрали из команды или роль выдали вручную в консоли).
 function NoAdminAccess({ onSignOut }) {
   return (
     <div className="gate">
@@ -78,14 +77,14 @@ function NoAdminAccess({ onSignOut }) {
 }
 
 export function RequireAuth({ role, children }) {
-  const { user, account, accountVerified, loading, needsProfile, leaving, signOut } = useAuth();
+  const { user, account, accountVerified, moderator, loading, needsProfile, leaving, signOut } = useAuth();
   const location = useLocation();
   if (leaving) return <Navigate to="/" replace />;
   if (loading) return <FullScreenLoader />;
   if (needsProfile) return <Navigate to="/register" replace />;
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
-  if (isAdminEmail(account?.email) && !accountVerified) return <VerifyAdminEmail email={account.email} onSignOut={signOut} />;
-  if (user.role === 'admin' && !isAdminEmail(account?.email)) return <NoAdminAccess onSignOut={signOut} />;
+  if (moderator && !accountVerified) return <VerifyAdminEmail email={account.email} onSignOut={signOut} />;
+  if (user.role === 'admin' && !moderator) return <NoAdminAccess onSignOut={signOut} />;
   if (role && user.role !== role) return <Navigate to={homePath(user.role)} replace />;
   return children;
 }

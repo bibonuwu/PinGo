@@ -2901,6 +2901,17 @@ a.stat-card:hover {
   }
 }
 
+/* ---------- Модераторы ---------- */
+
+.moderator-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.moderator-form > .btn {
+  align-self: flex-start;
+}
+
 /* ---------- Рассылки ---------- */
 
 .broadcast__grid {

@@ -4,9 +4,11 @@ import { t } from '../i18n';
 export const APP_VERSION = '0.1.0';
 export const SLOGAN = 'Support for every child';
 
-// Модераторы Pingo — только эти почты (подтверждённые). Тот же список — в firestore.rules, функция isAdmin().
+// Основатели — постоянные модераторы Pingo (их нельзя убрать из приложения). Тот же список — в firestore.rules,
+// функция isAdmin(). Остальных модераторов добавляют модераторы: коллекция moderators (services/admin.js).
 export const ADMIN_EMAILS = ['toryyy0325@gmail.com', 'aibekabeken47@gmail.com'];
-export const isAdminEmail = (email) => ADMIN_EMAILS.includes((email || '').trim().toLowerCase());
+export const normEmail = (email) => (email || '').trim().toLowerCase();
+export const isAdminEmail = (email) => ADMIN_EMAILS.includes(normEmail(email));
 
 // Видеокомната открывается за 15 минут до начала и закрывается через 15 минут после конца.
 export const ROOM_OPENS_BEFORE_MIN = 15;

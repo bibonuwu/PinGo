@@ -13,6 +13,7 @@ import {
   IdentificationCardIcon,
   MegaphoneIcon,
   SealCheckIcon,
+  ShieldCheckIcon,
   StarIcon,
   TrayIcon,
   VideoCameraIcon,
@@ -46,6 +47,7 @@ const ICONS = {
   announcement: MegaphoneIcon,
   complaint: FlagIcon,
   support_message: ChatCircleDotsIcon,
+  moderator_added: ShieldCheckIcon,
 };
 
 export default function Notifications() {

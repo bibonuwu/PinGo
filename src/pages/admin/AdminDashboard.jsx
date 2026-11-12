@@ -13,6 +13,7 @@ import {
   LifebuoyIcon,
   MegaphoneIcon,
   SealCheckIcon,
+  ShieldCheckIcon,
   SignOutIcon,
   StarIcon,
   StorefrontIcon,
@@ -328,6 +329,9 @@ export default function AdminDashboard() {
         <nav className="white-card menu menu--bordered">
           <MenuLink icon={UsersThreeIcon} to="/admin/users" hint={t('Поиск, экспорт в Excel')}>
             {t('Пользователи')}
+          </MenuLink>
+          <MenuLink icon={ShieldCheckIcon} to="/admin/moderators" hint={t('Добавить или убрать модератора')}>
+            {t('Модераторы')}
           </MenuLink>
           <MenuLink icon={MegaphoneIcon} to="/admin/broadcast" hint={t('Сообщение родителям или волонтёрам')}>
             {t('Рассылки')}

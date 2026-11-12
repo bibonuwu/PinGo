@@ -12,7 +12,7 @@ import { arrayRemove, arrayUnion, getDoc } from 'firebase/firestore';
 import { auth } from '../lib/firebase';
 import { db } from '../lib/db';
 import { batch, commit, friendlyError, ref, update } from '../lib/remote';
-import { DEFAULT_A11Y, isAdminEmail } from '../lib/constants';
+import { DEFAULT_A11Y, isAdminEmail, normEmail } from '../lib/constants';
 import { isEmail } from '../lib/utils';
 import { newProfile } from './profiles';
 import { t } from '../i18n';
@@ -30,11 +30,18 @@ function checkName(name) {
   return n;
 }
 
-// Модератор — только подтверждённая почта из ADMIN_EMAILS (то же проверяют правила Firestore).
-export const isAdminAccount = (account) => !!account?.emailVerified && isAdminEmail(account.email);
+// Почта модератора: основатель из ADMIN_EMAILS или почта, которую добавил модератор (moderators/{email}).
+// Права даёт только подтверждённая почта — это проверяют правила Firestore.
+export async function isModeratorEmail(email) {
+  const e = normEmail(email);
+  if (!e) return false;
+  if (isAdminEmail(e)) return true;
+  return (await getDoc(ref('moderators', e))).exists();
+}
 
-async function createAccountDocs(account, { role, name }) {
-  const allowed = ['parent', 'specialist'].includes(role) || (role === 'admin' && isAdminAccount(account));
+// Роль admin выдаёт только claimAdmin — после того как sync.js проверил, что почта модератора.
+async function createAccountDocs(account, { role, name }, { asAdmin = false } = {}) {
+  const allowed = ['parent', 'specialist'].includes(role) || (role === 'admin' && asAdmin);
   if (!allowed) throw new Error(t('Выберите, кто вы: родитель или специалист'));
   const user = {
     id: account.uid,
@@ -69,7 +76,9 @@ export async function registerUser({ role, name, email, password }) {
   }
   updateProfile(cred.user, { displayName: cleanName }).catch(() => {});
   // Почта модератора: админ-панель откроется после подтверждения адреса — письмо отправляем сразу.
-  if (isAdminEmail(email)) sendEmailVerification(cred.user).catch(() => {});
+  isModeratorEmail(email)
+    .then((moderator) => moderator && sendEmailVerification(cred.user))
+    .catch(() => {});
   return createAccountDocs(cred.user, { role, name: cleanName });
 }
 
@@ -78,7 +87,7 @@ export async function registerUser({ role, name, email, password }) {
 export async function claimAdmin(account, current) {
   if (!current) {
     const name = (account.displayName || account.email.split('@')[0]).trim().slice(0, 60);
-    return createAccountDocs(account, { role: 'admin', name: name.length >= 2 ? name : t('Модератор') });
+    return createAccountDocs(account, { role: 'admin', name: name.length >= 2 ? name : t('Модератор') }, { asAdmin: true });
   }
   const w = batch();
   w.update(ref('users', account.uid), { role: 'admin' });

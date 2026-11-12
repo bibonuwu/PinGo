@@ -47,7 +47,7 @@ export const NAV = {
       also: ['/specialist/training', '/specialist/settings', '/specialist/help'],
     },
   ],
-  // На телефоне «Пользователи», «Рассылки», уведомления и настройки открываются из «Обзора» (mobileAlso),
+  // На телефоне «Пользователи», «Модераторы», «Рассылки», уведомления и настройки открываются из «Обзора» (mobileAlso),
   // на компьютере уведомления и настройки — внизу боковой панели.
   admin: [
     {
@@ -55,12 +55,12 @@ export const NAV = {
       end: true,
       label: t('Обзор'),
       icon: SquaresFourIcon,
-      mobileAlso: ['/admin/users', '/admin/broadcast', '/admin/notifications', '/admin/settings', '/admin/help'],
+      mobileAlso: ['/admin/users', '/admin/moderators', '/admin/broadcast', '/admin/notifications', '/admin/settings', '/admin/help'],
     },
     { to: '/admin/profiles', label: t('Анкеты'), icon: IdentificationCardIcon, badge: 'profiles' },
     { to: '/admin/rating', label: t('Рейтинг'), icon: RankingIcon },
     { to: '/admin/volunteers', label: t('Волонтёры'), icon: HandHeartIcon, badge: 'volunteers' },
-    { to: '/admin/users', label: t('Пользователи'), icon: UsersThreeIcon, also: ['/admin/broadcast'], mobile: false },
+    { to: '/admin/users', label: t('Пользователи'), icon: UsersThreeIcon, also: ['/admin/broadcast', '/admin/moderators'], mobile: false },
     { to: '/admin/reports', label: t('Жалобы'), icon: FlagIcon, badge: 'reports' },
     { to: '/admin/messages', label: t('Сообщения'), icon: ChatCircleDotsIcon, badge: 'messages' },
   ],

@@ -65,6 +65,7 @@ const AdminProfileReview = page(() => import('./pages/admin/AdminProfileReview')
 const AdminRating = page(() => import('./pages/admin/AdminRating'));
 const AdminVolunteers = page(() => import('./pages/admin/AdminVolunteers'));
 const AdminUsers = page(() => import('./pages/admin/AdminUsers'));
+const AdminModerators = page(() => import('./pages/admin/AdminModerators'));
 const AdminBroadcast = page(() => import('./pages/admin/AdminBroadcast'));
 const AdminReports = page(() => import('./pages/admin/AdminReports'));
 const BookingDetail = page(() => import('./pages/shared/BookingDetail'));
@@ -86,8 +87,8 @@ const ROLE_PAGES = {
     BookingDetail, Messages, VideoRoom,
   ],
   admin: [
-    AdminDashboard, AdminProfiles, AdminProfileReview, AdminRating, AdminVolunteers, AdminUsers, AdminBroadcast, AdminReports,
-    Messages,
+    AdminDashboard, AdminProfiles, AdminProfileReview, AdminRating, AdminVolunteers, AdminUsers, AdminModerators, AdminBroadcast,
+    AdminReports, Messages,
   ],
 };
 
@@ -206,6 +207,7 @@ export default function App() {
                   <Route path="rating" element={<AdminRating />} />
                   <Route path="volunteers" element={<AdminVolunteers />} />
                   <Route path="users" element={<AdminUsers />} />
+                  <Route path="moderators" element={<AdminModerators />} />
                   <Route path="broadcast" element={<AdminBroadcast />} />
                   <Route path="reports" element={<AdminReports />} />
                   <Route path="messages" element={<Messages />} />

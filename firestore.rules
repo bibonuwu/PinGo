@@ -2,7 +2,8 @@ rules_version = '2';
 
 // Правила доступа Pingo. Главное: данные ребёнка видят только его родитель, специалисты,
 // к которым он записан, и модератор; роль пользователя нельзя поменять самому себе;
-// анкету в каталог публикует только модератор. Модераторы — только почты из списка в isAdmin().
+// анкету в каталог публикует только модератор. Модераторы — почты из списка в isAdmin()
+// и почты, которые модераторы добавили в коллекцию moderators.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -15,12 +16,14 @@ service cloud.firestore {
     function path(collectionName, id) {
       return /databases/$(database)/documents/$(collectionName)/$(id);
     }
-    // Модератор — подтверждённая почта из этого списка (тот же список — ADMIN_EMAILS в src/lib/constants.js).
+    // Модератор — подтверждённая почта: из этого списка (основатели, тот же список — ADMIN_EMAILS
+    // в src/lib/constants.js) или добавленная другим модератором (документ moderators/{email}).
     // Роль admin в users/{uid} без такой почты прав не даёт.
     function isAdmin() {
       return signedIn()
-        && request.auth.token.get('email', '') in ['toryyy0325@gmail.com', 'aibekabeken47@gmail.com']
-        && request.auth.token.get('email_verified', false) == true;
+        && request.auth.token.get('email_verified', false) == true
+        && (request.auth.token.get('email', '') in ['toryyy0325@gmail.com', 'aibekabeken47@gmail.com']
+          || exists(path('moderators', request.auth.token.get('email', ''))));
     }
     function incoming() {
       return request.resource.data;
@@ -36,6 +39,18 @@ service cloud.firestore {
     }
     function isParty(d) {
       return d.parentId == me() || d.specialistId == me();
+    }
+
+    // Модераторы, добавленные другими модераторами: id документа — почта в нижнем регистре.
+    // Свой документ может прочитать сам человек (так приложение узнаёт, что он модератор).
+    // Удалить себя нельзя — чтобы случайно не потерять доступ.
+    match /moderators/{email} {
+      allow get: if signedIn() && (request.auth.token.get('email', '') == email || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isAdmin() && incoming().email == email && email == email.lower()
+        && incoming().addedBy == me()
+        && incoming().keys().hasOnly(['email', 'addedBy', 'addedByName', 'createdAt']);
+      allow delete: if isAdmin() && request.auth.token.get('email', '') != email;
     }
 
     // Личные данные аккаунта (email, избранное, настройки): владелец и модератор.

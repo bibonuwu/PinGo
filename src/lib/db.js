@@ -18,6 +18,7 @@ const TABLES = [
   'complaints',
   'certificates',
   'broadcasts',
+  'moderators',
 ];
 
 const watchers = new Set();

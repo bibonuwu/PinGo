@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<title>Pingo Trailer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=DM+Sans:opsz,wght@9..40,400..600&family=Inter:opsz,wght@14..32,400..800&family=Oswald:wght@500..600&display=block">
+<style>
+:root{--y:#f4c600;--o:#ffaf04;--ink:#141414;--g1:#f5f5f7;--t2:#6e6e73}
+*{box-sizing:border-box}
+html,body{margin:0;background:#000;overflow:hidden}
+#stage{position:relative;width:1920px;height:1080px;overflow:hidden;background:#000;font-family:'Inter',system-ui,sans-serif;font-optical-sizing:auto;-webkit-font-smoothing:antialiased;transform-origin:0 0}
+.scene{position:absolute;inset:0;display:none;overflow:hidden}
+.cen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.hl{margin:0;font-weight:700;letter-spacing:-0.038em;line-height:1.06}
+.ln{display:block}
+.w{display:inline-block}
+.grad{background:linear-gradient(100deg,#ffe14d 0%,#ffc300 30%,#ff9500 65%,#ff6a3d 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:.08em}
+.grad-d{background:linear-gradient(100deg,#f0ae00,#ff8a00 55%,#ff5a36);-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:.08em}
+.eyebrow{font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#e3a600;font-size:34px}
+.abs{position:absolute}
+
+/* ---------- devices ---------- */
+.phone{position:absolute;width:418px;height:872px;border-radius:68px;background:#0b0b0c;padding:14px;box-shadow:inset 0 0 0 2px #3d3d40,0 0 0 3px #222224,0 60px 110px -36px rgba(0,0,0,.55),0 24px 50px -30px rgba(0,0,0,.35)}
+.scr{position:relative;width:390px;height:844px;border-radius:54px;overflow:hidden;background:#fff}
+.island{position:absolute;top:25px;left:50%;width:124px;height:36px;margin-left:-62px;border-radius:20px;background:#000;z-index:30}
+.sbar{position:absolute;top:0;left:0;right:0;height:56px;display:flex;justify-content:space-between;align-items:center;padding:8px 32px 0 48px;font-weight:600;font-size:17px;z-index:25;color:#141414;letter-spacing:-.01em}
+.sbar.light{color:#fff}
+.sic{display:flex;gap:6px;align-items:center}
+.sig{display:flex;gap:2px;align-items:flex-end}.sig i{width:3.5px;background:currentColor;border-radius:1px;display:block}
+.bat{width:26px;height:13px;border:1.6px solid currentColor;border-radius:4px;padding:1.5px;opacity:.95}.bat i{display:block;height:100%;width:78%;background:currentColor;border-radius:1.5px}
+
+.laptop{position:absolute;width:1120px}
+.lid{background:#0c0c0d;border-radius:24px 24px 8px 8px;padding:18px 18px 24px;box-shadow:inset 0 0 0 2px #2e2e30,0 50px 100px -40px rgba(0,0,0,.45)}
+.lscr{position:relative;width:1084px;height:678px;overflow:hidden;border-radius:6px;background:#fff}
+.lbase{height:24px;margin:0 -64px;background:linear-gradient(#e3e3e8,#b4b4ba 70%,#9a9aa0);border-radius:2px 2px 20px 20px;position:relative;box-shadow:0 30px 50px -24px rgba(0,0,0,.45)}
+.lbase:after{content:"";position:absolute;left:50%;top:0;width:180px;margin-left:-90px;height:9px;background:#c9c9ce;border-radius:0 0 10px 10px}
+
+/* ---------- app ui ---------- */
+.app{font-family:'Inter',sans-serif;color:#141414}
+.ahead{position:absolute;top:60px;left:0;right:0;height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font-size:17px;font-weight:700}
+.ahead .bk{font-size:30px;font-weight:400;line-height:1;margin-top:-4px;color:#141414}
+.ahead .sn{font-size:14px;color:#8e8e93;font-weight:600}
+.prog{position:absolute;top:110px;left:22px;right:22px;height:6px;border-radius:3px;background:#ededf0;overflow:hidden}
+.prog i{display:block;height:100%;width:25%;background:var(--y);border-radius:3px}
+.abody{position:absolute;top:132px;left:22px;right:22px}
+.guide{display:flex;gap:10px;align-items:flex-end;margin-bottom:6px}
+.guide .pw{width:62px;flex:none}
+.bubble{background:#fff9e3;border:1px solid #f7e7a6;border-radius:18px 18px 18px 6px;padding:10px 13px;font-size:14px;line-height:1.38;font-weight:500;color:#2a2a2a}
+.lbl{font-size:12.5px;font-weight:700;color:#8e8e93;text-transform:uppercase;letter-spacing:.05em;margin:16px 0 8px}
+.input{height:52px;border-radius:15px;background:#f2f2f7;display:flex;align-items:center;padding:0 16px;font-size:19px;font-weight:600;box-shadow:inset 0 0 0 2px var(--y)}
+.caret{display:inline-block;width:2px;height:24px;background:#e0a800;margin-left:1px;border-radius:1px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:9px 14px;border-radius:999px;background:#f2f2f7;font-size:14px;font-weight:600;color:#323232;display:inline-flex;gap:6px;align-items:center}
+.chip.on{background:var(--y);color:#141414}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lcard{border-radius:18px;background:#f2f2f7;padding:13px 14px;font-size:15px;font-weight:700;line-height:1.2}
+.lcard small{display:block;font-weight:500;color:#8e8e93;font-size:12px;margin-top:4px;line-height:1.3}
+.lcard i{display:block;width:26px;height:26px;border-radius:8px;margin-bottom:8px}
+.lcard.on{background:#141414;color:#fff}.lcard.on small{color:#bdbdc2}
+.btnd{position:absolute;left:22px;right:22px;bottom:34px;height:58px;border-radius:999px;background:#141414;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:17px}
+.done{position:absolute;inset:0;background:#fff;opacity:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;z-index:20}
+.done .dc{display:flex;flex-direction:column;align-items:center}
+.done h4{margin:14px 0 6px;font-size:30px;font-weight:800;letter-spacing:-.02em}
+.done p{margin:0;color:#6e6e73;font-size:16px;font-weight:500}
+.done .tags{display:flex;gap:6px;margin-top:16px;flex-wrap:wrap;justify-content:center;padding:0 30px}
+.conf{position:absolute;left:50%;top:44%;width:0;height:0}
+.conf i{position:absolute;display:block}
+
+.bigt{font-size:34px;font-weight:800;letter-spacing:-.025em;margin:0}
+.subt{font-size:13.5px;color:#8e8e93;font-weight:500;margin:4px 0 12px}
+.search{height:46px;border-radius:14px;background:#f2f2f7;display:flex;align-items:center;gap:8px;padding:0 14px;color:#8e8e93;font-size:15px;font-weight:500}
+.fchips{display:flex;gap:8px;margin:12px 0 2px;white-space:nowrap}
+.fchips .chip{padding:8px 13px;font-size:13.5px}
+.fchips .chip.dk{background:#141414;color:#fff}
+.scard{border-radius:22px;background:#fff;border:1px solid #e8e8ed;padding:14px;display:flex;gap:12px;margin-top:12px;box-shadow:0 10px 26px -18px rgba(0,0,0,.3);position:relative}
+.scard img{width:62px;height:62px;border-radius:50%;flex:none}
+.sname{font-weight:700;font-size:16px;letter-spacing:-.01em}
+.srole{color:#6e6e73;font-size:13px;margin-top:2px;font-weight:500}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.bdg{font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:999px;white-space:nowrap}
+.bdg.ok{background:#dcfce7;color:#15803d}.bdg.y{background:#fdf2c7;color:#7a5b00}.bdg.g{background:#f2f2f7;color:#4a4a4f}
+.rate{position:absolute;top:14px;right:14px;font-size:13px;font-weight:700;display:flex;gap:3px;align-items:center}
+.ring{position:absolute;inset:-3px;border-radius:24px;box-shadow:0 0 0 3px var(--y),0 12px 30px -10px rgba(244,198,0,.6);opacity:0}
+.dim{position:absolute;inset:0;background:#000;opacity:0;z-index:10}
+.sheet{position:absolute;left:0;right:0;bottom:0;height:404px;background:#fff;border-radius:30px 30px 0 0;box-shadow:0 -20px 50px -20px rgba(0,0,0,.3);padding:12px 22px;z-index:11;transform:translateY(100%)}
+.grab{width:40px;height:5px;border-radius:3px;background:#d1d1d6;margin:0 auto 16px}
+.sheet h5{margin:0;font-size:21px;font-weight:800;letter-spacing:-.02em}
+.sheet .sm{color:#8e8e93;font-size:13.5px;font-weight:500;margin:4px 0 14px}
+.days{display:flex;gap:7px}.day{flex:1;border-radius:16px;background:#f2f2f7;text-align:center;padding:9px 0;font-size:12px;color:#8e8e93;font-weight:600}.day b{display:block;font-size:20px;color:#141414;margin-top:2px}
+.day.on{background:#141414;color:#bdbdc2}.day.on b{color:#fff}
+.times{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.time{border-radius:14px;background:#f2f2f7;text-align:center;padding:12px 0;font-weight:700;font-size:15px}
+.time.on{background:var(--y)}
+.sheet .btnd{bottom:30px}
+.toast{position:absolute;top:64px;left:14px;right:14px;border-radius:20px;background:#141414;color:#fff;padding:14px 16px;display:flex;gap:12px;align-items:center;font-weight:600;font-size:15px;z-index:40;opacity:0;box-shadow:0 20px 40px -20px rgba(0,0,0,.6)}
+.toast .ck{width:30px;height:30px;border-radius:50%;background:#22c55e;display:flex;align-items:center;justify-content:center;flex:none}
+.toast small{display:block;color:#a1a1a6;font-weight:500;font-size:12.5px;margin-top:2px}
+
+/* chat */
+.chead{position:absolute;top:56px;left:0;right:0;height:72px;display:flex;align-items:center;gap:12px;padding:0 18px;border-bottom:1px solid #efeff4;background:rgba(255,255,255,.96);z-index:5}
+.chead img{width:44px;height:44px;border-radius:50%}
+.chead b{font-size:16px;display:block}.chead small{font-size:12.5px;color:#22a352;font-weight:600}
+.cbody{position:absolute;top:140px;left:14px;right:14px;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:78%;padding:11px 15px;font-size:15.5px;line-height:1.38;font-weight:500;border-radius:22px}
+.msg.me{align-self:flex-end;background:#141414;color:#fff;border-bottom-right-radius:7px;transform-origin:100% 100%}
+.msg.th{align-self:flex-start;background:#f2f2f7;color:#141414;border-bottom-left-radius:7px;transform-origin:0 100%}
+.typing{align-self:flex-start;background:#f2f2f7;border-radius:20px;padding:14px 16px;display:flex;gap:5px}
+.typing i{width:8px;height:8px;border-radius:50%;background:#8e8e93;display:block}
+.bk-card{align-self:stretch;margin:4px 6px;border-radius:22px;border:1px solid #e8e8ed;padding:14px 16px;box-shadow:0 12px 28px -18px rgba(0,0,0,.3);background:#fff}
+.bk-card .r1{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px}
+.bk-card .ck{width:28px;height:28px;border-radius:50%;background:#dcfce7;display:flex;align-items:center;justify-content:center}
+.bk-card .r2{color:#6e6e73;font-size:13.5px;margin:8px 0 12px;font-weight:500}
+.bk-card .yb{height:44px;border-radius:999px;background:var(--y);display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:15px}
+.cinput{position:absolute;left:14px;right:14px;bottom:34px;height:52px;border-radius:999px;background:#f2f2f7;display:flex;align-items:center;justify-content:space-between;padding:0 6px 0 18px;color:#8e8e93;font-size:15.5px;font-weight:500}
+.cinput .tx{color:#141414}
+.cinput .snd{width:40px;height:40px;border-radius:50%;background:#141414;display:flex;align-items:center;justify-content:center}
+
+/* steps */
+.stxt{position:absolute;top:50%;width:720px}
+.num{width:88px;height:88px;border-radius:50%;background:var(--y);display:flex;align-items:center;justify-content:center;font-size:46px;font-weight:800;color:#141414;margin-bottom:34px;letter-spacing:-.03em}
+.stxt h2{font-size:108px;margin:0;font-weight:800;letter-spacing:-.045em;line-height:1}
+.stxt p{font-size:35px;color:var(--t2);font-weight:500;line-height:1.36;margin:30px 0 0;letter-spacing:-.012em;max-width:680px}
+
+/* video room */
+.room{position:absolute;left:840px;top:170px;width:960px;height:740px;border-radius:36px;background:#18181a;box-shadow:0 0 0 1px rgba(255,255,255,.09),0 80px 140px -50px rgba(0,0,0,.9);overflow:hidden;font-family:'Inter'}
+.rtop{position:absolute;top:0;left:0;right:0;height:70px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;color:#fff;font-size:17px;font-weight:600}
+.live{display:flex;align-items:center;gap:10px;background:rgba(34,197,94,.14);color:#4ade80;padding:8px 14px;border-radius:999px;font-size:15px}
+.live i{width:9px;height:9px;border-radius:50%;background:#22c55e;display:block}
+.tile{position:absolute;left:20px;top:74px;right:20px;bottom:110px;border-radius:26px;overflow:hidden;background:radial-gradient(120% 120% at 30% 20%,#3a3a40 0%,#202024 60%,#141416 100%)}
+.tile .av{position:absolute;left:50%;top:46%;width:250px;height:250px;margin:-125px 0 0 -125px;border-radius:50%}
+.tile .av img{width:100%;height:100%;border-radius:50%;display:block}
+.spk{position:absolute;inset:-14px;border-radius:50%;border:5px solid rgba(244,198,0,.9)}
+.nm{position:absolute;left:18px;bottom:16px;background:rgba(0,0,0,.45);color:#fff;font-size:15px;font-weight:600;padding:8px 13px;border-radius:12px;display:flex;gap:8px;align-items:center}
+.pip{position:absolute;right:40px;bottom:130px;width:270px;height:180px;border-radius:22px;overflow:hidden;background:linear-gradient(140deg,#ffd84d,#ffaf04);box-shadow:0 20px 40px -16px rgba(0,0,0,.7),0 0 0 3px rgba(255,255,255,.12)}
+.pip .av2{position:absolute;left:50%;top:44%;width:112px;height:112px;margin:-56px 0 0 -56px;border-radius:50%}
+.pip .av2 img{width:100%;height:100%;border-radius:50%}
+.pip .spk{border-color:rgba(255,255,255,.95);inset:-9px;border-width:4px}
+.pip .nm{left:10px;bottom:10px;font-size:13px;padding:6px 10px}
+.ctrls{position:absolute;bottom:22px;left:0;right:0;display:flex;justify-content:center;gap:16px}
+.cb{width:66px;height:66px;border-radius:50%;background:#2c2c2e;display:flex;align-items:center;justify-content:center}
+.cb.red{background:#ff3b30;width:86px;border-radius:33px}
+.lcardx{position:absolute;left:84px;top:150px;width:210px;border-radius:24px;background:#fff;padding:20px;display:flex;flex-direction:column;align-items:center;box-shadow:0 30px 60px -20px rgba(0,0,0,.6);opacity:0}
+.lcardx b{font-size:34px;font-weight:800;margin-top:6px;letter-spacing:-.02em}
+
+/* settings */
+.card{position:absolute;background:#fff;border-radius:36px;box-shadow:0 30px 70px -40px rgba(0,0,0,.35),0 0 0 1px rgba(0,0,0,.04);padding:40px 44px}
+.srow{display:flex;justify-content:space-between;align-items:center;padding:18px 0;border-top:1px solid #ededf0}
+.srow:first-of-type{border-top:0}
+.srow b{font-size:24px;font-weight:700;letter-spacing:-.015em;display:block}
+.srow small{display:block;font-size:16px;color:#8e8e93;font-weight:500;margin-top:4px;max-width:440px;line-height:1.35}
+.sl{margin:14px 0 6px;position:relative;height:8px;border-radius:4px;background:#e5e5ea}
+.sl i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--y)}
+.sl u{position:absolute;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,.22),0 0 0 .5px rgba(0,0,0,.06)}
+.slw{padding:18px 0 22px;border-top:1px solid #ededf0}.slw:first-child{border-top:0;padding-top:4px}
+.slw .ttl{display:flex;justify-content:space-between;align-items:baseline}
+.slw .ttl b{font-size:24px;font-weight:700;letter-spacing:-.015em}
+.slw .ttl span{font-size:18px;color:#8e8e93;font-weight:600}
+.tg{width:68px;height:40px;border-radius:20px;background:#e5e5ea;position:relative;flex:none}
+.tg u{position:absolute;top:3px;left:3px;width:34px;height:34px;border-radius:50%;background:#fff;box-shadow:0 3px 8px rgba(0,0,0,.2)}
+.tap{position:absolute;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;background:rgba(20,20,20,.16);border:2px solid rgba(255,255,255,.7);opacity:0;z-index:50;pointer-events:none}
+.pvlabel{font-family:'Oswald';font-weight:600;font-size:22px;color:#e3a600;letter-spacing:.06em;text-transform:uppercase}
+.pvmsg{margin-top:26px;display:flex;gap:16px;align-items:flex-start}
+.pvmsg .pw{width:72px;flex:none}
+.pvbub{background:#f5f5f7;border-radius:30px 30px 30px 10px;padding:24px 28px;color:#3a3a3c;font-weight:500}
+
+/* safety */
+.sfli{display:flex;gap:18px;align-items:center;font-size:34px;font-weight:600;color:#f5f5f7;letter-spacing:-.015em;margin-top:26px}
+.sfli svg{flex:none}
+
+/* montage */
+.mc{position:absolute;inset:0;display:none}
+.mc .cen{gap:40px}
+.mc h1{font-size:150px;font-weight:800;letter-spacing:-.05em;line-height:1.02;margin:0}
+.langp{display:flex;background:rgba(0,0,0,.08);border-radius:999px;padding:8px;gap:6px;font-weight:700;font-size:36px}
+.langp span{padding:14px 34px;border-radius:999px}
+.langp .on{background:#141414;color:#fff}
+
+/* finale */
+.fin-t{position:absolute;left:240px;top:318px;width:860px}
+.wm{font-family:'Bricolage Grotesque','Inter',sans-serif;font-weight:800;font-size:220px;line-height:.9;color:#141414;margin:0;white-space:nowrap}
+.slog{font-family:'DM Sans','Inter';font-size:58px;color:#4a4a4f;margin:22px 0 0;font-weight:400;letter-spacing:-.01em}
+.kksub{font-size:34px;color:#8e8e93;margin:22px 0 0;font-weight:500;line-height:1.35;letter-spacing:-.01em;max-width:780px}
+.acts{display:flex;align-items:center;gap:34px;margin-top:52px}
+.pill{height:84px;padding:0 70px;border-radius:999px;background:#141414;color:#fff;display:flex;align-items:center;font-size:30px;font-weight:700}
+.url{font-size:32px;font-weight:600;color:#141414;display:flex;align-items:center;gap:12px}
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- S1 -->
+<section class="scene" id="s1" style="background:#000">
+  <div class="abs" id="s1glow" style="left:50%;top:50%;width:1400px;height:900px;margin:-450px 0 0 -700px;background:radial-gradient(closest-side,rgba(255,190,40,.16),rgba(255,160,0,.05) 55%,transparent);"></div>
+  <div class="cen" id="s1wrap">
+    <h1 class="hl" style="font-size:136px;color:#f5f5f7">
+      <span class="ln" id="s1a">Әр баланың</span>
+      <span class="ln" id="s1b">өз жолы бар.</span>
+    </h1>
+  </div>
+</section>
+
+<!-- S2 -->
+<section class="scene" id="s2" style="background:#000">
+  <div class="cen" id="s2wrap">
+    <h1 class="hl" style="font-size:124px;color:#f5f5f7">
+      <span class="ln"><span class="w s2w">Кейде</span> <span class="w s2w">бұл</span> <span class="w s2w">жолда</span></span>
+      <span class="ln"><span class="w s2w">сәл</span> <span class="w s2w">көбірек</span> <span class="w s2w"><span class="grad" id="s2g">қолдау</span></span> <span class="w s2w">керек.</span></span>
+    </h1>
+  </div>
+  <div class="abs" id="s2dot" style="left:50%;top:50%;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;background:#ffd23a;box-shadow:0 0 40px 12px rgba(255,200,0,.6);opacity:0"></div>
+</section>
+
+<!-- S3 -->
+<section class="scene" id="s3" style="background:#000">
+  <div class="abs" id="s3bloom" style="left:50%;top:50%;width:900px;height:900px;margin:-450px 0 0 -450px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,215,60,.95),rgba(255,170,0,.45) 40%,rgba(255,140,0,0) 72%)"></div>
+  <div class="abs" id="s3halo" style="left:50%;top:50%;width:1100px;height:1100px;margin:-550px 0 0 -550px;border-radius:50%;background:radial-gradient(closest-side,rgba(255,190,0,.22),rgba(255,150,0,.06) 50%,transparent)"></div>
+  <div class="abs" style="left:50%;top:50%;width:0;height:0">
+    <div id="s3icon" style="position:absolute;left:-150px;top:-150px;width:300px;height:300px;border-radius:68px;overflow:hidden;box-shadow:0 40px 120px -20px rgba(255,190,0,.55),0 0 0 1px rgba(255,255,255,.12)">
+      <img src="a/icon.jpg" style="width:100%;height:100%;display:block;transform:scale(1.12)">
+      <div id="s3sheen" style="position:absolute;top:-50%;left:0;width:120px;height:200%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);transform:rotate(20deg)"></div>
+    </div>
+  </div>
+  <div class="abs" style="left:0;right:0;top:640px;text-align:center">
+    <div id="s3wm" class="wm" style="color:#fff;font-size:150px;display:inline-block">PINGO</div>
+    <div id="s3slog" style="font-family:'DM Sans';font-size:46px;color:#a1a1a6;margin-top:16px;letter-spacing:-.01em">Support for every child</div>
+  </div>
+</section>
+
+<!-- S4 devices -->
+<section class="scene" id="s4" style="background:var(--g1)">
+  <div class="abs" style="left:0;right:0;top:92px;text-align:center" id="s4h">
+    <h2 class="hl" style="font-size:76px;color:#141414">Ата-аналар мен мамандар — <span class="grad-d">бір жерде.</span></h2>
+  </div>
+  <div class="abs" id="s4grp" style="inset:0;transform-origin:50% 100%">
+    <div class="laptop" id="s4lap" style="left:290px;top:262px">
+      <div class="lid"><div class="lscr"><img id="s4dimg" src="a/desk_land.jpg" style="width:1084px;display:block;position:absolute;left:0;top:0"></div></div>
+      <div class="lbase"></div>
+    </div>
+    <div class="phone" id="s4ph" style="left:1300px;top:132px;transform-origin:50% 100%">
+      <div class="scr"><div class="island"></div><img id="s4pimg" src="a/phone_land.jpg" style="width:390px;display:block;position:absolute;left:0;top:0"></div>
+    </div>
+  </div>
+</section>
+
+<!-- S5a title -->
+<section class="scene" id="s5a" style="background:#fff">
+  <div class="cen">
+    <div class="eyebrow ln" id="s5e">Бұл қалай жұмыс істейді</div>
+    <h1 class="hl" style="font-size:132px;color:#141414;margin-top:26px">
+      <span class="ln" id="s5l1">Алғашқы сабаққа дейін</span>
+      <span class="ln" id="s5l2"><span class="grad-d">үш қадам.</span></span>
+    </h1>
+  </div>
+</section>
+
+<!-- Step 1 -->
+<section class="scene" id="st1" style="background:#fff">
+  <div class="stxt" style="left:210px;transform:translateY(-50%)">
+    <div class="num ln" id="st1n">1</div>
+    <h2 class="ln" id="st1h">Бала профилі</h2>
+    <p class="ln" id="st1p">Пингвин-гид бала туралы айтуға көмектеседі: жасы, ерекшеліктері және оған қалай оқу жеңілірек.</p>
+  </div>
+  <div class="phone" id="st1ph" style="left:1230px;top:104px">
+    <div class="scr app">
+      <div class="island"></div>
+      <div class="sbar"><span>9:41</span><span class="sic"><span class="sig"><i style="height:5px"></i><i style="height:7px"></i><i style="height:9px"></i><i style="height:11px"></i></span><span class="bat"><i></i></span></span></div>
+      <div class="ahead"><span class="bk">‹</span><span>Бала профилі</span><span class="sn" id="w-sn">1 / 4</span></div>
+      <div class="prog"><i id="w-prog"></i></div>
+      <div class="abody">
+        <div class="guide"><div class="pw" data-pingo="open"></div><div class="bubble">Балаңыз туралы айтып беріңіз — мен сәйкес мамандарды іріктеймін.</div></div>
+        <div class="lbl">Баланың аты</div>
+        <div class="input"><span id="w-name"></span><i class="caret" id="w-caret"></i></div>
+        <div class="lbl">Ерекшеліктері</div>
+        <div class="chips" id="w-chips">
+          <span class="chip">Аутизм (АСБ)</span><span class="chip">ЗТГС</span><span class="chip">Тілдің кеш дамуы</span><span class="chip">Моторика</span><span class="chip">Әлеуметтік дағдылар</span><span class="chip">Дислексия</span>
+        </div>
+        <div class="lbl">Қалай оқиды</div>
+        <div class="grid2" id="w-ls">
+          <div class="lcard"><i style="background:#dbeafe"></i>Көру арқылы<small>Суреттер, карточкалар</small></div>
+          <div class="lcard"><i style="background:#fce7f3"></i>Есту арқылы<small>Тыңдау, әндер</small></div>
+          <div class="lcard"><i style="background:#fdf2c7"></i>Ойын арқылы<small>Ойын, ертегі</small></div>
+          <div class="lcard"><i style="background:#dcfce7"></i>Қадам-қадаммен<small>Нақты жоспар</small></div>
+        </div>
+      </div>
+      <div class="btnd" id="w-btn">Жалғастыру</div>
+      <div class="done" id="w-done">
+        <div class="conf" id="w-conf"></div>
+        <div class="dc" id="w-dc">
+          <div style="width:150px" data-pingo="happy"></div>
+          <h4>Профиль дайын</h4>
+          <p>Әлия · 6 жас</p>
+          <div class="tags"><span class="bdg y">Тілдің кеш дамуы</span><span class="bdg y">Әлеуметтік дағдылар</span><span class="bdg g">Ойын арқылы</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Step 2 -->
+<section class="scene" id="st2" style="background:#fff">
+  <div class="phone" id="st2ph" style="left:290px;top:104px">
+    <div class="scr app">
+      <div class="island"></div>
+      <div class="sbar"><span>9:41</span><span class="sic"><span class="sig"><i style="height:5px"></i><i style="height:7px"></i><i style="height:9px"></i><i style="height:11px"></i></span><span class="bat"><i></i></span></span></div>
+      <div class="abody" style="top:66px">
+        <h3 class="bigt">Мамандар</h3>
+        <div class="subt">Барлық анкетаны модератор тексереді</div>
+        <div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8e8e93" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Аты, бағыты немесе қала</div>
+        <div class="fchips"><span class="chip dk">Бүгін бос</span><span class="chip">Таңдаулылар</span><span class="chip">Логопедия</span><span class="chip">Психология</span></div>
+        <div id="cat-list">
+          <div class="scard"><div class="ring" id="c-ring"></div><img src="a/traveler.png"><div><div class="sname">Айгерім Сейітова</div><div class="srole">Логопед · Тәжірибесі: 6 жыл</div><div class="badges"><span class="bdg ok" id="c-match">✓ Сәйкес келеді · Әлия</span><span class="bdg y">Бүгін бос</span></div></div><div class="rate"><svg width="14" height="14" viewBox="0 0 24 24"><path fill="#f4c600" d="m12 2 3 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.8 5.7 21.4l1.5-7.1L1.8 9.4 9 8.6z"/></svg>4,9</div></div>
+          <div class="scard"><img src="a/wizard.png"><div><div class="sname">Дәурен Мұратұлы</div><div class="srole">Балалар психологы · 8 жыл</div><div class="badges"><span class="bdg ok">✓ Сәйкес келеді · Әлия</span><span class="bdg g">Онлайн</span></div></div><div class="rate"><svg width="14" height="14" viewBox="0 0 24 24"><path fill="#f4c600" d="m12 2 3 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.8 5.7 21.4l1.5-7.1L1.8 9.4 9 8.6z"/></svg>5,0</div></div>
+          <div class="scard"><img src="a/artist.png"><div><div class="sname">Мадина Қасымова</div><div class="srole">Ерікті · Мектепке дайындық</div><div class="badges"><span class="bdg y">Расталған ерікті</span><span class="bdg g">Тегін</span></div></div><div class="rate"><svg width="14" height="14" viewBox="0 0 24 24"><path fill="#f4c600" d="m12 2 3 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.8 5.7 21.4l1.5-7.1L1.8 9.4 9 8.6z"/></svg>4,8</div></div>
+          <div class="scard"><img src="a/chef.png"><div><div class="sname">Ерлан Жақсылықов</div><div class="srole">Эрготерапевт · 4 жыл</div><div class="badges"><span class="bdg g">Моторика</span></div></div><div class="rate"><svg width="14" height="14" viewBox="0 0 24 24"><path fill="#f4c600" d="m12 2 3 6.6 7.2.8-5.4 4.9 1.5 7.1L12 17.8 5.7 21.4l1.5-7.1L1.8 9.4 9 8.6z"/></svg>4,9</div></div>
+        </div>
+      </div>
+      <div class="dim" id="c-dim"></div>
+      <div class="sheet" id="c-sheet">
+        <div class="grab"></div>
+        <h5>Сабақ уақытын таңдаңыз</h5>
+        <div class="sm">Айгерім Сейітова · 45 минут · онлайн</div>
+        <div class="days" id="c-days"><div class="day">Дс<b>16</b></div><div class="day">Сс<b>17</b></div><div class="day">Ср<b>18</b></div><div class="day">Бс<b>19</b></div><div class="day">Жм<b>20</b></div></div>
+        <div class="times" id="c-times"><div class="time">10:00</div><div class="time">11:30</div><div class="time">15:00</div><div class="time">16:30</div><div class="time">17:15</div><div class="time">18:00</div></div>
+        <div class="btnd" id="c-btn">Өтінім жіберу</div>
+      </div>
+      <div class="toast" id="c-toast"><span class="ck"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span>Өтінім жіберілді!<small>Маман жақында растайды</small></span></div>
+    </div>
+  </div>
+  <div class="stxt" style="left:1000px;transform:translateY(-50%)">
+    <div class="num ln" id="st2n">2</div>
+    <h2 class="ln" id="st2h">Маман іріктеу</h2>
+    <p class="ln" id="st2p">Анкеталары тексерілген логопедтер, психологтар, репетиторлар, эрготерапевтер және еріктілер.</p>
+  </div>
+</section>
+
+<!-- Step 3 -->
+<section class="scene" id="st3" style="background:#050505">
+  <div class="stxt" style="left:170px;width:600px;transform:translateY(-50%)">
+    <div class="num ln" id="st3n">3</div>
+    <h2 class="ln" id="st3h" style="color:#f5f5f7;font-size:100px">Онлайн сабақтар</h2>
+    <p class="ln" id="st3p" style="color:#a1a1a6;font-size:33px">Жазылу, чат және бейнесабақ бір жерде. Бөлме сабақ басталуына 15 минут қалғанда ашылады.</p>
+  </div>
+  <div class="room" id="room">
+    <div class="rtop"><span class="live"><i id="r-dot"></i>Бейнебөлме ашық</span><span style="color:#a1a1a6;font-weight:500">Айгерім Сейітова · Логопед</span><span id="r-time" style="font-variant-numeric:tabular-nums">12:48</span></div>
+    <div class="tile">
+      <div class="av"><div class="spk" id="r-spk1"></div><img src="a/traveler.png"></div>
+      <div class="lcardx" id="r-card">
+        <svg width="120" height="120" viewBox="0 0 120 120"><g stroke="#ffaf04" stroke-width="8" stroke-linecap="round"><path d="M60 8v14M60 98v14M8 60h14M98 60h14M23 23l10 10M87 87l10 10M97 23 87 33M33 87 23 97"/></g><circle cx="60" cy="60" r="26" fill="#ffd23a"/><path d="M50 58q3-4 6 0M64 58q3-4 6 0M51 67q9 8 18 0" stroke="#141414" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>
+        <b>Күн</b>
+      </div>
+      <div class="nm"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Айгерім</div>
+    </div>
+    <div class="pip"><div class="av2"><div class="spk" id="r-spk2"></div><img src="a/hero.png"></div><div class="nm">Әлия</div></div>
+    <div class="ctrls" id="r-ctrls">
+      <div class="cb"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></div>
+      <div class="cb"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"><rect x="2.5" y="6.5" width="13" height="11" rx="2.5"/><path d="m15.5 11 6-3.5v9l-6-3.5z"/></svg></div>
+      <div class="cb"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div>
+      <div class="cb"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"><path d="M4 5h16v11H10l-6 4z"/></svg></div>
+      <div class="cb red"><svg width="32" height="32" viewBox="0 0 24 24" fill="#fff"><path d="M2.5 13.6c5.3-4.6 13.7-4.6 19 0l-2.1 2.6-3.6-1.1v-2.6a12 12 0 0 0-7.6 0v2.6l-3.6 1.1z"/></svg></div>
+    </div>
+  </div>
+</section>
+
+<!-- S6 accessibility -->
+<section class="scene" id="s6" style="background:var(--g1)">
+  <div class="abs" style="left:0;right:0;top:96px;text-align:center">
+    <h2 class="hl ln" id="s6h" style="font-size:100px;color:#141414">Әр балаға <span class="grad-d">бейімделеді.</span></h2>
+    <p class="ln" id="s6p" style="font-size:34px;color:var(--t2);font-weight:500;margin:22px 0 0;letter-spacing:-.01em">Ірі мәтін, жол аралығы және азырақ анимация — әр балаға өз баптауы.</p>
+  </div>
+  <div class="card" id="s6c1" style="left:190px;top:372px;width:720px;height:620px">
+    <div class="slw"><div class="ttl"><b>Мәтін өлшемі</b><span id="v1">100%</span></div><div class="sl" id="sl1"><i></i><u></u></div></div>
+    <div class="slw"><div class="ttl"><b>Жол аралығы</b><span id="v2">1,5</span></div><div class="sl" id="sl2"><i></i><u></u></div></div>
+    <div class="srow"><div><b>Анимация азырақ</b><small>Қозғалыссыз тыныш интерфейс</small></div><div class="tg" id="tg1"><u></u></div></div>
+    <div class="srow"><div><b>Жоғары контраст</b><small>Қоюырақ мәтін және анық шекаралар</small></div><div class="tg" id="tg2"><u></u></div></div>
+    <div class="srow"><div><b>Ыңғайлы оқу</b><small>Дислексия кезінде көмектеседі</small></div><div class="tg" id="tg3"><u></u></div></div>
+  </div>
+  <div class="card" id="s6c2" style="left:950px;top:372px;width:780px;height:620px">
+    <div class="pvlabel">Алдын ала қарау</div>
+    <div class="pvmsg"><div class="pw" id="pvpg" data-pingo="open"></div><div class="pvbub" id="pvtxt" style="font-size:24px;line-height:1.45">Сәлем! Бүгін сағат 15:00-де сабақ бар. Жануарлар бейнеленген карточкаларды ал — ойнап, жаңа сөздер үйренеміз.</div></div>
+  </div>
+  <div class="tap" id="tap6"></div>
+</section>
+
+<!-- S7 chat -->
+<section class="scene" id="s7" style="background:#fff">
+  <div class="stxt" style="left:210px;transform:translateY(-50%)">
+    <h2 class="ln" id="s7h">Маманмен чат</h2>
+    <p class="ln" id="s7p">Сабақтың мақсаттары мен егжей-тегжейін мессенджерлерге өтпей-ақ талқылаңыз.</p>
+  </div>
+  <div class="phone" id="s7ph" style="left:1230px;top:104px">
+    <div class="scr app">
+      <div class="island"></div>
+      <div class="sbar"><span>9:41</span><span class="sic"><span class="sig"><i style="height:5px"></i><i style="height:7px"></i><i style="height:9px"></i><i style="height:11px"></i></span><span class="bat"><i></i></span></span></div>
+      <div class="chead"><span style="font-size:30px;margin-top:-4px">‹</span><img src="a/traveler.png"><div><b>Айгерім Сейітова</b><small>● Pingo маманы</small></div></div>
+      <div class="cbody">
+        <div style="align-self:center;font-size:12.5px;color:#8e8e93;font-weight:600;margin:4px 0">Бүгін</div>
+        <div class="msg me" id="m1">Сәлеметсіз бе! Әлия жануарларды өте жақсы көреді.</div>
+        <div class="typing" id="m-typ"><i></i><i></i><i></i></div>
+        <div class="msg th" id="m2">Керемет! Карточкалармен ойнап, жаңа сөздер үйренеміз.</div>
+        <div class="bk-card" id="m3">
+          <div class="r1"><span class="ck"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>Сабақ расталды</div>
+          <div class="r2">Бейсенбі, 19 қараша · 15:00 · онлайн</div>
+          <div class="yb"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2.4" stroke-linejoin="round"><rect x="2.5" y="6.5" width="13" height="11" rx="2.5"/><path d="m15.5 11 6-3.5v9l-6-3.5z"/></svg>Бейнебөлмеге кіру</div>
+        </div>
+        <div class="msg me" id="m4">Рақмет, күтеміз!</div>
+      </div>
+      <div class="cinput"><span id="ci-tx">Хабарлама…</span><span class="snd"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- S8 safety -->
+<section class="scene" id="s8" style="background:#0a0a0a">
+  <div class="abs" id="s8grp" style="inset:0">
+    <div class="abs" style="left:190px;top:50%;width:1000px;transform:translateY(-50%)">
+      <div class="eyebrow ln" id="s8e" style="color:#f4c600">Қауіпсіздік</div>
+      <h1 class="hl" style="font-size:132px;color:#f5f5f7;margin:18px 0 34px">
+        <span class="ln" id="s8l1">Балалар —</span>
+        <span class="ln" id="s8l2"><span class="grad">бәрінен бұрын.</span></span>
+      </h1>
+      <div class="sfli ln s8i"><svg width="40" height="40" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5z" fill="#f4c600"/><path d="m8.5 12 2.5 2.5 4.5-5" stroke="#141414" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Әр маманның анкетасын модератор тексереді</div>
+      <div class="sfli ln s8i"><svg width="40" height="40" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5z" fill="#f4c600"/><path d="m8.5 12 2.5 2.5 4.5-5" stroke="#141414" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Барлық маман қауіпсіздік бойынша оқытудан өтеді</div>
+      <div class="sfli ln s8i"><svg width="40" height="40" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5z" fill="#f4c600"/><path d="m8.5 12 2.5 2.5 4.5-5" stroke="#141414" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Сөйлесу және бейнесабақтар — тек платформа ішінде</div>
+      <div class="sfli ln s8i"><svg width="40" height="40" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5z" fill="#f4c600"/><path d="m8.5 12 2.5 2.5 4.5-5" stroke="#141414" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Пайдаланушыға бір басумен шағымдануға болады</div>
+    </div>
+    <div class="abs" style="left:1500px;top:540px;width:0;height:0">
+      <div class="abs" id="s8glow" style="left:-420px;top:-420px;width:840px;height:840px;border-radius:50%;background:radial-gradient(closest-side,rgba(244,198,0,.35),rgba(244,198,0,.08) 60%,transparent)"></div>
+      <div class="abs" id="s8disc" style="left:-250px;top:-250px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe066,#f4c600 55%,#e9a800)"></div>
+      <div class="abs" id="s8pg" style="left:-185px;top:-215px;width:370px" data-pingo="glasses"></div>
+    </div>
+  </div>
+</section>
+
+<!-- S9 montage -->
+<section class="scene" id="s9" style="background:#000">
+  <div class="mc" id="mc0" style="background:#f4c600"><div class="cen" id="mc0i">
+    <svg width="130" height="130" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.3 8 11 4.6-1.7 8-6 8-11V5z" fill="#141414"/><path d="m8.5 12 2.5 2.5 4.5-5" stroke="#f4c600" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h1 style="color:#141414">Тексерілген<br>мамандар.</h1></div></div>
+  <div class="mc" id="mc1" style="background:#000"><div class="cen" id="mc1i">
+    <svg width="130" height="118" viewBox="0 0 200 180"><path d="M100 172 C40 132 4 100 4 58 C4 26 28 4 58 4 C78 4 92 16 100 30 C108 16 122 4 142 4 C172 4 196 26 196 58 C196 100 160 132 100 172 Z" fill="#ffb3c8"/></svg>
+    <h1 style="color:#f5f5f7"><span class="grad">Тегін</span> көмектесетін<br>еріктілер.</h1></div></div>
+  <div class="mc" id="mc2" style="background:#fff"><div class="cen" id="mc2i">
+    <svg width="130" height="130" viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8.8a15 15 0 0 1 4.2-2.6M22 8.8A15 15 0 0 0 10.5 5.1M5 12.4a10 10 0 0 1 3.4-1.9M19 12.4a10 10 0 0 0-1.8-1.3M8.5 16a5 5 0 0 1 7 0M12 20h.01M3 3l18 18"/></svg>
+    <h1 style="color:#141414">Интернетсіз де<br>жұмыс істейді.</h1></div></div>
+  <div class="mc" id="mc3" style="background:#ffaf04"><div class="cen" id="mc3i">
+    <div class="langp"><span id="lp-ru">РУС</span><span id="lp-kk" class="on">ҚАЗ</span></div>
+    <h1 style="color:#141414">Қазақша.<br>Орысша.</h1></div></div>
+</section>
+
+<!-- S10 finale -->
+<section class="scene" id="s10" style="background:#fff">
+  <div class="abs" id="s10grp" style="inset:0">
+    <svg class="abs" id="dSm" style="left:56px;top:40px" width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="100" fill="#FFE100"/><path d="M48 76 Q60 92 72 76" stroke="#141414" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M108 76 Q120 92 132 76" stroke="#141414" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M58 116 Q88 156 118 116" stroke="#141414" stroke-width="7" fill="none" stroke-linecap="round"/></svg>
+    <svg class="abs" id="dB1" style="left:1690px;top:-70px" width="230" height="288" viewBox="0 0 160 200"><path d="M40 6 C96 -6 152 40 158 104 C164 160 132 196 92 194 C44 192 6 150 2 96 C-2 52 8 14 40 6 Z" fill="#282828"/></svg>
+    <svg class="abs" id="dB2" style="left:-60px;top:800px" width="200" height="250" viewBox="0 0 160 200"><path d="M40 6 C96 -6 152 40 158 104 C164 160 132 196 92 194 C44 192 6 150 2 96 C-2 52 8 14 40 6 Z" fill="#282828"/></svg>
+    <svg class="abs" id="dH" style="left:1700px;top:850px" width="170" height="153" viewBox="0 0 200 180"><path d="M100 172 C40 132 4 100 4 58 C4 26 28 4 58 4 C78 4 92 16 100 30 C108 16 122 4 142 4 C172 4 196 26 196 58 C196 100 160 132 100 172 Z" fill="#FFB3C8"/><ellipse cx="62" cy="86" rx="12" ry="8" fill="#FF7A9E" opacity="0.7"/><rect x="84" y="56" width="8" height="22" rx="4" fill="#141414"/><rect x="128" y="56" width="8" height="22" rx="4" fill="#141414"/><path d="M86 96 Q110 124 134 96" stroke="#141414" stroke-width="7" fill="none" stroke-linecap="round"/></svg>
+    <div class="fin-t">
+      <div class="wm ln" id="f-wm">PINGO</div>
+      <div class="slog ln" id="f-slog">Support for every child</div>
+      <div class="kksub ln" id="f-kk">Балалардың қамқорлықпен өсуіне көмектесеміз.</div>
+      <div class="acts ln" id="f-acts"><div class="pill">Бастау</div><div class="url">pingo-kids.web.app <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#141414" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div></div>
+    </div>
+    <div class="abs" style="left:1400px;top:560px;width:0;height:0">
+      <div class="abs" id="f-boat" style="left:-255px;top:-370px;width:510px;transform-origin:50% 85%"><img src="a/boat.png" style="width:100%;display:block"></div>
+      <div class="abs" style="left:-320px;top:212px;width:640px;height:60px;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 15%,#000 85%,transparent)" id="f-wvw">
+        <svg id="f-wv" width="1140" height="60" viewBox="0 0 600 40" preserveAspectRatio="none" style="position:absolute;left:0;top:0"><path d="M0 20 Q 25 5 50 20 T 100 20 T 150 20 T 200 20 T 250 20 T 300 20 T 350 20 T 400 20 T 450 20 T 500 20 T 550 20 T 600 20" fill="none" stroke="#9bd3f0" stroke-width="3.4" stroke-linecap="round"/></svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- End card -->
+<section class="scene" id="end" style="background:#000">
+  <div class="cen" id="endi">
+    <div style="width:150px;height:150px;border-radius:34px;overflow:hidden;box-shadow:0 30px 90px -20px rgba(255,190,0,.5)"><img src="a/icon.jpg" style="width:100%;height:100%;transform:scale(1.12);display:block"></div>
+    <div class="wm" style="color:#fff;font-size:72px;margin-top:40px">PINGO</div>
+    <div style="font-size:30px;color:#86868b;font-weight:500;margin-top:18px;letter-spacing:-.01em">pingo-kids.web.app</div>
+  </div>
+</section>
+
+</div>
+<script>
+const DURATION = 75;
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const P = (t, s, d) => clamp((t - s) / d);
+const lerp = (a, b, k) => a + (b - a) * k;
+const eo = k => 1 - Math.pow(1 - k, 3);
+const ex = k => (k >= 1 ? 1 : 1 - Math.pow(2, -10 * k));
+const eio = k => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
+const pop = k => (k <= 0 || k >= 1 ? 0 : Math.sin(Math.PI * k));
+const mix = (c1, c2, k) => { const a = c1.match(/\w\w/g).map(h => parseInt(h, 16)), b = c2.match(/\w\w/g).map(h => parseInt(h, 16)); return `rgb(${a.map((v, i) => Math.round(lerp(v, b[i], k))).join(',')})`; };
+
+// Pingo SVG (из src/components/Pingo.jsx)
+function pingo(mood, glasses) {
+  const INK = '#2E2E30', EYE = '#2B1714';
+  const eye = (x, closed) => closed
+    ? `<path d="M${x - 10} 96 Q${x} 83 ${x + 10} 96" stroke="${EYE}" stroke-width="5" stroke-linecap="round" fill="none"/>`
+    : `<g><ellipse cx="${x}" cy="93" rx="8.5" ry="10" fill="${EYE}"/><circle cx="${x + 3}" cy="89" r="3" fill="#fff"/></g>`;
+  return `<svg viewBox="0 0 200 220" width="100%" style="display:block;overflow:visible">
+  <ellipse class="pg-sh" cx="100" cy="213" rx="50" ry="5.5" fill="#000" opacity=".14"/>
+  <g class="pg-b">
+   <ellipse cx="80" cy="205" rx="17" ry="8.5" fill="#F0883E"/><ellipse cx="120" cy="205" rx="17" ry="8.5" fill="#F0883E"/>
+   <ellipse cx="100" cy="158" rx="58" ry="49" fill="${INK}"/><ellipse cx="100" cy="171" rx="42" ry="33" fill="#fff"/>
+   <path d="M46 150 C30 160 24 182 32 196 C42 190 52 174 54 160 Z" fill="${INK}"/>
+   <path class="pg-f" d="M154 150 C170 160 176 182 168 196 C158 190 148 174 146 160 Z" fill="${INK}" style="transform-box:fill-box;transform-origin:0 0"/>
+   <ellipse cx="100" cy="86" rx="80" ry="68" fill="${INK}"/>
+   <path d="M100 52 C112 36 150 30 166 56 C180 80 172 118 150 134 C134 146 116 150 100 150 C84 150 66 146 50 134 C28 118 20 80 34 56 C50 30 88 36 100 52 Z" fill="#fff"/>
+   <ellipse cx="56" cy="114" rx="9" ry="5.5" fill="#FF9EB5" opacity=".6"/><ellipse cx="144" cy="114" rx="9" ry="5.5" fill="#FF9EB5" opacity=".6"/>
+   <g class="pg-e" style="transform-box:fill-box;transform-origin:50% 50%">${eye(72, mood === 'happy')}${eye(128, mood === 'happy' || mood === 'wink')}</g>
+   ${glasses ? `<g fill="none" stroke="#141414" stroke-width="4.5"><circle cx="72" cy="93" r="17" fill="rgba(255,255,255,.15)"/><circle cx="128" cy="93" r="17" fill="rgba(255,255,255,.15)"/><path d="M89 92 Q100 85 111 92" stroke-linecap="round"/></g>` : ''}
+   <path d="M86 110 Q100 99 114 110 Q107 123 100 124 Q93 123 86 110 Z" fill="#F07C3A"/><path d="M89 114 Q100 120 111 114 Q106 123 100 124 Q94 123 89 114 Z" fill="#D9622B"/>
+  </g></svg>`;
+}
+$$('[data-pingo]').forEach(el => { const m = el.dataset.pingo; el.innerHTML = pingo(m === 'glasses' ? 'open' : m, m === 'glasses'); });
+
+// Детерминированный «салют»
+function rng(seed) { return () => { seed |= 0; seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const CONF = (() => { const r = rng(7), cols = ['#F4C600', '#FFAF04', '#8B5CF6', '#3B82F6', '#22C55E', '#FFB3C8', '#141414'], out = []; const host = $('#w-conf');
+  for (let i = 0; i < 34; i++) { const a = (Math.PI * 2 * i) / 34 + r() * 0.4, d = 110 + r() * 120, s = 7 + r() * 8, round = i % 3 === 0; const el = document.createElement('i');
+    el.style.cssText = `background:${cols[i % 7]};width:${s}px;height:${round ? s : s * 0.5}px;border-radius:${round ? '50%' : '3px'};margin:${-s / 2}px 0 0 ${-s / 2}px`; host.appendChild(el);
+    out.push({ el, x: Math.cos(a) * d, y: Math.sin(a) * d - 70, rot: r() * 540 - 270, delay: r() * 0.12 }); } return out; })();
+
+// Появление/уход: прозрачность, сдвиг, размытие
+function fx(el, t, inAt, outAt, o = {}) {
+  const { dur = 1.0, outDur = 0.55, y = 40, x = 0, blur = 14, scale = 1, outY = -24, outX = 0, outBlur = 10, outScale = 1 } = o;
+  const k = P(t, inAt, dur), a = ex(k), ao = eo(P(t, inAt, dur * 0.6));
+  const b = outAt == null ? 0 : eio(P(t, outAt, outDur));
+  el.style.opacity = (ao * (1 - b)).toFixed(4);
+  const ty = (1 - a) * y + b * outY, tx = (1 - a) * x + b * outX, sc = lerp(scale, 1, a) * lerp(1, outScale, b);
+  el.style.transform = `translate3d(${tx.toFixed(2)}px,${ty.toFixed(2)}px,0) scale(${sc.toFixed(4)})`;
+  const bl = (1 - a) * blur + b * outBlur;
+  el.style.filter = bl > 0.08 ? `blur(${bl.toFixed(2)}px)` : 'none';
+}
+const vis = (id, t, a, b) => { const el = $('#' + id); const on = t >= a && t < b; el.style.display = on ? 'block' : 'none'; return on ? el : null; };
+const seg = (t, segs, v0) => { let v = v0; for (const [s, d, a, b] of segs) { if (t >= s) v = lerp(a, b, eio(P(t, s, d))); } return v; };
+function stageXY(el) { const r = el.getBoundingClientRect(), s = $('#stage').getBoundingClientRect(), k = s.width / 1920; return [(r.left + r.width / 2 - s.left) / k, (r.top + r.height / 2 - s.top) / k]; }
+function bob(svgHost, t, amp = 5, speed = 2.4) { const b = svgHost.querySelector('.pg-b'); if (b) b.style.transform = `translateY(${(-amp * (0.5 - 0.5 * Math.cos(t * speed))).toFixed(2)}px)`; }
+function blink(svgHost, t, times) { const e = svgHost.querySelector('.pg-e'); if (!e) return; let s = 1; for (const b of times) { const k = P(t, b, 0.18); if (k > 0 && k < 1) s = 1 - 0.9 * pop(k); } e.style.transform = `scaleY(${s})`; }
+
+function render(t) {
+  // ---------- S1 ----------
+  if (vis('s1', t, 0, 5)) {
+    fx($('#s1a'), t, 0.6, 4.05, { dur: 1.6, y: 34, blur: 18, outDur: 0.75, outBlur: 16, outY: -14 });
+    fx($('#s1b'), t, 1.5, 4.15, { dur: 1.6, y: 34, blur: 18, outDur: 0.75, outBlur: 16, outY: -14 });
+    $('#s1wrap').style.transform = `scale(${(1 + 0.05 * eo(P(t, 0, 5))).toFixed(4)})`;
+    $('#s1glow').style.opacity = (eo(P(t, 0.3, 3)) * (1 - P(t, 4, 1))).toFixed(3);
+  }
+  // ---------- S2 ----------
+  if (vis('s2', t, 4.9, 10.05)) {
+    $$('.s2w').forEach((w, i) => fx(w, t, (i < 3 ? 5.25 : 6.15) + (i < 3 ? i : i - 3) * 0.14, 8.85, { dur: 1.2, y: 30, blur: 14, outDur: 0.6, outBlur: 18, outY: 0, outScale: 0.94 }));
+    $('#s2g').style.backgroundPosition = `${lerp(100, 0, eio(P(t, 6.2, 3))).toFixed(1)}% 0`;
+    $('#s2wrap').style.transform = `scale(${(1 + 0.035 * P(t, 5, 4)).toFixed(4)})`;
+    const d = $('#s2dot'), k1 = ex(P(t, 9.25, 0.45)), k2 = P(t, 9.8, 0.25);
+    d.style.opacity = (eo(P(t, 9.25, 0.2)) * (1 - k2)).toFixed(3);
+    d.style.transform = `scale(${(k1 * (1 + 0.15 * Math.sin(t * 12)) * (1 + 5 * k2 * k2)).toFixed(3)})`;
+  }
+  // ---------- S3 logo ----------
+  if (vis('s3', t, 9.9, 15.35)) {
+    const kb = P(t, 10, 1.7);
+    $('#s3bloom').style.opacity = (t < 10 ? 0 : Math.pow(1 - kb, 1.6) * 0.95).toFixed(3);
+    $('#s3bloom').style.transform = `scale(${lerp(0.15, 3.0, ex(kb)).toFixed(3)})`;
+    $('#s3halo').style.opacity = (eo(P(t, 10.2, 1.5)) * (0.8 + 0.2 * Math.sin(t * 1.6))).toFixed(3);
+    const ic = $('#s3icon'), ki = ex(P(t, 10, 1.35));
+    ic.style.opacity = eo(P(t, 10, 0.3)).toFixed(3);
+    const up = -118 * eio(P(t, 11.25, 1.05));
+    ic.style.transform = `translateY(${up.toFixed(2)}px) scale(${(lerp(0.45, 1, ki) * (1 + 0.03 * P(t, 10, 5.3))).toFixed(4)})`;
+    $('#s3sheen').style.transform = `translateX(${lerp(-200, 460, eio(P(t, 12.7, 0.9))).toFixed(1)}px) rotate(20deg)`;
+    const wm = $('#s3wm');
+    fx(wm, t, 11.5, null, { dur: 1.5, y: 20, blur: 16 });
+    wm.style.letterSpacing = `${lerp(0.42, -0.02, ex(P(t, 11.5, 1.6))).toFixed(4)}em`;
+    fx($('#s3slog'), t, 12.2, null, { dur: 1.2, y: 22, blur: 10 });
+  }
+  // ---------- S4 devices ----------
+  { const s = vis('s4', t, 14.4, 22.95); if (s) {
+    const r = 1250 * eio(P(t, 14.4, 0.95));
+    s.style.clipPath = r < 1249 ? `circle(${r.toFixed(1)}px at 50% 50%)` : 'none';
+    fx($('#s4h'), t, 15.0, null, { dur: 1.2, y: 30 });
+    const kl = ex(P(t, 15.15, 1.7)), kp = ex(P(t, 15.5, 1.7));
+    const lap = $('#s4lap'), ph = $('#s4ph');
+    lap.style.opacity = eo(P(t, 15.15, 0.5)).toFixed(3); lap.style.transform = `translateY(${lerp(460, 0, kl).toFixed(2)}px)`;
+    ph.style.opacity = eo(P(t, 15.5, 0.5)).toFixed(3); ph.style.transform = `translateY(${lerp(560, 0, kp).toFixed(2)}px) scale(.8) rotate(${lerp(6, 0, kp).toFixed(3)}deg)`;
+    $('#s4grp').style.transform = `scale(${(1 + 0.035 * eo(P(t, 15, 8))).toFixed(4)})`;
+    $('#s4pimg').style.transform = `translateY(${-seg(t, [[17.0, 1.25, 0, 860], [18.9, 1.3, 860, 1650], [20.8, 1.3, 1650, 2560]], 0)}px)`;
+    $('#s4dimg').style.transform = `translateY(${-seg(t, [[18.3, 1.6, 0, 520], [20.5, 1.6, 520, 1180]], 0)}px)`;
+  } }
+  // ---------- S5a ----------
+  { const s = vis('s5a', t, 22.3, 25.2); if (s) {
+    s.style.opacity = eo(P(t, 22.3, 0.45)).toFixed(3);
+    fx($('#s5e'), t, 22.55, 24.5, { dur: 1.0, y: 20, outDur: 0.45 });
+    fx($('#s5l1'), t, 22.7, 24.55, { dur: 1.2, y: 40, outDur: 0.45 });
+    fx($('#s5l2'), t, 22.95, 24.6, { dur: 1.2, y: 40, outDur: 0.45 });
+  } }
+  // ---------- Step 1 ----------
+  { const s = vis('st1', t, 24.9, 30.25); if (s) {
+    s.style.opacity = eo(P(t, 24.9, 0.35)).toFixed(3);
+    const out = 29.7;
+    fx($('#st1n'), t, 25.1, out, { dur: 1, y: 30, scale: 0.6 });
+    fx($('#st1h'), t, 25.22, out, { dur: 1.1, y: 40 });
+    fx($('#st1p'), t, 25.4, out, { dur: 1.1, y: 40 });
+    const ph = $('#st1ph'), k = ex(P(t, 25.0, 1.4)), b = eio(P(t, out, 0.5));
+    ph.style.opacity = (eo(P(t, 25.0, 0.4)) * (1 - b)).toFixed(3);
+    ph.style.transform = `translate(${lerp(160, 0, k) + b * 60}px,0) scale(${lerp(0.93, 1, k).toFixed(4)})`;
+    const name = 'Әлия', n = Math.floor(P(t, 25.85, 0.6) * name.length + 0.0001);
+    $('#w-name').textContent = name.slice(0, n);
+    $('#w-caret').style.opacity = (t < 26.6 || Math.floor(t * 2.4) % 2 === 0) ? 1 : 0;
+    $('#w-prog').style.width = `${seg(t, [[26.5, 0.5, 25, 50], [27.45, 0.5, 50, 75], [28.4, 0.4, 75, 100]], 25)}%`;
+    $('#w-sn').textContent = t < 26.5 ? '1 / 4' : t < 27.45 ? '2 / 4' : t < 28.4 ? '3 / 4' : '4 / 4';
+    const chips = $$('#w-chips .chip'), sel = { 2: 26.7, 4: 27.15 };
+    chips.forEach((c, i) => { const at = sel[i]; const on = at != null && t >= at; c.classList.toggle('on', on); c.style.transform = at != null ? `scale(${1 + 0.1 * pop(P(t, at, 0.3))})` : ''; });
+    const ls = $$('#w-ls .lcard'); ls.forEach((c, i) => { const on = i === 2 && t >= 27.7; c.classList.toggle('on', on); c.style.transform = i === 2 ? `scale(${1 - 0.05 * pop(P(t, 27.62, 0.25))})` : ''; });
+    $('#w-btn').style.transform = `scale(${1 - 0.05 * pop(P(t, 28.25, 0.25))})`;
+    const dn = $('#w-done'), kd = P(t, 28.5, 0.35);
+    dn.style.opacity = eo(kd).toFixed(3);
+    $('#w-dc').style.transform = `scale(${lerp(0.75, 1, ex(P(t, 28.55, 0.9))).toFixed(4)})`;
+    bob($('#w-dc'), t, 6, 4);
+    CONF.forEach(c => { const k = P(t, 28.6 + c.delay, 1.7); const kk = ex(k);
+      c.el.style.opacity = k <= 0 ? 0 : (k < 0.6 ? 1 : 1 - (k - 0.6) / 0.4).toFixed(3);
+      c.el.style.transform = `translate(${(c.x * kk).toFixed(1)}px,${(c.y * kk + 170 * k * k).toFixed(1)}px) rotate(${(c.rot * k).toFixed(1)}deg)`; });
+    bob($('#st1ph .guide'), t, 3, 3);
+  } }
+  // ---------- Step 2 ----------
+  { const s = vis('st2', t, 29.9, 35.25); if (s) {
+    s.style.opacity = eo(P(t, 29.9, 0.35)).toFixed(3);
+    const out = 34.7;
+    fx($('#st2n'), t, 30.15, out, { dur: 1, y: 30, scale: 0.6 });
+    fx($('#st2h'), t, 30.27, out, { dur: 1.1, y: 40 });
+    fx($('#st2p'), t, 30.45, out, { dur: 1.1, y: 40 });
+    const ph = $('#st2ph'), k = ex(P(t, 30.0, 1.4)), b = eio(P(t, out, 0.5));
+    ph.style.opacity = (eo(P(t, 30.0, 0.4)) * (1 - b)).toFixed(3);
+    ph.style.transform = `translate(${lerp(-160, 0, k) - b * 60}px,0) scale(${lerp(0.93, 1, k).toFixed(4)})`;
+    $$('#cat-list .scard').forEach((c, i) => fx(c, t, 30.4 + i * 0.13, null, { dur: 0.9, y: 50, blur: 6 }));
+    $('#c-ring').style.opacity = eo(P(t, 31.5, 0.4)).toFixed(3);
+    $('#c-match').style.transform = `scale(${1 + 0.15 * pop(P(t, 31.5, 0.35))})`; $('#c-match').style.display = 'inline-block';
+    const ks = ex(P(t, 32.25, 0.85));
+    $('#c-sheet').style.transform = `translateY(${lerp(100, 0, ks).toFixed(2)}%)`;
+    $('#c-dim').style.opacity = (0.32 * eo(P(t, 32.25, 0.4))).toFixed(3);
+    $$('#c-days .day').forEach((d, i) => { d.classList.toggle('on', i === 3 && t >= 32.95); d.style.transform = i === 3 ? `scale(${1 - 0.07 * pop(P(t, 32.88, 0.22))})` : ''; });
+    $$('#c-times .time').forEach((d, i) => { d.classList.toggle('on', i === 2 && t >= 33.45); d.style.transform = i === 2 ? `scale(${1 - 0.07 * pop(P(t, 33.38, 0.22))})` : ''; });
+    $('#c-btn').style.transform = `scale(${1 - 0.05 * pop(P(t, 33.85, 0.25))})`;
+    const tt = $('#c-toast'), kt = ex(P(t, 34.05, 0.7));
+    tt.style.opacity = eo(P(t, 34.05, 0.25)).toFixed(3); tt.style.transform = `translateY(${lerp(-90, 0, kt).toFixed(2)}px) scale(${lerp(0.9, 1, kt).toFixed(3)})`;
+  } }
+  // ---------- Step 3 video ----------
+  { const s = vis('st3', t, 34.9, 40.25); if (s) {
+    s.style.opacity = eo(P(t, 34.9, 0.4)).toFixed(3);
+    const out = 39.7;
+    fx($('#st3n'), t, 35.15, out, { dur: 1, y: 30, scale: 0.6 });
+    fx($('#st3h'), t, 35.27, out, { dur: 1.1, y: 40 });
+    fx($('#st3p'), t, 35.45, out, { dur: 1.1, y: 40 });
+    const rm = $('#room'), k = ex(P(t, 35.1, 1.5)), b = eio(P(t, out, 0.5));
+    rm.style.opacity = (eo(P(t, 35.1, 0.45)) * (1 - b)).toFixed(3);
+    rm.style.transform = `translateY(${lerp(180, 0, k).toFixed(2)}px) scale(${(lerp(0.9, 1, k) * (1 + 0.02 * P(t, 35, 5))).toFixed(4)})`;
+    const sec = 768 + Math.floor(t - 35.1); $('#r-time').textContent = `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
+    $('#r-dot').style.opacity = (0.55 + 0.45 * Math.cos(t * 4)).toFixed(3);
+    const sp1 = (t > 35.9 && t < 37.7) ? 1 : 0, sp2 = (t > 37.9 && t < 39.5) ? 1 : 0;
+    $('#r-spk1').style.opacity = (sp1 * (0.55 + 0.45 * Math.abs(Math.sin(t * 7.3)))).toFixed(3);
+    $('#r-spk1').style.transform = `scale(${1 + 0.04 * Math.abs(Math.sin(t * 5.1))})`;
+    $('#r-spk2').style.opacity = (sp2 * (0.55 + 0.45 * Math.abs(Math.sin(t * 8.1)))).toFixed(3);
+    const kc = ex(P(t, 36.6, 0.9)); const cd = $('#r-card');
+    cd.style.opacity = eo(P(t, 36.6, 0.3)).toFixed(3); cd.style.transform = `translateY(${lerp(40, 0, kc)}px) rotate(${lerp(-12, -4, kc)}deg) scale(${lerp(0.7, 1, kc)})`;
+    fx($('#r-ctrls'), t, 35.7, null, { dur: 1, y: 30, blur: 0 });
+  } }
+  // ---------- S6 accessibility ----------
+  { const s = vis('s6', t, 39.9, 47.85); if (s) {
+    s.style.opacity = eo(P(t, 39.9, 0.4)).toFixed(3);
+    const out = 47.3;
+    fx($('#s6h'), t, 40.15, out, { dur: 1.1, y: 40 });
+    fx($('#s6p'), t, 40.4, out, { dur: 1.1, y: 30 });
+    fx($('#s6c1'), t, 40.6, out, { dur: 1.3, y: 90, blur: 8 });
+    fx($('#s6c2'), t, 40.78, out, { dur: 1.3, y: 90, blur: 8 });
+    const v1 = eio(P(t, 41.55, 1.35)), v2 = eio(P(t, 43.15, 1.05));
+    const setSl = (id, v, base) => { const sl = $(id); const p = (base + (1 - base) * v) * 100; sl.querySelector('i').style.width = p + '%'; sl.querySelector('u').style.left = p + '%'; };
+    setSl('#sl1', v1, 0.22); setSl('#sl2', v2, 0.18);
+    $('#v1').textContent = Math.round(lerp(100, 140, v1)) + '%';
+    $('#v2').textContent = lerp(1.5, 2.0, v2).toFixed(1).replace('.', ',');
+    const tgs = [['#tg1', 46.15], ['#tg2', 45.35], ['#tg3', 44.55]];
+    const kv = {};
+    tgs.forEach(([id, at]) => { const k = eio(P(t, at, 0.28)); kv[id] = k; const el = $(id); el.style.background = mix('#e5e5ea', '#34c759', k); el.querySelector('u').style.transform = `translateX(${(28 * k).toFixed(2)}px)`; });
+    const tx = $('#pvtxt');
+    tx.style.fontSize = lerp(24, 30, v1).toFixed(2) + 'px';
+    tx.style.lineHeight = lerp(1.45, 1.9, v2).toFixed(3);
+    tx.style.fontFamily = kv['#tg3'] > 0.5 ? 'Verdana, Inter, sans-serif' : 'Inter, sans-serif';
+    tx.style.letterSpacing = (0.02 * kv['#tg3']).toFixed(4) + 'em';
+    tx.style.color = mix('#3a3a3c', '#000000', kv['#tg2']);
+    tx.style.fontWeight = kv['#tg2'] > 0.5 ? 600 : 500;
+    tx.style.boxShadow = `inset 0 0 0 ${(2.5 * kv['#tg2']).toFixed(2)}px #141414`;
+    const calm = kv['#tg1'];
+    bob($('#pvpg'), t, 8 * (1 - calm), 3.4);
+    const fl = $('#pvpg .pg-f'); if (fl) fl.style.transform = `rotate(${(-22 * (1 - calm) * (0.5 - 0.5 * Math.cos(t * 5))).toFixed(2)}deg)`;
+    // палец
+    const tap = $('#tap6'); let tx0 = null, op = 0;
+    if (t >= 41.3 && t < 42.95) { tx0 = stageXY($('#sl1 u')); op = eo(P(t, 41.3, 0.2)) * (1 - P(t, 42.9, 0.05)); }
+    else if (t >= 42.95 && t < 44.3) { tx0 = stageXY($('#sl2 u')); op = eo(P(t, 42.95, 0.2)) * (1 - P(t, 44.25, 0.05)); }
+    else { for (const [id, at] of tgs) { if (t >= at - 0.25 && t < at + 0.4) { tx0 = stageXY($(id)); op = eo(P(t, at - 0.25, 0.15)) * (1 - P(t, at + 0.25, 0.15)); } } }
+    if (tx0) { tap.style.left = tx0[0] + 'px'; tap.style.top = tx0[1] + 'px'; }
+    tap.style.opacity = op.toFixed(3);
+  } }
+  // ---------- S7 chat ----------
+  { const s = vis('s7', t, 47.4, 52.85); if (s) {
+    s.style.opacity = eo(P(t, 47.4, 0.4)).toFixed(3);
+    const out = 52.3;
+    fx($('#s7h'), t, 47.65, out, { dur: 1.1, y: 40 });
+    fx($('#s7p'), t, 47.85, out, { dur: 1.1, y: 40 });
+    const ph = $('#s7ph'), k = ex(P(t, 47.5, 1.4)), b = eio(P(t, out, 0.5));
+    ph.style.opacity = (eo(P(t, 47.5, 0.4)) * (1 - b)).toFixed(3);
+    ph.style.transform = `translate(${lerp(160, 0, k) + b * 60}px,0) scale(${lerp(0.93, 1, k).toFixed(4)})`;
+    const showMsg = (id, at) => { const el = $('#' + id); el.style.display = t >= at ? '' : 'none'; const kk = ex(P(t, at, 0.6)); el.style.opacity = eo(P(t, at, 0.2)); el.style.transform = `translateY(${lerp(18, 0, kk)}px) scale(${lerp(0.85, 1, kk)})`; };
+    showMsg('m1', 48.2);
+    const typ = $('#m-typ'); typ.style.display = (t >= 48.85 && t < 49.6) ? 'flex' : 'none';
+    $$('#m-typ i').forEach((d, i) => d.style.transform = `translateY(${(-4 * Math.max(0, Math.sin(t * 9 - i * 0.9))).toFixed(2)}px)`);
+    showMsg('m2', 49.6); showMsg('m3', 50.3); showMsg('m4', 51.45);
+    const msg = 'Рақмет, күтеміз!', ci = $('#ci-tx');
+    if (t >= 50.85 && t < 51.45) { ci.className = 'tx'; ci.textContent = msg.slice(0, Math.floor(P(t, 50.85, 0.5) * msg.length + 0.001)); }
+    else { ci.className = ''; ci.textContent = 'Хабарлама…'; }
+  } }
+  // ---------- S8 safety ----------
+  { const s = vis('s8', t, 52.4, 60.05); if (s) {
+    s.style.opacity = eo(P(t, 52.4, 0.5)).toFixed(3);
+    const out = 59.45;
+    $('#s8grp').style.transform = `scale(${(1 + 0.03 * P(t, 52.4, 7.6)).toFixed(4)})`;
+    fx($('#s8e'), t, 52.85, out, { dur: 1, y: 20 });
+    fx($('#s8l1'), t, 53.0, out, { dur: 1.3, y: 40, blur: 16 });
+    fx($('#s8l2'), t, 53.3, out, { dur: 1.3, y: 40, blur: 16 });
+    $$('.s8i').forEach((el, i) => fx(el, t, 54.15 + i * 0.62, out, { dur: 1.0, y: 0, x: -40, blur: 8 }));
+    const kd = ex(P(t, 53.0, 1.4));
+    $('#s8disc').style.transform = `scale(${lerp(0.3, 1, kd).toFixed(4)})`; $('#s8disc').style.opacity = eo(P(t, 53.0, 0.4)) * (1 - eio(P(t, out, 0.5)));
+    $('#s8glow').style.opacity = (eo(P(t, 53.3, 1.5)) * (0.75 + 0.25 * Math.sin(t * 2)) * (1 - eio(P(t, out, 0.5)))).toFixed(3);
+    const pg = $('#s8pg'), kp = ex(P(t, 53.2, 1.4));
+    pg.style.opacity = eo(P(t, 53.2, 0.4)) * (1 - eio(P(t, out, 0.5)));
+    pg.style.transform = `translateY(${lerp(120, 0, kp).toFixed(2)}px) scale(${lerp(0.7, 1, kp).toFixed(4)})`;
+    bob(pg, t, 7, 2.6); blink(pg, t, [56.9, 58.7]);
+    const fl = pg.querySelector('.pg-f'); const w = P(t, 55.3, 1.8); fl.style.transform = `rotate(${(-28 * pop(w) * (0.6 + 0.4 * Math.sin(t * 9))).toFixed(2)}deg)`;
+  } }
+  // ---------- S9 montage ----------
+  if (vis('s9', t, 60, 65.02)) {
+    for (let i = 0; i < 4; i++) { const a = 60 + i * 1.25, el = $('#mc' + i), on = t >= a && t < a + 1.25; el.style.display = on ? 'block' : 'none';
+      if (on) { const k = ex(P(t, a, 0.5)), inn = $('#mc' + i + 'i'); inn.style.opacity = eo(P(t, a, 0.16)); inn.style.transform = `scale(${(lerp(1.14, 1, k) * (1 + 0.04 * P(t, a, 1.25))).toFixed(4)})`; const bl = (1 - k) * 12; inn.style.filter = bl > 0.1 ? `blur(${bl.toFixed(2)}px)` : 'none'; } }
+    const sw = t >= 64.3; $('#lp-ru').className = sw ? 'on' : ''; $('#lp-kk').className = sw ? '' : 'on';
+  }
+  // ---------- S10 finale ----------
+  { const s = vis('s10', t, 65, 73.45); if (s) {
+    $('#s10grp').style.transform = `scale(${(1.0 + 0.03 * eo(P(t, 65, 8))).toFixed(4)})`;
+    const wm = $('#f-wm'); fx(wm, t, 65.55, null, { dur: 1.5, y: 30, blur: 18 }); wm.style.letterSpacing = `${lerp(0.28, -0.02, ex(P(t, 65.55, 1.6))).toFixed(4)}em`;
+    fx($('#f-slog'), t, 66.15, null, { dur: 1.2, y: 26 });
+    fx($('#f-kk'), t, 66.75, null, { dur: 1.2, y: 26 });
+    fx($('#f-acts'), t, 67.5, null, { dur: 1.2, y: 30, blur: 6 });
+    const kb = ex(P(t, 65.0, 1.8)), bt = $('#f-boat');
+    bt.style.opacity = eo(P(t, 65, 0.3));
+    bt.style.transform = `translateY(${(lerp(520, 0, kb) - 9 * Math.sin(t * 1.5)).toFixed(2)}px) rotate(${(2.6 * Math.sin(t * 1.5 + 0.6)).toFixed(3)}deg) scale(${lerp(0.85, 1, kb).toFixed(4)})`;
+    $('#f-wv').style.transform = `translateX(${(-((t * 70) % 190)).toFixed(2)}px)`;
+    $('#f-wvw').style.opacity = eo(P(t, 65.4, 0.8));
+    const deco = [['#dSm', -340, -340, 0, 7, 12], ['#dB1', 300, -300, 0.12, 9, 10], ['#dB2', -300, 300, 0.2, 8, 14], ['#dH', 320, 300, 0.08, 5.5, 10]];
+    deco.forEach(([id, x0, y0, dl, per, amp]) => { const k = ex(P(t, 65.2 + dl, 1.5)); const fy = -amp * Math.sin((t * 2 * Math.PI) / per), fr = 5 * Math.sin((t * 2 * Math.PI) / per + 1);
+      $(id).style.transform = `translate(${lerp(x0, 0, k).toFixed(1)}px,${(lerp(y0, 0, k) + fy).toFixed(1)}px) rotate(${(fr + lerp(-40, 0, k)).toFixed(2)}deg)`; });
+  } }
+  // ---------- End ----------
+  { const s = vis('end', t, 72.8, 75.5); if (s) {
+    s.style.opacity = eo(P(t, 72.8, 0.6)).toFixed(3);
+    const e = $('#endi'); e.style.opacity = (eo(P(t, 73.0, 0.6)) * (1 - eio(P(t, 74.25, 0.7)))).toFixed(3);
+    e.style.transform = `scale(${lerp(0.96, 1.0, eo(P(t, 72.9, 2.1))).toFixed(4)})`;
+  } }
+}
+
+window.__duration = DURATION;
+window.__seek = t => { render(t); return true; };
+window.__ready = (async () => {
+  await document.fonts.ready;
+  const sample = 'ӘәҒғҚқҢңӨөҰұҮүҺһІі PINGO Support Aa 0123';
+  await Promise.all(['800 100px "Bricolage Grotesque"', '400 40px "DM Sans"', '400 30px Inter', '500 30px Inter', '600 30px Inter', '700 100px Inter', '800 100px Inter', '600 30px Oswald'].map(f => document.fonts.load(f, sample)));
+  await Promise.all([...document.images].map(i => (i.complete ? Promise.resolve() : new Promise(r => { i.onload = i.onerror = r; })).then(() => i.decode().catch(() => {}))));
+  render(0);
+  return true;
+})();
+
+// Предпросмотр в браузере: trailer.html?play (или ?t=12.5)
+const qs = new URLSearchParams(location.search);
+if (qs.has('play') || qs.has('t')) {
+  const fit = () => { const k = Math.min(innerWidth / 1920, innerHeight / 1080); $('#stage').style.transform = `scale(${k})`; };
+  fit(); addEventListener('resize', fit);
+  window.__ready.then(() => {
+    if (qs.has('t')) { render(parseFloat(qs.get('t'))); return; }
+    const t0 = performance.now() - (parseFloat(qs.get('play')) || 0) * 1000;
+    const loop = () => { const t = ((performance.now() - t0) / 1000) % DURATION; render(t); requestAnimationFrame(loop); };
+    loop();
+  });
+}
+</script>
+</body>
+</html>
